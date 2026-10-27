@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow — หน้า Entry & Review
 description: หน้าป้อนบรรทัดและหน้า review variance ที่ใช้ทำและ submit การนับสต๊อกประจำงวดจริง
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 # การนับสต๊อกประจำงวด (Physical Count) — User Flow — หน้า Entry & Review
 
 > **At a Glance**
-> **หน้าจอ:** `physical-count/:id/entry` (`pc-entry-component.tsx`) และ `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** ผู้ใช้ permission-gated คนเดียวกันกับที่บันทึกใน [03-user-flow-count-lead.md](/th/inventory/physical-count/03-user-flow-count-lead)
+> **หน้าจอ:** `physical-count/:id/entry` (`pc-entry-component.tsx`) และ `physical-count/:id/review` (`pc-review-component.tsx`) &nbsp;·&nbsp; **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Role:** ผู้ใช้คนเดียวที่ผ่าน gate `inventory_management.physical_count` ซึ่งเป็นคนเดียวกับที่บันทึกใน [03-user-flow-count-lead.md](/th/inventory/physical-count/03-user-flow-count-lead)
 > **สิ่งที่ persona นี้ทำ:** ป้อน `actual_qty` ต่อบรรทัดสินค้า แนบ note/photo ต่อบรรทัดถ้าต้องการ บันทึก save ความคืบหน้า submit เพื่อ review และยืนยัน submit สุดท้าย
 
 ## 1. ขอบเขตหน้าจอ
@@ -37,7 +37,7 @@ graph LR
 - **Search + filter pill สถานะ** — All / Counted / Uncounted กรองการ์ดสินค้าที่มองเห็นฝั่ง client; search จับคู่ชื่อ/รหัส/SKU/ชื่อท้องถิ่นของสินค้า
 - **ปุ่ม Refresh** — เรียก `PATCH .../refresh` ซึ่งรัน query union สินค้าเดียวกับตอนสร้างใหม่และเพิ่มสินค้าที่เข้าเงื่อนไขใหม่เข้า sheet
 - **Import / Export** — Export เขียนไฟล์ `.xlsx` ของยอดนับ effective ปัจจุบัน (id, รหัส/ชื่อ/ชื่อท้องถิ่น/SKU สินค้า, หน่วย, `actual_qty`); Import อ่าน spreadsheet กลับและจับคู่แถวด้วย SKU รายงานจำนวนที่จับคู่/ข้าม
-- **การ์ดสินค้า** (`EntryItemRow`, virtualized) — ชื่อ/รหัส/ชื่อท้องถิ่น/SKU สินค้า, input ตัวเลข `actual_qty` (commit ตอน blur, clamp `≥ 0` ที่ client), ปุ่ม calculator (`CalculatorDialog` สำหรับคำนวณยอดรวมจากปริมาณลัง/หน่วย), ป้ายหน่วยนับ และลิงก์ "Add Notes" เปิด dialog note ที่ใช้ร่วมกัน (ข้อความอิสระ + รูปแนบ อ้างอิง `tb_physical_count_detail_comment`) Book quantity (`on_hand_qty`) **ไม่เคยแสดง** บนหน้านี้
+- **แถวสินค้า** (`EntryItemRow`, virtualized; แถวหนาแน่นที่คอลัมน์เรียงตรงกันตั้งแต่การปรับ style รอบ 2026-10 — กด **Enter** ในช่องนับจะย้าย focus ไปแถวถัดไป, `use-entry-advance.ts`) — ชื่อ/รหัส/ชื่อท้องถิ่น/SKU สินค้า, input ตัวเลข `actual_qty` (commit ตอน blur, clamp `≥ 0` ที่ client), ปุ่ม calculator (`CalculatorDialog` สำหรับคำนวณยอดรวมจากปริมาณลัง/หน่วย), ป้ายหน่วยนับ และลิงก์ "Add Notes" เปิด dialog note ที่ใช้ร่วมกัน (ข้อความอิสระ + รูปแนบ อ้างอิง `tb_physical_count_detail_comment`) Book quantity (`on_hand_qty`) **ไม่เคยแสดง** บนหน้านี้
 - **"Set uncounted to zero"** — เติมค่า local ของทุกบรรทัดที่ยังว่างเป็น `0` แบบ bulk (ไม่ save เอง)
 - **Save vs. Submit for Review** — footer แสดง **Save** เมื่อมีบรรทัดใดยังไม่นับ; เมื่อทุกบรรทัดมีค่าแล้ว (จากการแก้ไข local หรือ save ก่อนหน้า) Save จะหายไปและเหลือเพียง **Submit for Review**
 
@@ -59,8 +59,8 @@ graph LR
 | ป้อน/แก้ไข `actual_qty` บนบรรทัด | เอกสาร `in_progress` | Local state เท่านั้น จนกว่าจะ Save หรือ Submit for Review | ค่าถูก clamp เป็น `≥ 0` ที่ client (`entry-item-row.tsx`); ยังไม่ยืนยันค่าต่ำสุดฝั่ง server |
 | แนบ note/photo ให้บรรทัด | เวลาใดก็ได้ | `POST /physical-count-detail-comments/:detailId` (multipart: `message`, `type`, `files`) | อ้างอิง `tb_physical_count_detail_comment`; component notes-dialog ที่ใช้ร่วมกับหน้า entry อื่น ๆ ในโค้ดฐานนี้ |
 | Save | มีอย่างน้อยหนึ่งบรรทัดมีค่า; เอกสารไม่ `completed` | `PATCH .../save` — stamp `counted_at`/`counted_by_id` และคำนวณ `diff_qty` ใหม่บนบรรทัดที่ส่งมาเทียบกับ `on_hand_qty` ที่เก็บอยู่ในขณะนั้น (ปกติยังเป็น `0` ก่อน review); ต้องการ `doc_version` | ทำซ้ำได้; ไม่เปลี่ยน `tb_physical_count.status` |
-| Submit for Review | ทุกบรรทัดมีค่า effective (`uncountedCount === 0`) | `PATCH .../review` — คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับ **ทุก** บรรทัดจากยอด ledger สด; navigate ไป `/review` | ไม่ stamp `counted_at`; ไม่เปลี่ยน `status` ต้องการ `doc_version` ดูข้อควรระวัง `counted_at` ใน [02-business-rules.md](/th/inventory/physical-count/02-business-rules) `PHC_VAL_004` |
-| Submit (สุดท้าย จาก `/review`) | `counted_at != null` ของทุกบรรทัด | `PATCH .../submit` — `status → completed`; ยิง variance rollup เข้า `tb_stock_in`/`tb_stock_out` | Terminal; ตาม `PHC_POST_001`–`004` ต้องการ `doc_version` |
+| Submit for Review | ทุกบรรทัดมีค่า effective (`uncountedCount === 0`) | `PATCH .../review` — คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับ **ทุก** บรรทัดจากยอด cost-layer ของงวดที่นับ; navigate ไป `/review` | stamp `counted_at` / `counted_by_id` บนบรรทัดที่ได้รับเป็นครั้งแรก (บรรทัดที่ stamp แล้วคงเวลาเดิม); ไม่เปลี่ยน `status` ต้องการ `doc_version` ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) `PHC_VAL_004` |
+| Submit (สุดท้าย จาก `/review`) | `counted_at != null` ของทุกบรรทัด | `PATCH .../submit` — `status → completed`; ยิง variance rollup เข้า `tb_stock_in`/`tb_stock_out` ชนิด EOP **และ post เข้า ledger** | Terminal; ตาม `PHC_POST_001`–`004` ถูกปฏิเสธ (ไม่มีอะไรถูกเขียน) ถ้า BU ไม่มี adjustment type `eop_in` / `eop_out` ที่ active สำหรับเครื่องหมายที่เกิดขึ้น หรือถ้า ledger ปฏิเสธบรรทัดส่วนขาด (สต๊อกไม่พอ) ต้องการ `doc_version` |
 | Refresh สินค้า | เอกสารไม่ `completed` | `PATCH .../refresh` — เพิ่มสินค้าที่เข้าเงื่อนไขใหม่เข้า sheet | ไม่ลบหรือตีราคาบรรทัดที่มีอยู่ใหม่ |
 
 ## 4. จุดตัดสินใจ
@@ -73,12 +73,12 @@ graph LR
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit (สุดท้าย) | ระบบ — variance rollup | `tb_physical_count.status = completed`; `tb_stock_in`/`tb_stock_out` สร้าง (ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5) |
+| Submit (สุดท้าย) | ระบบ — variance rollup | `tb_physical_count.status = completed`; `tb_stock_in`/`tb_stock_out` ถูกสร้างและ post เข้า ledger (ดู [02-business-rules.md](/th/inventory/physical-count/02-business-rules) § 5) |
 | Navigate กลับ | [หน้ารายการ](/th/inventory/physical-count/03-user-flow-count-lead) | ไม่เปลี่ยนสถานะ |
 
 ## 6. แหล่งอ้างอิง
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`, `pc-entry-header.tsx`, `pc-entry-notes-dialog.tsx`; `routes/inventory-management/shared/entry-item-row.tsx`, `review-component.tsx`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`)
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (case ของหน้า entry / review, ตรวจทานซ้ำ 2026-09-20)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (case ของหน้า entry / review, ตรวจทานซ้ำ 2026-09-20)
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow](/th/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead) (การเดินทางฝั่งหน้ารายการของ role เดียวกัน)

@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum ของโมดูลการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -33,7 +33,7 @@ dateCreated: 2026-05-15T14:30:00.000Z
 
 Prisma schema canonical กำหนดสี่ตาราง (ตรวจสอบกับ `prisma-shared-schema-tenant/prisma/schema.prisma` บรรทัด 3964-4130):
 
-- **`tb_spot_check`** — header ของ spot-check พกพา `spot_check_no` (หมายเลขเอกสาร รูปแบบ `SC{YY}{MM}{seq}` ผ่าน running-code service ที่แชร์), `start_date` (default `now()`) / `end_date` (nullable — stamp เฉพาะโดย `submit()`), `location_id → tb_location` พร้อม snapshot `location_code` / `location_name`, `doc_status` บน `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`; default `pending`), `method` บน `enum_spot_check_method` (`random` / `high_value` / `manual`; default `random`), `size` (จำนวนเป้าหมายตัวอย่าง default `10` — สำหรับ manual คือแค่จำนวนสินค้าที่ผู้ใช้เลือกจริง), `description`, `note`, `doc_version` (`Int @db.Integer`, default `0` — ตัวนับ optimistic-concurrency; ทุกคำเรียก `update`/`save`/`review`/`submit` ต้องส่งค่าปัจจุบันกลับมา ไม่งั้น `where` clause ที่ต้องตรงกันจะไม่ match — ดู [system-config/doc-version](/th/inventory/system-config/doc-version)) และ JSON blob `info` / `dimension` (ทั้งคู่ไม่ถูกใช้โดย logic ปัจจุบันใด ๆ — ไม่พบโค้ดที่อ่านค่ากลับ) Unique ภายใน `(spot_check_no, deleted_at)`
+- **`tb_spot_check`** — header ของ spot-check พกพา `spot_check_no` (หมายเลขเอกสาร รูปแบบ `SC{YY}{MM}{seq}` ผ่าน running-code service ที่แชร์ (จองภายใน transaction ที่สร้างเอกสาร `reserveDocumentNumbers`)), `start_date` (default `now()`) / `end_date` (nullable — stamp เฉพาะโดย `submit()`), `location_id → tb_location` พร้อม snapshot `location_code` / `location_name`, `doc_status` บน `enum_spot_check_status` (`pending`, `in_progress`, `void`, `completed`; default `pending`), `method` บน `enum_spot_check_method` (`random` / `high_value` / `manual`; default `random`), `size` (จำนวนเป้าหมายตัวอย่าง default `10` — สำหรับ manual คือแค่จำนวนสินค้าที่ผู้ใช้เลือกจริง), `description`, `note`, `doc_version` (`Int @db.Integer`, default `0` — ตัวนับ optimistic-concurrency; ทุกคำเรียก `update`/`save`/`review`/`submit` ต้องส่งค่าปัจจุบันกลับมา ไม่งั้น `where` clause ที่ต้องตรงกันจะไม่ match — ดู [system-config/doc-version](/th/inventory/system-config/doc-version)) และ JSON blob `info` / `dimension` (ทั้งคู่ไม่ถูกใช้โดย logic ปัจจุบันใด ๆ — ไม่พบโค้ดที่อ่านค่ากลับ) Unique ภายใน `(spot_check_no, deleted_at)`
 - **`tb_spot_check_comment`** — comment/attachment ระดับ header พกพา `message`, JSON array `attachments`, `enum_comment_type` (`user`/`system`) เป็น Prisma model จริงพร้อม controller ฝั่ง backend จริง (`spot-check-comments.controller.ts`) แต่ **ไม่มี hook หรือหน้าจอใดใน `carmen-frontend` อ่านหรือเขียนมันเลย** — ยืนยันจาก `TODO` comment ของ `use-spot-check-comments.ts` เองที่ list endpoint ระดับ header ว่ายังไม่ implement
 - **`tb_spot_check_detail`** — บรรทัด spot-check ต่อสินค้า พกพา `product_id`, snapshot `product_code` / `product_name` / `product_local_name` / `product_sku`, `inventory_unit_id` (FK ไปยัง `tb_unit`), `on_hand_qty` (`Decimal(20,5)`, default `0` — แต่ทุกแถวที่สร้างผ่าน `create()` จริง ถูก seed ด้วย **ปริมาณสต๊อกสดของ pool ณ เวลาสุ่มตัวอย่าง** ไม่ใช่ `0`; จากนั้น **ถูกเขียนทับใหม่อีกครั้ง** ด้วยยอดสดโดย `reviewItems()` เมื่อผู้ใช้กด Submit for Review), `actual_qty` (`Decimal(20,5)`, nullable, seed เป็น `0` ตอนสร้าง — ไม่ใช่ `null`), `diff_qty` (`actual_qty − on_hand_qty`, `Decimal(20,5)`, default `0`), `counted_at` / `counted_by_id` (stamp โดย **ทั้ง** `saveItems()` และ `reviewItems()` — ต่างจาก physical-count ที่มีเพียงการ Save ระหว่างนับเท่านั้นที่ stamp `counted_at`), และ `sequence_no` สำหรับลำดับ sheet (กำหนด `1..N` ตอนสร้าง) Unique ภายใน `(spot_check_id, product_id, dimension, deleted_at)`
 - **`tb_spot_check_detail_comment`** — comment/attachment ระดับบรรทัด ตารางเดียวที่ live UI ใช้จริง: dialog notes ต่อบรรทัดในหน้า entry (`sc-entry-notes-dialog.tsx`) อ่าน/เขียนผ่าน `GET`/`POST /spot-check-detail-comment/:detailId` เก็บข้อความอิสระบวก photo attachment (pattern เดียวกับ dialog notes ของ [physical-count](/th/inventory/physical-count) เอง)
@@ -49,7 +49,7 @@ tb_location
                 ├─1──*──► tb_spot_check_comment  (มีแค่ schema — ไม่มี hook frontend ใช้)
                 │
                 └─1──*──► tb_spot_check_detail
-                            │   (on_hand_qty snapshot ตอนสร้าง ถูกเขียนทับใหม่อีกครั้งตอน review;
+                            │   (on_hand_qty snapshot ตอนสร้างจาก cost layer ของงวดที่ active ถูกเขียนทับใหม่อีกครั้งตอน review;
                             │    actual_qty / diff_qty; counted_at / counted_by_id stamp โดย
                             │    ทั้ง save และ review; ไม่มีคอลัมน์ lot_no)
                             │
@@ -65,7 +65,7 @@ tb_location
 หมายเหตุ:
 
 - **ลำดับชั้นสองระดับ ไม่มี period parent** ต่างจากต้นไม้สามระดับ `tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail` ของ physical-count, spot check เป็นเอกสาร `(location, time-window)` เดี่ยวไม่มี entity จัดกลุ่มระดับ period เลย endpoint `GET /spot-check/current` คำว่า "current" หมายถึง "เอกสาร `pending`/`in_progress` ล่าสุด ไม่ว่างวดใด" — อ่านตรงจาก comment ของโค้ด `findCurrentByLocation()` เอง
-- **`on_hand_qty` ถูกจับสองครั้ง ไม่ใช่ครั้งเดียว** `create()` seed มันจากยอดสต๊อกสดของ `SpotCheckLogic.getProductsByLocation()` ณ เวลาสุ่มตัวอย่าง; `saveItems()` (การ Save ระหว่างนับ) ไม่แตะมันอีกเลย — คำนวณแค่ `diff_qty` ใหม่เทียบกับค่าที่เก็บอยู่ปัจจุบัน; `reviewItems()` (Submit for Review) คำนวณมันใหม่รอบสองจาก `groupBy` สดบน `tb_inventory_transaction_detail` ไม่มี date cut-off ถ้ามีการเคลื่อนไหวสต๊อกอื่นที่ตำแหน่งนั้นระหว่างสร้างกับ review สอง snapshot อาจต่างกัน — ยอดตอน review คือสิ่งที่ผู้ใช้เห็นเปรียบเทียบจริง
+- **`on_hand_qty` ถูกจับสองครั้ง ไม่ใช่ครั้งเดียว** `create()` seed มันจากยอดสต๊อกของ `SpotCheckLogic.getProductsByLocation()` (ยอด cost-layer ของงวดที่ active) ณ เวลาสุ่มตัวอย่าง; `saveItems()` (การ Save ระหว่างนับ) ไม่แตะมันอีกเลย — คำนวณแค่ `diff_qty` ใหม่เทียบกับค่าที่เก็บอยู่ปัจจุบัน; `reviewItems()` (Submit for Review) คำนวณมันใหม่รอบสองผ่าน `getLocationOnHand` (`groupBy` สดบน `tb_inventory_transaction_cost_layer`, `at_period` = งวดที่ active, ไม่รวม layer ที่ soft-delete) การ seed ตอน `create()` ใช้ helper เดียวกัน ถ้ามีการเคลื่อนไหวสต๊อกอื่นที่ตำแหน่งนั้นระหว่างสร้างกับ review สอง snapshot อาจต่างกัน — ยอดตอน review คือสิ่งที่ผู้ใช้เห็นเปรียบเทียบจริง
 - **`@relation` FK declaration ที่ระบุชัดเจนทั้งหมดใช้ `onDelete: NoAction`** (หรือ `Cascade` สำหรับ `inventory_unit_id`) — รักษาความหมาย soft-delete (`deleted_at`)
 
 ## 4. Enum

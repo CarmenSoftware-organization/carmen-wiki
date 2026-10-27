@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — Audit & Config (Correction)
 description: บันทึก correction — ไม่มี surface ของ Approver/Finance, Auditor หรือ Sysadmin สำหรับการนับสต๊อกประจำงวด
 published: true
-date: 2026-07-15T17:56:09.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, test-scenarios, audit, config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -19,7 +19,7 @@ Draft ก่อนหน้าของโมดูลวิกินี้ cata
 
 ## 2. เหตุผลที่ถูกลบออก
 
-ดู [03-user-flow-audit-config.md](/th/inventory/physical-count/03-user-flow-audit-config) สำหรับการแจกแจงทีละ source โดยละเอียด สรุปคือ: โมดูลนี้มี permission key เดียวเท่านั้น (`inventory_management.physical_count`) เอกสาร rollup ถูก insert ที่ `doc_status = completed` ทันทีโดยไม่มี stage ให้อนุมัติ ไม่มีกลไก tolerance หรือ recount ใด ๆ ให้ config และไม่มี reason-code mapping ใด ๆ ถูกอ่านโดย rollup เลย (`adjustment_type_id` คงเป็น `null`) ไม่มีอะไรเหลือให้เขียน scenario เทียบสำหรับกลุ่ม persona นี้
+ดู [03-user-flow-audit-config.md](/th/inventory/physical-count/03-user-flow-audit-config) สำหรับการแจกแจงทีละ source โดยละเอียด สรุปคือ: โมดูลนี้มี permission key เดียวเท่านั้น (`inventory_management.physical_count`) เอกสาร rollup ถูก insert ที่ `doc_status = completed` ทันที (และ post เข้า ledger) โดยไม่มี stage ให้อนุมัติ ไม่มีกลไก tolerance หรือ recount ใด ๆ ให้ config และ rollup ใช้ adjustment type `eop_in` / `eop_out` คงที่ของ BU แทน reason-code mapping ที่ตั้งค่าได้ ไม่มีอะไรเหลือให้เขียน scenario เทียบสำหรับกลุ่ม persona นี้
 
 ## 3. ควรอ่านอะไรแทน
 

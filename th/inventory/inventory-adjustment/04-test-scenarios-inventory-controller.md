@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — Test Scenarios — Inventory Controller
 description: Test cases สำหรับการ review draft, commit, ลบ/void และการอ่านเอกสารที่ completed — ไม่มี approval queue
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -34,7 +34,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | IC-EDGE-01 | ปุ่ม Void บนเอกสารที่ completed | เปิดเอกสารที่ completed | ไม่มี **Edit** (`isView && !isReadOnly` เป็น false) จึงไม่มี **Void** (`canVoid = isEdit && …`); การกลับรายการทำได้ผ่าน API เท่านั้น |
 | IC-EDGE-02 | ลบเอกสารที่ completed | เรียกลบผ่าน API (หน้ารายละเอียดซ่อนปุ่มเมื่อ `isReadOnly`) | 400 `Cannot delete a completed Stock In — inventory has already been adjusted` |
 | IC-EDGE-03 | filter สถานะ `In Progress` | เลือก `In Progress` ใน filter ของหน้ารายการ | ไม่คืนอะไร — ไม่มี code path ใดตั้ง `in_progress` บน `tb_stock_in`/`tb_stock_out` |
-| IC-EDGE-04 | แถวจาก physical-count ในหน้ารายการ | physical count ถูก submit พร้อม variance | แถว `tb_stock_in`/`tb_stock_out` ของมันปรากฏเป็น `completed` โดยไม่มี reason และ**ไม่มี stock movements** (ไม่เคย post) |
+| IC-EDGE-04 | แถวจาก physical-count ในหน้ารายการ | physical count ถูก submit พร้อม variance | แถว `tb_stock_in`/`tb_stock_out` ของมันปรากฏเป็น `completed` ชนิด `eop_in` / `eop_out` **พร้อม** stock movements (post โดย `submit()`); ค่า filter `type` เป็น `eop_in` / `eop_out` คืนเฉพาะแถวเหล่านั้น |
 | IC-EDGE-05 | แถวจาก write-off ของ wastage ในหน้ารายการ | `POST /wastage-reporting` ถูกเรียก | Stock-Out ที่ `completed` หนึ่งฉบับต่อ location พร้อม reason ของผู้เรียก; stock movements แสดง `adjustment_out` จาก lot ที่ระบุชื่อ |
 | IC-EDGE-06 | `doc_version` ล้าสมัย | สอง session แก้ไข draft เดียวกัน | save/commit ครั้งที่สองล้มเหลวเพราะ `doc_version` ไม่ตรง; reload แล้วลองใหม่ |
 

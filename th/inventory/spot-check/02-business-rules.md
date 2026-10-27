@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Business Rules
 description: กฎการตรวจสอบ การคำนวณ การกำหนดสิทธิ์ การ post และกฎข้ามโมดูลของการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, business-rules, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -29,7 +29,7 @@ Rule ID ใช้รูปแบบ `SPC_VAL_NNN`
 | Rule ID | เงื่อนไข | บังคับใช้เมื่อ | Error / พฤติกรรม |
 | ------- | --------- | ------------- | ----------------- |
 | `SPC_VAL_001` | `location_id` ต้องอ้างอิง `tb_location` ที่มีอยู่จริงและไม่ถูกลบ | สร้าง (`POST /spot-checks`) | Reject ด้วย `COMMON_LOCATION_NOT_FOUND` ไม่มีการตรวจ `location_type` หรือ `is_active` แยกภายใน `create()` เอง — หน้ารายการเสนอเฉพาะ location ที่กรองแล้วโดย `findCurrentByLocation()` (`location_type ∈ {inventory, consignment}`, `is_active = true`, และ — เว้นแต่ติ๊ก "Include Not Count" — `physical_count_type = yes`) |
-| `SPC_VAL_002` | eligible product pool (union ของ `tb_product_location` assignment กับสินค้าใดที่มีสต๊อกสุทธิไม่เป็นศูนย์ที่ location) ต้องไม่ว่างเปล่า | สร้าง | Reject ด้วย `"No products found at this location"` |
+| `SPC_VAL_002` | pool ที่ใช้สุ่ม — สินค้าที่ **active** ซึ่ง assign ให้ location ผ่าน `tb_product_location` (`SpotCheckLogic.getProductsByLocation`; ไม่ใช่ union กับสินค้าที่มีสต๊อกแต่ไม่ได้ assign ซึ่งป้อนเฉพาะรายการเลือกด้วยมือ) — ต้องไม่ว่างเปล่า | สร้าง | Reject ด้วย `"No products found at this location"` |
 | `SPC_VAL_003` | `method = manual` ต้องมี array `product_id[]` ไม่ว่างเปล่า หลังกรองให้เหลือเฉพาะสินค้าใน eligible pool จริง ต้องเหลืออย่างน้อยหนึ่งตัว | สร้าง | Reject ด้วย `"product_id is required for manual selection"` (array ว่าง/ไม่มี) หรือ `"None of the selected products were found at this location"` (กรองแล้วเหลือศูนย์) |
 | `SPC_VAL_004` | `method = high_value` ต้องมี `tb_inventory_period` อย่างน้อยหนึ่งแถว (เปลี่ยนชื่อจาก `tb_period`, migration `20260916141000`; `spot-check.logic.ts` อ่าน `prisma.tb_inventory_period`) ที่ `status ∈ {open, locked}` | สร้าง | Reject ด้วย `SPOT_CHECK_NO_ACTIVE_PERIOD` ("No active period found") ถ้าไม่มี |
 | `SPC_VAL_005` | เอกสารที่ `doc_status = pending` เท่านั้นที่ update ได้ (`description`/`note` เท่านั้น — ไม่มีฟิลด์อื่นแก้ไขได้ผ่าน `update()`) | Update | Reject ด้วย `"Only pending spot checks can be updated"` **ไม่สามารถเข้าถึงได้ผ่านหน้าจอที่ shipped ใด ๆ** — ดู [spot-check](/th/inventory/spot-check) § 1; มีแค่การเรียก Bruno/API โดยตรงเท่านั้นที่ใช้ path นี้ |
@@ -46,9 +46,9 @@ Rule ID ใช้รูปแบบ `SPC_CALC_NNN` ฟิลด์ปริม�
 | Rule ID | สูตร |
 | ------- | ------- |
 | `SPC_CALC_001` (variance qty) | `diff_qty = actual_qty − on_hand_qty` ต่อบรรทัด คำนวณฝั่ง server โดยทั้ง `saveItems()` (เทียบกับ `on_hand_qty` ที่เก็บอยู่ปัจจุบัน) และ `reviewItems()` (เทียบกับ `on_hand_qty` ที่คำนวณสดใหม่) |
-| `SPC_CALC_002` (การคำนวณ on-hand ใหม่ตอน review) | `reviewItems()` คำนวณ `on_hand_qty` ทุกบรรทัดเป็น `Σ tb_inventory_transaction_detail.qty` ที่ `location_id` ของ spot check จัดกลุ่มตาม `product_id` โดยไม่มี date cut-off — ยอด ledger สดตอนกด "Submit for Review" ซึ่งอาจต่างจากยอดที่จับตอนสร้าง |
+| `SPC_CALC_002` (การคำนวณ on-hand ใหม่ตอน review) | `reviewItems()` คำนวณ `on_hand_qty` ทุกบรรทัดด้วย `getLocationOnHand(location_id, product_ids, at_period)` — `Σ in_qty − Σ out_qty` ครอบ row `tb_inventory_transaction_cost_layer` ที่ไม่ถูกลบของงวดที่ **active** (`buildOnHandPeriodWhere`: งวด `open`/`locked` ที่เก่าสุด; ตัวกรองว่าง = ทุก layer เมื่อไม่มีงวด active) ณ ขณะกด "Submit for Review" ซึ่งอาจต่างจากยอดที่จับตอนสร้าง (helper เดียวกัน) การอ่านเดิม `Σ tb_inventory_transaction_detail.qty` ถูกยกเลิกแล้ว สินค้าที่ไม่มี layer อ่านเป็น `0` |
 | `SPC_CALC_003` (สรุป review) | `getReview()`/payload review คำนวณ `matched = count(diff_qty === 0)`, `variant = total − matched`; หน้า review คำนวณเพิ่ม `overages = count(diff_qty > 0)` และ `shortages = count(diff_qty < 0)` ฝั่ง client จาก `diff_qty` เดียวกัน **ไม่มีการคำนวณมูลค่าผลต่างเป็นตัวเงินที่ใดเลย** — `diff_qty × cost_per_unit` ไม่มีอยู่ในโมดูลนี้; cost ปรากฏเฉพาะเป็น *input การจัดอันดับตอนเลือกตัวอย่าง* สำหรับ method `high_value` (§ 4 ด้านล่าง) ไม่เคยเป็นการตีมูลค่าของ variance ที่นับได้ |
-| `SPC_CALC_004` (การจัดอันดับ high-value) | สำหรับ `method = high_value`: จัดอันดับสินค้าแต่ละตัวใน pool ด้วย `on_hand_qty × max(cost_per_unit)` โดย max cost อ่านจากแถว `tb_inventory_transaction_cost_layer` ที่ location นั้นด้วย `in_qty > 0` และ `lot_at_date` อยู่ในช่วง `[start_at, end_at]` ของงวดที่ active; สินค้าต่ำกว่า `minimum_cost` floor (ถ้ามี) ถูกคัดออก; สินค้าที่ไม่พบ cost ถูกต่อท้ายกลุ่มที่มี cost (เฉพาะเมื่อไม่ได้ตั้ง `minimum_cost`) เรียงตามที่ถูก assign ให้ location ล่าสุดก่อน; `size` ตัวแรก (หรือน้อยกว่าถ้า pool เล็กกว่า) ถูกเก็บไว้ |
+| `SPC_CALC_004` (การจัดอันดับ high-value) | สำหรับ `method = high_value`: จัดอันดับสินค้าแต่ละตัวใน pool ด้วย `on_hand_qty × max(cost_per_unit)` โดย max cost อ่านจากแถว `tb_inventory_transaction_cost_layer` ที่ location นั้นด้วย `in_qty > 0` และ `lot_at_date` อยู่ในช่วงวันเต็มของงวดที่ active (`periodDateRange(period)`: วันแรก 00:00 ถึงวันสุดท้าย 23:59:59.999 ใน timezone ของ BU — การเปรียบเทียบ `[start_at, end_at]` ดิบแบบเดิมตัดวันสุดท้ายทิ้ง); สินค้าต่ำกว่า `minimum_cost` floor (ถ้ามี) ถูกคัดออก; สินค้าที่ไม่พบ cost ถูกต่อท้ายกลุ่มที่มี cost (เฉพาะเมื่อไม่ได้ตั้ง `minimum_cost`) เรียงตามที่ถูก assign ให้ location ล่าสุดก่อน; `size` ตัวแรก (หรือน้อยกว่าถ้า pool เล็กกว่า) ถูกเก็บไว้ |
 
 ## 4. กฎ Authorization
 
@@ -82,7 +82,7 @@ Rule ID ใช้รูปแบบ `SPC_POST_NNN` "Posting" สำหรับ�
 | การ post variance ไปยัง inventory | "Real-time variance posting to inventory is listed as **Pending** — not yet implemented... does not post variance adjustments to inventory, lots, or cost." | ยืนยันตรงเป๊ะ: `submit()` ไม่มีผลการ posting ใด ๆ เลย และ doc-comment ของตัวมันเองก็ระบุไว้ตรง ๆ | ✅ |
 | ชุดสถานะ | หกค่า: `draft`, `pending`, `in-progress`, `on-hold`, `completed`, `cancelled` | `enum_spot_check_status` มีสี่ค่า: `pending`, `in_progress`, `void`, `completed` ความแตกต่างระหว่าง `draft`/`pending` ก่อนนับ และสถานะ pause `on-hold` ของเอกสารไม่มี schema เทียบเท่า; `cancelled` แม็พไปที่ `void` จริง | 🟡 |
 | ประเภทการตรวจ | ห้า: `random`, `targeted`, `high-value`, `variance-based`, `cycle-count` | `enum_spot_check_method` มีสาม: `random`, `high_value`, `manual` `targeted`/`variance-based`/`cycle-count` ไม่มี schema เทียบเท่า; analog ที่ใกล้เคียงที่สุดของ "targeted" ในโค้ดคือ `manual` (เลือกสินค้าเอง) | 🟡 |
-| รูปแบบหมายเลขอ้างอิง | `SC-YYMMDD-XXXX` | running-code service สร้าง `spot_check_no` จาก pattern วันที่ + ลำดับที่ tenant config ได้ ประเภท `SPOT-CHECK` — รูปแบบที่แท้จริง config โดย tenant ผ่านหน้า running-code ที่แชร์ ไม่ได้ hardcode เป็น `SC-YYMMDD-XXXX` | 🟡 |
+| รูปแบบหมายเลขอ้างอิง | `SC-YYMMDD-XXXX` | `spot_check_no` ถูกจองโดย `reserveDocumentNumbers` (type `SPOT-CHECK`, series บน `tb_spot_check.spot_check_no`) **ภายใน `$transaction` เดียวกับที่เขียน header และบรรทัด** ภายใต้ advisory lock ต่อชุดเลขที่ถือจนกว่าจะ commit — การสร้างพร้อมกันจึงไม่ได้เลขซ้ำ, spot check ที่ถูกลบยังคงถือเลขของมัน และความล้มเหลวไม่ทิ้ง header ที่ไม่มีบรรทัด รูปแบบ config โดย tenant ผ่านหน้า running-code ไม่ได้ hardcode เป็น `SC-YYMMDD-XXXX` | 🟡 |
 | Gate End Period Close | "All Spot Checks must be `completed` before End Period Close Stage 2" | การค้นทั้ง repo ใน `period-end.validate.ts` สำหรับการอ้างอิง `spot` ใด ๆ ไม่พบผลลัพธ์เลย — spot check **ไม่ใช่** period-end gate ชนิดใดเลย สอดคล้องกับข้อค้นพบเดียวกันที่ยืนยันแล้วในการ re-sync ของโมดูล [inventory](/th/inventory/inventory) เอง | 🔴 |
 | Pause/resume | `in-progress → on-hold → in-progress` สำหรับ "staff/items unavailable" | ไม่มีสถานะ `on_hold`/pause — ผู้ใช้แค่ออกจากหน้า entry แล้วกลับมาใหม่ทีหลังได้ (เอกสารยังคง `in_progress` หรือ `pending` พร้อมสิ่งที่ยังไม่ได้ save ในเครื่องหายไป — มีเพียง call Save เท่านั้นที่ persist ความคืบหน้า) | 🔴 |
 
@@ -95,7 +95,7 @@ Rule ID ใช้รูปแบบ `SPC_XMOD_NNN`
 | Rule ID | กฎ |
 | ------- | ---- |
 | `SPC_XMOD_001` | **→ [inventory-adjustment](/th/inventory/inventory-adjustment)**: ไม่มีลิงก์อัตโนมัติใด ๆ ผลต่างที่ยืนยันแล้วถูกแก้ไขได้ก็แต่โดยผู้ใช้สร้างเอกสาร Stock In/Out แยกต่างหากที่นั่นด้วยตัวเอง — ไม่มีสิ่งใดใน spot check เองที่อ้างอิง trigger หรือ pre-fill action นั้น |
-| `SPC_XMOD_002` | **→ [inventory](/th/inventory/inventory)**: spot check อ่าน ledger (`tb_inventory_transaction_detail`) สองครั้ง — ครั้งแรกเพื่อสร้าง eligible product pool และ seed `on_hand_qty` ตอนสร้าง อีกครั้งตอน Submit-for-Review เพื่อ refresh `on_hand_qty` — แต่ไม่เคยเขียนลงไป |
+| `SPC_XMOD_002` | **→ [inventory](/th/inventory/inventory)**: spot check อ่าน cost layer ของ ledger (`tb_inventory_transaction_cost_layer`, งวดที่ active) สองครั้ง — ครั้งแรกเพื่อ seed `on_hand_qty` ตอนสร้าง (และสำหรับรายการเลือกด้วยมือ เพื่อหาสินค้าที่มีสต๊อกแต่ไม่ได้ assign) อีกครั้งตอน Submit-for-Review เพื่อ refresh `on_hand_qty` — แต่ไม่เคยเขียนลงไป |
 | `SPC_XMOD_003` | **→ [master-data/location](/th/inventory/master-data/location)**: filter default ของหน้ารายการ (ซ่อน location ที่ flag `physical_count_type = no` เว้นแต่ติ๊ก "Include Not Count") ใช้ admin flag ระดับ location ตัวเดียวกับที่ [physical-count](/th/inventory/physical-count) ใช้สำหรับ period-end gate ของตัวเอง — แต่ spot check เองไม่ใช่ period-end gate |
 | `SPC_XMOD_004` | **→ [physical-count](/th/inventory/physical-count)**: spot check เป็นลูกพี่ลูกน้อง ad-hoc ที่แคบกว่าของการนับบางส่วน — document tree ที่แยกกันโดยสิ้นเชิง (ไม่มีตารางหรือ enum ที่แชร์) ซึ่งบังเอิญใช้ union logic ของ product-pool เดียวกันและ generic notes-dialog UI component เดียวกัน |
 

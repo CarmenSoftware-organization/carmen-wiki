@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้ารายการ & สร้าง
 description: Test case หน้ารายการและหน้าสร้างสำหรับโมดูลการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -23,9 +23,9 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 
 | # | Scenario | Pre-condition | ผลที่คาดหวัง |
 | - | -------- | ------------- | ---------------- |
-| L-F-01 | โหลดหน้ารายการ (มุมมอง Locations) | ผู้ใช้ใดก็ได้ที่มี permission ของโมดูล | KPI tiles (All/Resume/Not Started) และ card ตำแหน่ง render ภายในเวลาโหลดหน้าปกติ ตรงกับ `TC-SPC-010001` |
-| L-F-02 | สลับไปมุมมอง History | บนหน้ารายการ | มุมมองสลับไปเป็นรายการ spot check ที่เคยสร้างทั้งหมด แบ่งหน้า สถานะใดก็ได้ ตรงกับ `TC-SPC-010002` |
-| L-F-03 | Filter ตาม KPI tile | คลิก tile "Resume" | เหลือเฉพาะตำแหน่งที่มี spot check `pending`/`in_progress` ตรงกับ `TC-SPC-010003` |
+| L-F-01 | โหลดหน้ารายการ (มุมมอง Locations) | ผู้ใช้ใดก็ได้ที่มี permission ของโมดูล | Status strip (All/Resume/Not Started) และแถวตำแหน่ง render ภายในเวลาโหลดหน้าปกติ ตรงกับ `TC-SPC-010001` |
+| L-F-02 | สลับไปมุมมอง History | บนหน้ารายการ | URL เปลี่ยนเป็น `/inventory-management/spot-check/history` และ grid แบ่งหน้าฝั่ง server ของ spot check ที่เคยสร้างทั้งหมด สถานะใดก็ได้ render (filter/search/sort ทำงานฝั่ง server) ตรงกับ `TC-SPC-010002` |
+| L-F-03 | Filter ตาม segment ของ status strip | คลิก segment "Resume" | เหลือเฉพาะตำแหน่งที่มี spot check `pending`/`in_progress` ตรงกับ `TC-SPC-010003` |
 | L-F-04 | ค้นหาตามชื่อ/รหัสตำแหน่ง | พิมพ์คำที่ตรงบางส่วน | รายการแคบลงฝั่ง client ตรงกับ `TC-SPC-010004` |
 | L-F-05 | Include Not Count | ติ๊ก "Include Not Count" | ตำแหน่งที่ flag `physical_count_type = no` ถูกเพิ่มเข้ารายการ ตรงกับ `TC-SPC-010006` |
 | L-F-06 | เริ่ม spot check — Random | ตำแหน่งไม่มี spot check ค้าง; `items ≥ 1` | `POST /spot-checks` สำเร็จ; เอกสารสร้างที่ `pending` พร้อม `size` แถวสุ่ม; navigate ไป `/:id` ตรงกับ `TC-SPC-030002` |

@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Store Keeper
 description: Flow ประจำวันสำหรับกรอกเอกสาร Stock-In หรือ Stock-Out — Save เก็บเป็น draft, Commit post เข้า ledger
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -44,7 +44,7 @@ graph LR
 
 **Flow หลัก (Stock-In, 7 ขั้นตอน):**
 
-1. **เปิด Add Stock-In** วันที่ของฟอร์ม default เป็นวันนี้ ถูก cap ที่วันสิ้นสุดของงวดปัจจุบัน (`resolveDefaultDate`); ต้องอยู่ในช่วงงวดปัจจุบัน (Zod) และฝั่ง server ต้องอยู่ในงวด inventory ที่ open/locked
+1. **เปิด Add Stock-In** วันที่ของฟอร์ม default เป็นวันนี้ ถูก cap ที่วันสิ้นสุดของงวดปัจจุบัน (`resolveDefaultDate`); ต้องอยู่ในช่วงงวดปัจจุบันและไม่เกินวันนี้ (Zod, ฝั่ง front-end เท่านั้น) และฝั่ง server ต้องอยู่ในงวด inventory ที่ open/locked
 2. **เลือก reason** ฟิลด์ **Reason** (`adjustment_type_id`) แสดงเฉพาะแถว `tb_adjustment_type` ที่ active และ `type = stock_in` กรองฝั่ง client
 3. **เลือกตำแหน่ง** `LookupUserLocation` กรองเหลือประเภทตำแหน่ง Inventory/Consignment
 4. **เพิ่มบรรทัด** การคลิก **Add Item** เปิด product picker ทันที (`1f0f1f1a`) และเตือนถ้ายังไม่ได้เลือกตำแหน่ง แต่ละบรรทัด: สินค้า (จำกัดขอบเขตด้วยตำแหน่งที่เลือก), `qty` (`≥ 0` ใน Zod, `min(0)`), `cost_per_unit` — เติมเริ่มต้นจากต้นทุนปัจจุบันของสินค้าที่ตำแหน่งนั้น (`useProductCostByLocationQty`, `e246abaa`) แต่แก้ไขได้ (API ยังรับ `expired_at` ต่อบรรทัด; ฟอร์มไม่มีฟิลด์นี้)
@@ -56,7 +56,7 @@ graph LR
 
 - คอลัมน์ `cost_per_unit` ถูกซ่อน — ต้นทุนถูกแก้ไขโดย ledger ตอน commit (FIFO layer เก่าสุดก่อน; Average ที่ค่าเฉลี่ยปัจจุบันของ BU) และไม่เคย persist บน `tb_stock_out_detail`
 - วันที่ต้องอยู่ในงวด**ปัจจุบัน** (`STOCK_OUT_DATE_NOT_CURRENT_PERIOD`) ไม่ใช่งวดที่เปิดใดก็ได้
-- Commit ตรวจ on-hand ต่อสินค้าล่วงหน้า: ถ้าขาดจะคืน `Insufficient stock for {product} at {location}: on hand {x}, requested {y}` (400) และไม่มีอะไรถูกเขียน
+- Commit ตรวจ on-hand ต่อสินค้าล่วงหน้า: ถ้าขาดจะคืน `Insufficient stock for {product} at {location} on {date}: {x} available, requested {y} (lowest balance from {date} on falls on {day})` (400) และไม่มีอะไรถูกเขียน การตรวจเดียวกันนี้ทำงานตอน **Save** draft ของ stock-out ด้วย และ Qty แสดงไอคอน (i) สีแดงทันทีที่เกินจำนวนที่ดึงได้ ณ วันที่เอกสาร
 
 ## 3. Decision Branches
 

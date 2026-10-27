@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้า Entry & Review
 description: Test case ของหน้า entry และ review สำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -30,7 +30,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [ph
 | E-F-05 | Export ยอดนับปัจจุบัน | เวลาใดก็ได้ | ไฟล์ `.xlsx` ดาวน์โหลดพร้อม id, รหัส/ชื่อ/ชื่อท้องถิ่น/SKU สินค้า, หน่วย, และ `actual_qty` effective ปัจจุบันต่อแถว |
 | E-F-06 | Import ยอดนับจาก spreadsheet | ไฟล์ที่ export ไว้ก่อนหน้า (หรือเตรียมจากภายนอก) ที่มี SKU ตรงกัน | แถวที่จับคู่เติมค่า local ของบรรทัดของตน; toast รายงานจำนวนที่จับคู่/รวม/ข้าม |
 | E-F-07 | Refresh สินค้าระหว่างการนับ | สินค้าเข้าเงื่อนไขใหม่สำหรับสถานที่ (assign แล้ว หรือมีสต๊อกแล้ว) | `PATCH .../refresh` เพิ่มบรรทัดใหม่เข้า sheet; บรรทัดที่มีอยู่ไม่ได้รับผลกระทบ |
-| E-F-08 | Submit for Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` |
+| E-F-08 | Submit for Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด cost-layer ของงวดที่นับ; navigate ไป `/review` |
 | E-F-09 | หน้า review แสดงตัวเลขสรุปถูกต้อง | บางบรรทัด match บางบรรทัด overage บางบรรทัด shortage | ตัวเลข matches/variances/overages/shortages บนหน้า review ตรงกับ `diff_qty` ของแต่ละบรรทัด |
 | E-F-10 | Submit สุดท้ายด้วย variance ผสม | `counted_at != null` ของทุกบรรทัด | `PATCH .../submit` ตั้ง `status = completed`, สร้าง `tb_stock_in` หนึ่งฉบับ (บรรทัด overage) และ/หรือ `tb_stock_out` หนึ่งฉบับ (บรรทัด shortage) ทั้งคู่ `doc_status = completed` แล้ว; navigate กลับหน้ารายการ |
 
@@ -55,7 +55,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [ph
 | - | -------- | ---------------- |
 | E-E-01 | ทุกบรรทัดถูกพิมพ์และ Submit for Review ทันที โดยไม่ผ่าน Save ก่อน | เนื่องจาก Save เป็น action เดียวที่ stamp `counted_at` และ Submit for Review ไม่ทำ Submit สุดท้ายบนหน้า review อาจ reject ด้วย `"<N> products have not been counted yet"` แม้ทุกบรรทัดจะแสดงค่าอยู่ก็ตาม — เป็นการอ่านตรงจาก `save()` เทียบกับ `reviewItems()` ใน `physical-count.service.ts` ยังไม่ได้ยืนยันด้วย automated test อิสระ |
 | E-E-02 | ศูนย์บนชั้น | Counter ป้อน `actual_qty = 0` ชัดเจน (ไม่ปล่อยว่าง); นับเป็นการป้อนจริงที่สมบูรณ์ — shortage เต็มเทียบกับ `on_hand_qty` ที่ขั้นตอน review คำนวณได้ |
-| E-E-03 | Set uncounted to zero แล้ว Submit for Review | ทุกบรรทัดที่ว่างก่อนหน้ากลายเป็น `0` ที่ local; Submit for Review พร้อมใช้และคำนวณ variance จริงสำหรับบรรทัดเหล่านั้นเทียบกับยอด ledger สด |
+| E-E-03 | Set uncounted to zero แล้ว Submit for Review | ทุกบรรทัดที่ว่างก่อนหน้ากลายเป็น `0` ที่ local; Submit for Review พร้อมใช้และคำนวณ variance จริงสำหรับบรรทัดเหล่านั้นเทียบกับยอด cost-layer ของงวดที่นับ |
 | E-E-04 | Import จับคู่ได้บางส่วน | บาง row ของ spreadsheet ไม่จับคู่กับ SKU ของบรรทัดใด | Toast รายงานจำนวนที่ข้าม; บรรทัดที่ไม่จับคู่คงเดิมทุกประการ |
 | E-E-05 | Overage และ shortage ผสมกันใน submit เดียว | มีอย่างน้อยหนึ่งบรรทัด `diff_qty` บวกและหนึ่งบรรทัดลบ | ทั้ง `tb_stock_in` และ `tb_stock_out` ถูกสร้างโดย Submit สุดท้ายครั้งเดียวกัน |
 | E-E-06 | ทุกบรรทัด reconcile เป็นศูนย์ variance | ทุก `diff_qty = 0` | Submit สุดท้ายสำเร็จ; ไม่มี `tb_stock_in`/`tb_stock_out` ถูกสร้างเลย |
@@ -64,5 +64,5 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [ph
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`)
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-counter](/th/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)

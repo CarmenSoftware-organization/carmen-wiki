@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — User Flow
 description: วงจรชีวิตเอกสารและไฟล์ flow เฉพาะ persona ของการนับสต๊อกประจำงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -12,12 +12,12 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 > **At a Glance**
 > **โมดูล:** [physical-count](/th/inventory/physical-count) &nbsp;·&nbsp; **Persona:** role เดียวไม่แยกกลุ่ม gate ด้วย permission เดียว (`inventory_management.physical_count`) — สองไฟล์ที่ลิงก์ด้านล่างแบ่งการเดินทางของมันตามหน้าจอ (list เทียบกับ entry/review) ไม่ใช่ตาม role ที่ต่างกันจริง
-> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` ทำโดย **Start Period Close** บน `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` โดยการปิดงวด) Per-document (`enum_physical_count_status`): สร้างโดยตรงที่ `in_progress → completed` — `pending` เข้าถึงไม่ได้ผ่าน create path ที่ยืนยันแล้ว Submit สุดท้ายยิง variance rollup โดยตรงเข้า `tb_stock_in`/`tb_stock_out` (ดู [02-business-rules](/th/inventory/physical-count/02-business-rules) § 5)
+> **วงจรชีวิต workflow:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` ทำโดย **Start Period Close** บน `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` โดยการปิดงวด) Per-document (`enum_physical_count_status`): สร้างโดยตรงที่ `in_progress → completed` — `pending` เข้าถึงไม่ได้ผ่าน create path ที่ยืนยันแล้ว Submit สุดท้ายยิง variance rollup: `tb_stock_in`/`tb_stock_out` ชนิด EOP ถูกสร้างที่ `completed` และ post เข้า ledger (ดู [02-business-rules](/th/inventory/physical-count/02-business-rules) § 5)
 > **หน้าจอจริง:** `physical-count` (list) → `physical-count/:id/entry` (ป้อนบรรทัด) → `physical-count/:id/review` (review variance + submit สุดท้าย)
 
 ## 1. ภาพรวม
 
-หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `physical-count` การ implement จริงเป็นการเดินทางต่อเนื่องเดียวโดยไม่มีการส่งต่อระหว่างคนละคน: ผู้ใช้ที่ถือ permission คนหนึ่งเปิดรายการสถานที่ของงวดบัญชีปัจจุบัน (`physical-count`) เริ่มหรือทำต่อการนับที่สถานที่หนึ่ง (สร้าง `tb_physical_count` โดยตรงที่ `in_progress` หรือทำต่อฉบับที่มีอยู่) เดินหน้า entry (`physical-count/:id/entry`) ป้อน `actual_qty` ทีละบรรทัดสินค้า กด **Submit for Review** เมื่อทุกบรรทัดมีค่าแล้ว review variance ที่คำนวณบน `physical-count/:id/review` และกด **Submit** สุดท้าย — action เดียวที่ทั้งปิดการนับ (`status = completed`) และสร้างเอกสาร rollup ของ variance
+หน้านี้เป็น **จุดเริ่ม overview** สำหรับชุด user-flow ของโมดูล `physical-count` การ implement จริงเป็นการเดินทางต่อเนื่องเดียวโดยไม่มีการส่งต่อระหว่างคนละคน: ผู้ใช้ที่ถือ permission คนหนึ่งเปิดรายการสถานที่ของงวดบัญชีปัจจุบัน (`physical-count`) เริ่มหรือทำต่อการนับที่สถานที่หนึ่ง (สร้าง `tb_physical_count` โดยตรงที่ `in_progress` หรือทำต่อฉบับที่มีอยู่) เดินหน้า entry (`physical-count/:id/entry`) ป้อน `actual_qty` ทีละบรรทัดสินค้า กด **Submit for Review** เมื่อทุกบรรทัดมีค่าแล้ว review variance ที่คำนวณบน `physical-count/:id/review` และกด **Submit** สุดท้าย — action เดียวที่ทั้งปิดการนับ (`status = completed`) และสร้างพร้อม post เอกสาร rollup ของ variance
 
 หัวข้อ 2 ด้านล่างอธิบาย state machine ของวงจรชีวิตเอกสารจริงสำหรับ `tb_physical_count_period.status` และ `tb_physical_count.status` หัวข้อ 3 ลิงก์สองไฟล์ที่อธิบาย flow จริงเดียวกันจากสองมุมมองตามหน้าจอ — หน้ารายการ (`03-user-flow-count-lead.md`) และหน้า entry/review (`03-user-flow-counter.md`) — ที่คงไว้เป็นไฟล์แยกกันเพื่อความต่อเนื่องกับ layout หน้าของวิกินี้ ไม่ใช่เพราะมี role "lead" และ "counter" ที่แตกต่างกันในโค้ด หัวข้อ 4 เป็นบันทึก correction ชี้ไปยัง `03-user-flow-audit-config.md` ซึ่งบันทึกการไม่มีอยู่จริงที่ยืนยันแล้วของ surface ใด ๆ ของ Approver/Auditor/Sysadmin
 
@@ -74,19 +74,19 @@ stateDiagram-v2
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | Create (`POST /physical-counts`) | `in_progress` | ผู้ใช้ใดก็ตามที่มี `inventory_management.physical_count` | Period เป็น `counting` (`PHC_VAL_001`); สถานที่มีอยู่จริง (`PHC_VAL_002`) บรรทัดสินค้า seed จาก union ของการ assign `tb_product_location` และสินค้าใดก็ตามที่มีสต๊อกไม่เป็นศูนย์ที่สถานที่นั้น |
 | `in_progress` | Save (`PATCH .../save`) | `in_progress` | ผู้ใช้เดียวกัน | บรรทัด subset ใดก็ได้; stamp `counted_at`/`counted_by_id` บนบรรทัดที่ส่งมา |
-| `in_progress` | Submit for Review (`PATCH .../review`) | `in_progress` (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดียวกัน | คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` |
-| `in_progress` | Submit (`PATCH .../submit`, จาก `/review`) | `completed` | ผู้ใช้เดียวกัน | ทุกบรรทัดมี `counted_at != null` (`PHC_VAL_004`); ยิง variance rollup (`PHC_POST_001`–`004`) |
+| `in_progress` | Submit for Review (`PATCH .../review`) | `in_progress` (ไม่เปลี่ยนสถานะ) | ผู้ใช้เดียวกัน | คำนวณ `on_hand_qty`/`diff_qty` ใหม่สำหรับทุกบรรทัดจากยอด cost-layer ของงวดที่นับ (`PHC_CALC_002`); stamp `counted_at` บนบรรทัดที่ได้รับเป็นครั้งแรก; navigate ไป `/review` |
+| `in_progress` | Submit (`PATCH .../submit`, จาก `/review`) | `completed` | ผู้ใช้เดียวกัน | ทุกบรรทัดมี `counted_at != null` (`PHC_VAL_004`); BU มี type `eop_in` / `eop_out` ที่ active สำหรับเครื่องหมายที่มีอยู่; ยิง variance rollup และ post เข้า ledger (`PHC_POST_001`–`004`) — ความล้มเหลวในการ post ใด ๆ (เช่น สต๊อกไม่พอสำหรับส่วนขาด) จะ rollback submit |
 | `completed` | ดูอย่างเดียว | `completed` | ผู้ใช้ใดก็ตามที่มี permission ของโมดูล (อ่าน) | Terminal; ถูกบล็อกจาก Save/Review/Submit/Delete ต่อไป (`PHC_VAL_006`) ไม่มี route ที่เปิด detail ของเอกสาร `completed` จากหน้ารายการ — ดูหมายเหตุ § 3 ใน [03-user-flow-count-lead.md](/th/inventory/physical-count/03-user-flow-count-lead) |
 
 ### 2.3 การกระจายตัวของ Variance Rollup
 
 Submit สุดท้ายคือ **rollup event** ตาม `PHC_POST_001`–`003`:
 
-- บรรทัดที่ `diff_qty > 0` จัดกลุ่มเข้า `tb_stock_in` ใหม่ **หนึ่งฉบับ** ถูก insert ตรงที่ `doc_status = completed`
-- บรรทัดที่ `diff_qty < 0` จัดกลุ่มเข้า `tb_stock_out` ใหม่ **หนึ่งฉบับ** ถูก insert ตรงที่ `doc_status = completed`
+- บรรทัดที่ `diff_qty > 0` จัดกลุ่มเข้า `tb_stock_in` ใหม่ **หนึ่งฉบับ** (adjustment type `eop_in`) ถูก insert ตรงที่ `doc_status = completed` ลงวันที่สิ้นงวดที่นับ ตั้งราคาด้วย *Default price for added items* ของ BU (`si.cost-from`)
+- บรรทัดที่ `diff_qty < 0` จัดกลุ่มเข้า `tb_stock_out` ใหม่ **หนึ่งฉบับ** (adjustment type `eop_out`) ถูก insert ตรงที่ `doc_status = completed`; ต้นทุนคือสิ่งที่ ledger post (lot แบบ FIFO / ค่าเฉลี่ย) และถูกเขียนกลับลงบรรทัด
 - บรรทัดที่ `diff_qty = 0` ไม่สร้าง rollup row
 - ทั้ง header ที่สร้างขึ้นและบรรทัด detail ใดไม่ถูกเชื่อมกลับไปยังการนับต้นทางด้วยฟิลด์ structured ใด ๆ — มีเพียงข้อความ description ที่ใช้ร่วมกัน
-- **ไม่มี row `tb_inventory_transaction` ถูกเขียนโดย action นี้** — เอกสาร rollup มีอยู่เพียงเป็นบันทึกเท่านั้น มันไม่ได้เคลื่อนย้าย on-hand balance ด้วยตัวเอง
+- **ทุกบรรทัดถูก post เข้า ledger** ภายใน transaction เดียวกัน (`executeAdjustmentIn` / `executeAdjustmentOut`) — เอกสาร rollup เคลื่อนย้าย on-hand balance และ `inventory_transaction_id` ถูก stamp บนทุกแถว detail *(แก้ไข 2026-10-27: ฉบับก่อนหน้าระบุตรงข้าม)*
 
 ## 3. ไฟล์ Persona
 
@@ -103,5 +103,5 @@ Draft ก่อนหน้าของโมดูลวิกินี้อ�
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`)
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำ 2026-09-20)
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (41 case, ตรวจทานซ้ำ 2026-09-20)
 - Flow ที่เกี่ยวข้อง: [inventory-adjustment/03-user-flow](/th/inventory/inventory-adjustment/03-user-flow) (โมดูลที่ rollup เขียนเข้า), [spot-check](/th/inventory/spot-check) (flow ลูกพี่ลูกน้องการนับบางส่วน)

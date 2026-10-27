@@ -2,7 +2,7 @@
 title: การสุ่มตรวจ (Spot Check) — Test Scenarios — หน้า Entry & Review
 description: Test case หน้า entry และ review สำหรับโมดูลการสุ่มตรวจ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -29,7 +29,7 @@ Scenario ด้านล่างใช้ action ที่ catalogue ใน [sp
 | E-F-04 | ใช้ calculator คำนวณ total | สินค้ามี case/unit conversion | Calculator return total เขียนเข้า `actual_qty` ของบรรทัด ตรงกับ `TC-SPC-060003` |
 | E-F-05 | "Set X Empty to Zero" | มีบรรทัดยังไม่นับอยู่ | ทุกบรรทัดที่ยังไม่นับกลายเป็น `0` ในเครื่องและนับเป็น counted; footer สลับเป็น Submit For Review เมื่อ `uncountedCount = 0` ตรงกับ `TC-SPC-060004` |
 | E-F-06 | Save For Resume ด้วยการนับบางส่วน | บางบรรทัดมีค่า บางบรรทัดไม่มี | `PATCH .../save` stamp `counted_at`/`counted_by_id` บนบรรทัดที่ส่ง; call แรกยังพลิก `pending → in_progress`; navigate กลับหน้ารายการ ตรงกับ `TC-SPC-060001` |
-| E-F-07 | Submit For Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่ทุกบรรทัดจากยอด ledger สด; navigate ไป `/review` ตรงกับ `TC-SPC-070001` |
+| E-F-07 | Submit For Review เมื่อทุกบรรทัดมีค่าแล้ว | `uncountedCount === 0` | `PATCH .../review` คำนวณ `on_hand_qty`/`diff_qty` ใหม่ทุกบรรทัดจากยอด cost-layer ของงวดที่ active; navigate ไป `/review` ตรงกับ `TC-SPC-070001` |
 | E-F-08 | หน้า review แสดง tile สรุปถูกต้อง | บางบรรทัด match บางบรรทัด overage บางบรรทัด shortage | Tile Matches/Variances/Overages/Shortages ตรงกับ `diff_qty` แต่ละบรรทัด; variance ลบแสดงสีเตือน บวกแสดงสีสำเร็จ ตรงกับ `TC-SPC-070002` |
 | E-F-09 | Submit Spot Check (ขั้นสุดท้าย) | อยู่บนหน้า review | `PATCH .../submit` ตั้ง `doc_status = completed`; navigate กลับหน้ารายการ; ไม่มีเอกสารอื่นถูกสร้าง ตรงกับ `TC-SPC-070003` |
 | E-F-10 | Export ยอดนับปัจจุบัน | เวลาใดก็ได้ | ไฟล์ `.xlsx` ดาวน์โหลดพร้อม id, รหัส/ชื่อ/ชื่อท้องถิ่น/SKU สินค้า, หน่วย, และ `actual_qty` ปัจจุบันต่อแถว |

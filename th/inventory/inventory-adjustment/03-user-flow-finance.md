@@ -2,7 +2,7 @@
 title: การปรับสต๊อก (Inventory Adjustment) — User Flow — Finance
 description: ประกาศแก้ไข — ไม่มี persona Finance, การลงบัญชี GL หรือการอนุมัติแบบ threshold สำหรับโมดูลนี้
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 ## สิ่งที่ตรวจสอบแล้ว
 
 - การค้นหาทั่ว repo `carmen-turborepo-backend` และ `carmen-frontend` สำหรับ `journal`, `ledger` และโค้ดลงบัญชี GL ในโมดูล stock-in/stock-out ไม่พบผลลัพธ์ใด ๆ (ตรวจซ้ำ 2026-09-22) แกน GL (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal voucher) มาถึงในเดือน 2026-09 แต่ไม่มีอะไรใน `stock-in/` / `stock-out/` อ้างอิงถึงมัน
-- `tb_adjustment_type` ไม่มีฟิลด์บัญชี GL, ไม่มี flag บังคับแนบเอกสาร, ไม่มี flag ตรวจสอบคุณภาพ — มีเพียง `code`, `name`, `type`, `description`, `is_active`, `note`
+- `tb_adjustment_type` มี `chart_of_accounts_id` ที่ nullable (contra GL account, เพิ่มเมื่อ 2026-10) แต่ไม่มีโค้ด stock-in/stock-out ใดอ่านมัน และไม่มี flag บังคับแนบเอกสารหรือ flag ตรวจสอบคุณภาพ — นอกนั้นมีเพียง `code`, `name`, `type`, `description`, `is_active`, `note`
 - `enum_stage_role` (enum role ของ workflow ในระดับ platform) คือ `{create, approve, purchase, issue, view_only}` — ไม่มีสมาชิก `finance` และเมธอด `create()`/`update()`/`void*()` ของโมดูลนี้ไม่เคยเรียก workflow orchestrator เลย
 - การค้นหาทั่ว repo สำหรับ `threshold` ที่ขอบเขตของโมดูล inventory/stock-in/stock-out ไม่พบผลลัพธ์ที่เกี่ยวข้องเลย
 - nav entry และทุก route ใต้ `/inventory-management/inventory-adjustment` gate ด้วยสิทธิ์ทั่วไปตัวเดียว `inventory_management.view` — ไม่มี permission หรือ route guard ที่เจาะจง Finance

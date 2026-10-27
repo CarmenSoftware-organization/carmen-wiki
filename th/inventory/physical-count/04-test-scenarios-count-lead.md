@@ -2,7 +2,7 @@
 title: การนับสต๊อกประจำงวด (Physical Count) — Test Scenarios — หน้ารายการ
 description: Test case ของหน้ารายการสำหรับโมดูลการนับสต๊อกประจำงวด
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: physical-count, test-scenarios, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -26,7 +26,7 @@ Scenario ด้านล่างใช้ action ของหน้าราย
 | L-F-01 | โหลดหน้ารายการสำหรับงวดบัญชีใหม่เอี่ยม | ยังไม่มี `tb_physical_count_period` สำหรับ `tb_inventory_period` ที่เปิดอยู่ปัจจุบัน | `GET /physical-count-periods/current` auto-create ที่ `status: draft`; รายการสถานที่ render |
 | L-F-02 | เริ่มการนับสำหรับสถานที่ที่ยังไม่เริ่มและจำเป็น | สถานที่มี `location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, `is_active = true`; ไม่มี `tb_physical_count` สำหรับ period นี้; period ของ physical-count เป็น `counting` แล้ว | `POST /physical-counts` สำเร็จ; เอกสารสร้างที่ `in_progress`; navigate ไป `/:id/entry` |
 | L-F-03 | ทำต่อสถานที่ที่ in-progress | สถานที่มี `tb_physical_count` ที่ `in_progress` อยู่แล้ว | Navigate ตรงไป `/:id/entry`; ไม่มีเอกสารใหม่สร้าง |
-| L-F-04 | Filter ด้วย KPI tile | คลิก tile "In Progress" | เหลือเฉพาะการ์ดสถานที่ที่ in-progress ที่มองเห็น |
+| L-F-04 | Filter ด้วย status strip | คลิก segment "In Progress" ของ status strip | เหลือเฉพาะแถวสถานที่ที่ in-progress ที่มองเห็น |
 | L-F-05 | Search ด้วยชื่อหรือรหัส | พิมพ์ชื่อ/รหัสสถานที่บางส่วน | รายการแคบลงตามที่ตรงกัน ฝั่ง client |
 | L-F-06 | รวมสถานที่ที่ไม่นับ | เช็ค "Include not-counted locations" | สถานที่ที่ flag `physical_count_type = no` ถูกเพิ่มเข้ารายการ ยังคงจำกัดที่สถานที่ inventory/consignment ที่ active |
 | L-F-07 | สลับไป period ก่อนหน้า | เลือก period ที่ปิดแล้วจาก dropdown period | ป้ายแสดง "Previous Period"; สถานที่ของ period นั้น render โดยผลจริงคืออ่านอย่างเดียว (การเริ่มการนับ *ใหม่* กับชุดเอกสารของ period ที่ปิดแล้วไม่ใช่ส่วนของ flow ปกติของหน้านี้) |
@@ -56,5 +56,5 @@ Scenario ด้านล่างใช้ action ของหน้าราย
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`)
-- **E2E:** `../carmen-frontend-e2e/tests/` — ยังไม่มี spec physical-count; manual catalog `docs/test-cases/750-physical-count.md`
+- **E2E:** `../carmen-frontend-e2e/tests/` — ไม่มี spec `750-physical-count` โดยเฉพาะ แต่การนับถูก exercise ผ่านหน้าจอจริงโดย spec period-close แบบ opt-in `921-period-close-count.spec.ts` และ `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: นับทุก location, เอกสารชดเชย EOP-IN / EOP-OUT ลงวันที่วันสุดท้ายของงวด, ต้นทุนเทียบกับ `si.cost-from` ของ BU, system quantity = ยอด ณ สิ้นงวดที่นับ); รันด้วย `bun run test:period-close` (ดู [inventory/period-end](/th/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md`
 - ที่เกี่ยวข้อง: [physical-count/03-user-flow-count-lead](/th/inventory/physical-count/03-user-flow-count-lead), [physical-count/02-business-rules](/th/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/04-test-scenarios](/th/inventory/physical-count/04-test-scenarios) (scenario end-to-end)
