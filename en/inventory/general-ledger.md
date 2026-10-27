@@ -1,6 +1,6 @@
 ---
 title: General Ledger
-description: GL and accounts-payable subledger documented only where they touch inventory. Nothing in inventory posts to the ledger directly; the one inventory-fed voucher is an AP invoice built from committed GRN lines. The journal-voucher screens are real, the AP/AR/dashboard screens are mock; GL master, budgets, templates and reports are a deliberate gap.
+description: GL and AP subledger, documented only where they touch inventory. Inventory never posts to the ledger directly; the one inventory-fed voucher is an AP invoice built from committed GRN lines.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: general-ledger, inventory, carmen-software

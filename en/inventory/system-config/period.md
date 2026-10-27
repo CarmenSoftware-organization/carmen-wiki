@@ -1,6 +1,6 @@
 ---
 title: Inventory Period (formerly Period)
-description: Inventory (accounting) periods and per-period cost snapshots. Renamed from Period on 2026-09-16 — tb_inventory_period*, /system-admin/inventory-period, api/:bu_code/inventory-periods, key system_admin.inventory_period. Timeline strip; status is changed by period end only, not by the edit dialog.
+description: Inventory periods and per-period cost snapshots (tb_inventory_period*, /system-admin/inventory-period, system_admin.inventory_period). Status changes only through period end, not the edit dialog.
 published: true
 date: '2026-10-27T00:00:00.000Z'
 tags: system-config, period, configuration, carmen-software

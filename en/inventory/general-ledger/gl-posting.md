@@ -1,6 +1,6 @@
 ---
 title: GL Posting and the Inventory Seam
-description: How a journal voucher reaches tb_gl_balance (post/void/reverse/year-end), the subledger facade AP and AR use, the JV status lifecycle and gl_jv workflow, the gl_run_due cron, template generation, and the verified fact that no inventory transaction posts to the GL directly (the only inventory-fed voucher is an AP invoice built from GRN lines).
+description: How a journal voucher reaches tb_gl_balance (post/void/reverse/year-end), the AP/AR subledger facade, JV lifecycle, the gl_run_due cron, and why no inventory transaction posts to the GL directly.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: general-ledger, inventory, costing, carmen-software

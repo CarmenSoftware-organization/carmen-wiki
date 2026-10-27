@@ -1,6 +1,6 @@
 ---
 title: Workflow
-description: Multi-stage approval workflows for PR / PO / SR — stages, actions, recipients, SLA, field visibility, stage roles, routing rules, product scope. One page per document type; detail page built around a stage rail; workflow type fixed at creation; in-flight documents lock stages only.
+description: Multi-stage approval workflows for PR / PO / SR: stages, actions, recipients, SLA, field visibility, routing rules, product scope; stage rail detail page; type fixed at creation; in-flight docs lock stages.
 published: true
 date: '2026-10-27T00:00:00.000Z'
 tags: system-config, workflow, configuration, carmen-software

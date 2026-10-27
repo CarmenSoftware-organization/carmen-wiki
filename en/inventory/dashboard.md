@@ -1,6 +1,6 @@
 ---
 title: Dashboard
-description: The single /dashboard landing page — a greeting header, a shared "Business unit dashboard" widget section, and a personal drag-and-drop 12-column "Saved Widgets" grid of dataset-backed cards (KPI, gauge, pie, bar, line, table, status pipelines) that each user builds for themselves.
+description: The /dashboard landing page: greeting header, a shared Business unit dashboard widget section, and each user's own drag-and-drop 12-column Saved Widgets grid of dataset-backed cards.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: dashboard, kpi, reporting, carmen-software

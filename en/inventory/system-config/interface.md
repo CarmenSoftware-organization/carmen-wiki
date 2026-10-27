@@ -1,6 +1,6 @@
 ---
 title: Interface (External API and POS)
-description: The /system-admin/interface screen — per-BU external-system connections. Covers the Export tools > External brand (inbound BU API key, API docs, the api/ext/v1 read endpoints ap-invoices and gl-journals used by accounting export) and a summary of the POS (Simphony / Micros 3700) settings.
+description: The /system-admin/interface screen: per-BU external connections — inbound BU API key, API docs, the api/ext/v1 ap-invoices and gl-journals endpoints, and a summary of POS (Simphony / Micros 3700) settings.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: system-config, interface, external-api, api-key, pos, accounting-export, carmen-software

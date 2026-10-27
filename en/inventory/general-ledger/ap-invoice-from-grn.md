@@ -1,6 +1,6 @@
 ---
 title: AP Invoice from GRN
-description: The one place a received-goods document reaches the ledger - an AP invoice built from committed GRN lines (grn-candidates, from-grn, matched_qty), the Dr inventory / Dr input VAT / Cr AP voucher it posts on approval, the GRN edit lock it causes, and the separate external export of GRN/CN and SR/SI/SO as Dr/Cr data.
+description: AP invoice built from committed GRN lines: candidates, matched_qty, the Dr inventory / Dr input VAT / Cr AP voucher, the GRN edit lock, and the separate external Dr/Cr export.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: general-ledger, accounts-payable, grn, inventory, carmen-software

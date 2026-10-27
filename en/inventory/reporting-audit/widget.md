@@ -1,6 +1,6 @@
 ---
 title: Widget
-description: Dashboard widget entity — per-user and BU-shared tiles bound to a code-registered dataset catalog, served by micro-data over HTTP behind the gateway; display column, render switching, BU widgets with module + platform-default deploy state, bilingual titles, and system widgets read from the Backstage template table.
+description: Dashboard widget entity: per-user and BU-shared tiles bound to the micro-data dataset catalog, render switching, BU widget deploy state, bilingual titles, and system widgets from Backstage templates.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: reporting-audit, widget, configuration, carmen-software

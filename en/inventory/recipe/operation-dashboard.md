@@ -1,6 +1,6 @@
 ---
 title: Operation Plan Dashboard
-description: The /operation-plan landing screen — 10 system-template KPI/chart tiles (recipe + equipment) read from the backstage widget-template table via a gateway config route, plus a BU widget section; each tile lazily loading its dataset; not a user-configurable widget board.
+description: The /operation-plan landing screen: 10 recipe and equipment KPI/chart tiles from the Backstage widget-template table plus a BU widget section; not a user-configurable board.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: recipe, operation-plan, dashboard, widget, carmen-software

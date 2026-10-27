@@ -1,6 +1,6 @@
 ---
 title: Credit Note
-description: Vendor credit against a prior GRN — quantity_return deducts stock, amount_discount revalues cost; one product per GRN once, date must fall in the current period, return must be covered by stock on that date; only drafts are editable; submit goes draft → completed. No AP/GL posting.
+description: Vendor credit against a prior GRN: quantity_return deducts stock, amount_discount revalues cost; current-period date, stock-covered returns, draft-only edits, draft → completed. No AP/GL posting.
 published: true
 date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, credit-note, accounting, carmen-software
