@@ -2,7 +2,7 @@
 title: ใบเบิกของจากสโตร์ — โมเดลข้อมูล — ตารางคอมเมนต์
 description: ตารางคอมเมนต์ / ไฟล์แนบระดับเอกสารและระดับบรรทัดสำหรับโมดูลใบเบิกของจากสโตร์ — ข้อความ, JSON ไฟล์แนบ, และ enum ประเภทคอมเมนต์ (user/system)
 published: true
-date: 2026-07-15T12:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: store-requisition, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -80,6 +80,10 @@ updated_by_id       uuid / FK ไปยัง tb_user
 
 **Constraints:** `@id` บน `id` FK `store_requisition_detail_id → tb_store_requisition_detail.id` (`NoAction` on delete/update)
 **Indexes:** ไม่มีประกาศนอกเหนือจาก primary key
+
+## 3a. นโยบายการอัปโหลดไฟล์แนบ (re-sync 2026-10-27)
+
+comment controller ของ gateway ไม่ได้ hard-code ขีดจำกัด 10 MB / MIME ห้าชนิดอีกต่อไป การอัปโหลดผ่าน `CommentFilesInterceptor()` และ `AttachmentPolicyService.assertFiles(bu_code, files)` (`apps/backend-gateway/src/common/attachment-policy/`) ซึ่งอ่านรายการ `config` ของ business unit คือ `attachment.allowed_types` และ `attachment.max_size_mb` ค่า default เมื่อไม่ได้ตั้ง: กลุ่มชนิดไฟล์ `image` + `pdf`, 10 MB ต่อไฟล์; ขนาดถูกจำกัดสูงสุด 25 MB และกลุ่มที่เลือกได้คือ image, pdf, excel, word, csv และ text นโยบายถูก cache ต่อ BU เป็นเวลา 60 วินาที ตอน update micro-service รับ `attachments` ได้ทั้งแบบ array เต็มหรือแบบ `{ add, remove }` (ลบโดยใช้ `fileToken`) และ `addAttachment` รับเป็นลิสต์
 
 ## 4. การอ้างอิงข้าม
 

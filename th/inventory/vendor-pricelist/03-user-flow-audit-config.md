@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — User Flow — Audit & Config (แก้ไข)
 description: หน้าแก้ไข — ไม่มี Audit workspace หรือ Configuration console เฉพาะทางอยู่ในโมดูล vendor-pricelist
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, user-flow, audit-config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -25,7 +25,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 ## สิ่งที่เป็นจริง
 
-- Pattern running-code generic (`tb_config_running_code`, type `PRICE-LIST`) ขับการสร้าง `pricelist_no` — นี่คือกลไกการกำหนดเลข generic เดียวกับที่ใช้ทั่วผลิตภัณฑ์ ไม่ใช่ console การกำหนดเลขเฉพาะ pricelist
+- Pattern running-code generic (`tb_config_running_code`, type `PRICE-LIST`) ขับการสร้าง `pricelist_no` (ตั้งแต่ 2026-10 เลขถูกจองโดย `reserveDocumentNumbers` ภายใน transaction ที่ insert list) — นี่คือกลไกการกำหนดเลข generic เดียวกับที่ใช้ทั่วผลิตภัณฑ์ ไม่ใช่ console การกำหนดเลขเฉพาะ pricelist
 - ตาราง comment มีอยู่จริงและมี manual CRUD endpoint ของตัวเองต่อ entity family ใช้ได้โดย user ที่ authorized คนใดก็ได้สำหรับโน้ต free-text — แต่การเขียนหนึ่งครั้งเป็น action แบบ manual เสมอ ไม่เคยเป็น audit-trail entry อัตโนมัติ (ดู [01a-data-model-comments](/th/inventory/vendor-pricelist/01a-data-model-comments))
 - ถ้าต้องการ audit query surface เฉพาะทางหรือ action token-revocation วันนี้ยังไม่มีอยู่จริง และจะเป็นงาน feature ใหม่ ไม่ใช่ช่องว่างด้านเอกสาร
 - event ของ portal (`create` / `save` / `submit`) และ action `email_sent` ของ RFQ ถูกเขียนลงตาราง `tb_activity` ที่ใช้ร่วม (2026-09-11/16) และอ่านได้ผ่าน Activity panel ปกติ — ใกล้เคียง audit trail ที่สุด; ยังคงไม่มี workspace query-builder

@@ -2,7 +2,7 @@
 title: การเติมสต๊อก (Stock Replenishment)
 description: รายการที่ต่ำกว่า par ขับโดย threshold par / max บน tb_product_location พร้อม wizard สร้าง draft PR หรือ SR — เป็น API จริงตั้งแต่ 2026-08; ไม่มี scheduled sweep
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: store-requisition, replenishment, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 > **เจ้าของ:** Purchaser / Requester (review รายการที่ต่ำกว่า par แล้วสร้าง draft PR หรือ SR) &nbsp;·&nbsp; **ตาราง:** ไม่มีเฉพาะ — อ่าน `tb_product_location` + on-hand เขียน draft `tb_purchase_request` / `tb_store_requisition` ธรรมดา &nbsp;·&nbsp; **Trigger:** on demand (ตอนโหลดหน้าจอ) — **ไม่มี cron** &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/stock-replenishment`, `GET …/location-products/:location_id/:product_id/pending-documents`, `POST …/stock-replenishment/pr`, `POST …/stock-replenishment/sr` &nbsp;·&nbsp; **สรุป 1 บรรทัด:** หน้าจอแสดงทุก `(location, product)` ที่ต่ำกว่า par; มนุษย์เลือกแถวแล้วสร้างเอกสาร
 
 > ✅ **สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22):** หมายเหตุรอบ 2026-07-15 ที่ว่าหน้าจอนี้ขับด้วย mock data ล้าสมัยแล้ว `feat: add stock replenishment and wastage reporting api` (`c9348f667`, 2026-08) เพิ่ม backend (`apps/micro-business/src/inventory/stock-replenishment/`, gateway `apps/backend-gateway/src/application/stock-replenishment/`), `57d5715a0` (2026-08-26) เพิ่ม endpoint สร้าง PR/SR และ hook ฝั่ง frontend `routes/store-operation/stock-replenishment/use-stock-replenishment.ts` เรียก API จริงแล้ว สิ่งที่ **ยังคง** ไม่ได้ implement: scheduled sweep ใด ๆ (ไม่พบ `replenish` / `par_qty` ใน `../micro-cronjobs/`), idempotent "หนึ่ง draft ต่อวัน", term `on_order`, การ config สถานที่ต้นทาง และ period gate — Section 2–6 ด้านล่างบรรยายโค้ดตามที่เป็นอยู่
+> **Re-sync 2026-10-27 (backend `c9d788829`, frontend `391062b5`):** ตัวเลข on-hand ตอนนี้ถูกจำกัดขอบเขตที่ **active inventory period** (`buildOnHandPeriodWhere()` เพิ่ม `at_period = <active period>` ให้การรวม cost-layer ใน `stock-replenishment.service.ts` และ `products.replenishment.ts`; ดู §6) — สต๊อกที่อยู่ใน period เก่าที่ยังไม่เคยปิดจะไม่ถูกนับจนกว่า period นั้นจะปิด; หน้าจอถูกสร้างใหม่บน `ListPageShell` พร้อม stock-level bar ต่อแถว, จำนวน "N to reorder" (ไม่มียอดรวมข้ามหน่วยอีกต่อไป), sticky bottom action bar และ empty state (§2) API, payload และอัตราส่วนสถานะไม่เปลี่ยน
 
 ![การเติมสต๊อก (Stock Replenishment) screen](/screenshots/store-requisition/stock-replenishment.png)
 
@@ -58,8 +59,8 @@ graph LR
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| ดูว่าอะไรต่ำกว่า par | Store Operation → Stock Replenishment | Summary bar: locations / items / critical / warning / low / total reorder qty; หนึ่งกลุ่มพับได้ต่อสถานที่; แต่ละแถวแสดง on-hand, min, max, par, reorder qty และ status badge |
-| สร้าง PR สำหรับส่วนที่ขาด | เลือกแถว → wizard **Create PR** → เลือก workflow ปรับ `request_qty` / order unit → ยืนยัน | `POST …/stock-replenishment/pr` — draft PR หนึ่งใบต่อ call; สถานที่ติดไปกับแต่ละบรรทัด |
+| ดูว่าอะไรต่ำกว่า par | Store Operation → Stock Replenishment | Summary bar: locations, **"N to reorder"** (จำนวนแถวที่ `reorder_qty > 0` — ยอดรวม reorder quantity ข้ามหน่วยแบบเดิมถูกตัดออกเพราะหน่วยต่างกัน) และ badge critical / warning / low (badge ที่นับได้ 0 จะถูกซ่อน) หนึ่งกลุ่มพับได้ต่อสถานที่; ตอนโหลดครั้งแรกจะขยายเฉพาะกลุ่มที่มีแถว `critical` (Expand all / Collapse all override แล้วถูกจำไว้) แต่ละแถวแสดง **stock-level bar** (`stock-level-bar.tsx`: ส่วนที่เติม = on-hand ระบายสีตามสถานะ, tick ที่ min และ par, สเกล = ค่าสูงสุดของ on-hand / min / max / par; ตัวเลขดิบทั้งสี่อยู่ใน tooltip) พร้อม reorder qty และ status badge ไม่มีอะไรต่ำกว่า par → empty state "all stocked"; ค้นหาแล้วไม่พบ → empty state "no results" พร้อมปุ่ม clear-search |
+| สร้าง PR สำหรับส่วนที่ขาด | เลือกแถว → **Create PR** (sticky bar ด้านล่างแสดง "N selected", ปุ่ม Clear และหมายเหตุเมื่อบางแถวที่เลือกถูกซ่อนด้วยการค้นหาปัจจุบัน — ยังคงถูกส่ง) → wizard → เลือก workflow ปรับ `request_qty` / order unit → ยืนยัน | `POST …/stock-replenishment/pr` — draft PR หนึ่งใบต่อ call; สถานที่ติดไปกับแต่ละบรรทัด |
 | สร้าง SR สำหรับส่วนที่ขาด | เลือกแถว → wizard **Create SR** → เลือกสถานที่ต้นทาง + SR workflow → ยืนยัน | `POST …/stock-replenishment/sr` — บรรทัดที่ใช้คู่ `(from_location, location_id)` เดียวกันกลายเป็น draft SR หนึ่งใบ; response คือ array ของ id ที่สร้าง |
 | ดูว่าอะไรกำลังมาสำหรับแถวนั้นแล้ว | แถว → pending documents | `GET …/location-products/:location_id/:product_id/pending-documents` (`stock-replenishment.pending.ts`) แสดง PR ใน `draft` / `in_progress` / `approved` (approved นับเป็น pending โดยตั้งใจ — ผ่าน workflow แล้ว แต่ยังไม่ได้รับของ), SR ใน `draft` / `in_progress` และบรรทัด PO ที่ลิงก์กับบรรทัด PR เหล่านั้น สำหรับคู่นั้น เป็นข้อมูลประกอบ — รายการ **ไม่** หักออกจากส่วนที่ขาด |
 | เปลี่ยน threshold | [product](/th/inventory/product) → tab location → แก้ `tb_product_location.par_qty` / `max_qty` / `min_qty` | มีผลตอนโหลดหน้าจอครั้งถัดไป |
@@ -97,7 +98,7 @@ flowchart TD
 
 - **Reorder level เลือก `max_qty` ก่อน** `reorder_level = max_qty > 0 ? max_qty : par_qty`; `reorder_qty = max(reorder_level − on_hand, 0)` `min_qty` ถูกคืนเพื่อแสดงผลเท่านั้น
 - **ไม่มี term `on_order`** PO ที่เปิดอยู่และ SR transfer ที่กำลังดำเนินการไม่ลดส่วนที่ขาด; endpoint pending-documents คือสิ่งทดแทนแบบ manual
-- **ไม่มี cron ไม่มี idempotency ไม่มี period gate** ทุกรอบ wizard สร้าง draft ใหม่; ไม่มีสิ่งใดตรวจ inventory period ที่นี่ (กฎวันที่ submit/issue ของ SR เองใช้บังคับภายหลัง — ดู [store-requisition/02-business-rules](/th/inventory/store-requisition/02-business-rules) `SR_VAL_014`)
+- **ไม่มี cron ไม่มี idempotency ไม่มี period gate ตอนสร้าง** ทุกรอบ wizard สร้าง draft ใหม่; ไม่มีสิ่งใดตรวจ inventory period ตอนสร้าง draft (กฎวันที่ submit/issue ของ SR เองใช้บังคับภายหลัง — ดู [store-requisition/02-business-rules](/th/inventory/store-requisition/02-business-rules) `SR_VAL_014`) อย่างไรก็ตาม **การอ่าน on-hand** ถูกจำกัดตาม period: นับเฉพาะ cost layer ที่ stamp active period (`at_period`) ซึ่งรวมยอดยกมาเข้า period นั้นด้วย เมื่อไม่มี active period ตัวกรองจะว่างและนับทุก layer
 - **สถานที่ต้นทางถูกเลือกต่อรอบ wizard** ไม่ได้ config ต่อ BU; SR wizard ตัดปลายทางออกจากตัวเลือกต้นทาง
 - **ส่วนหัวของ draft มาจากผู้เรียก**: `buildDraftHeader()` ใช้สมาชิกภาพ `tb_department_user` แรกของผู้เรียกเป็นแผนกและ workflow ที่เลือก; `requestor_id` คือผู้เรียก
 - **Pagination เป็นตามกลุ่มสถานที่** (`perpage < 0` คืนทั้งหมด); แถวภายในกลุ่มเรียง `reorder_qty desc, name asc`
@@ -158,7 +159,8 @@ GET (on screen load, optional ?location_id=, ?search=):
 1. candidates = tb_product_location WHERE deleted_at IS NULL AND par_qty > 0
                 AND location IS active AND location_type <> direct
                 (optionally filtered by ?location_id= / product search)
-2. on_hand[(location, product)] = Σ balance from the inventory ledger for the pair
+2. on_hand[(location, product)] = Σ (in_qty − out_qty) over cost layers of the pair WHERE at_period = <active period>
+                (buildOnHandPeriodWhere; no active period → all layers)
 3. for each candidate:
      par = par_qty; on_hand = max(raw_balance, 0); if on_hand >= par: skip
      reorder_level = max_qty > 0 ? max_qty : par
@@ -172,7 +174,7 @@ POST …/sr (user action):
              every product is allowed by workflow.data.products (when that list is non-empty)
 2. header = { requestor = caller, department = caller's first tb_department_user, workflow }
 3. group lines by (from_location, location_id) → one StoreRequisitionLogic.create() per group
-   (sr_type derived from the two locations; sr_no = draft-<hex>)
+   (sr_type derived from the two locations; sr_no = draft-<seq>)
 4. return the created ids → the SRs continue as ordinary drafts
 ```
 
@@ -189,10 +191,10 @@ POST …/sr (user action):
 
 ## 8. แหล่งอ้างอิง
 
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-replenishment/` — `stock-replenishment.service.ts` (`findAll`, `selectBelowPar`, `createPrByReplenishmentProduct`, `createSrByReplenishmentProduct`, `findPendingDocuments`, `buildDraftHeader`), `stock-replenishment.helper.ts` (`toReplenishmentStatus`, `toReorderQty`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`), `stock-replenishment.verify.ts`, `stock-replenishment.draft.ts`, `dto/stock-replenishment.dto.ts`, `dto/stock-replenishment.serializer.ts`; gateway `apps/backend-gateway/src/application/stock-replenishment/stock-replenishment.controller.ts` (app-ids `stockReplenishment.findAll` / `findPendingDocuments` / `createPr` / `createSr`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/stock-replenishment/` — `stock-replenishment.service.ts` (`findAll`, `selectBelowPar`, `createPrByReplenishmentProduct`, `createSrByReplenishmentProduct`, `findPendingDocuments`, `buildDraftHeader`), `../on-hand-period.helper.ts` (`buildOnHandPeriodWhere`), `stock-replenishment.helper.ts` (`toReplenishmentStatus`, `toReorderQty`, `RATIO_CRITICAL = 0.25`, `RATIO_WARNING = 0.5`), `stock-replenishment.verify.ts`, `stock-replenishment.draft.ts`, `dto/stock-replenishment.dto.ts`, `dto/stock-replenishment.serializer.ts`; gateway `apps/backend-gateway/src/application/stock-replenishment/stock-replenishment.controller.ts` (app-ids `stockReplenishment.findAll` / `findPendingDocuments` / `createPr` / `createSr`)
 - **Error catalogue:** `STOCK_REPLENISHMENT_WORKFLOW_NOT_FOUND`, `STOCK_REPLENISHMENT_WORKFLOW_PERMISSION_DENIED`, `STOCK_REPLENISHMENT_LOCATION_PERMISSION_DENIED`, `STOCK_REPLENISHMENT_PRODUCTS_NOT_APPLICABLE` ใน `packages/error-catalog/src/catalog.ts`
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_location`, `tb_store_requisition`, `enum_sr_type`
-- **Frontend:** `../carmen-frontend/routes/store-operation/stock-replenishment/` — `use-stock-replenishment.ts` (`useStockReplenishment`, `useCreateStockReplPr`, `useCreateStockReplSr`), `stock-repl-component.tsx`, `stock-repl-location.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`; `types/stock-replenishment.ts`
+- **Frontend:** `../carmen-frontend/routes/store-operation/stock-replenishment/` — `use-stock-replenishment.ts` (`useStockReplenishment`, `useCreateStockReplPr`, `useCreateStockReplSr`), `stock-repl-component.tsx`, `stock-repl-location.tsx`, `stock-level-bar.tsx`, `stock-repl-pr-wizard.tsx`, `stock-repl-sr-wizard.tsx`; `types/stock-replenishment.ts`
 - **E2E:** `../carmen-frontend-e2e/tests/711-stock-replenishment.spec.ts` (33 case, `TC-SRPL-*`: โหลดหน้า, summary bar, กลุ่มสถานที่, expand/collapse, การเลือก, wizard); narrative ใน `docs/user-stories/711-stock-replenishment.md`
 - **Cron job:** ไม่มี — `../micro-cronjobs/` ไม่มีโค้ดการเติมสต๊อกในรอบนี้
 - **Module landing:** [store-requisition](/th/inventory/store-requisition) § 7

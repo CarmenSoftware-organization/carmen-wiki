@@ -2,7 +2,7 @@
 title: คำขอใบเสนอราคา (Request for Quotation)
 description: เอกสารคำขอราคา outbound (RFQ) ส่ง email ไปยังผู้ขายหนึ่งรายหรือมากกว่า — แต่ละรายได้ลิงก์ portal ที่หมดอายุได้; submission ลงเป็น pricelist ที่ submitted
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, rfq, procurement, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -12,6 +12,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 > **At a Glance**
 > **เจ้าของ:** Purchaser / Procurement Manager &nbsp;·&nbsp; **ตาราง:** `tb_request_for_pricing` (+ detail, comments) &nbsp;·&nbsp; **Workflow:** ไม่มี (ขับด้วย date-window) &nbsp;·&nbsp; **ต้นน้ำ:** [templates/price-list](/th/inventory/templates/price-list) &nbsp;·&nbsp; ขอใบเสนอราคาจากผู้ขายก่อนได้รับการมอบ `tb_pricelist`
+> **Re-sync 2026-10-27:** ลิสต์ตอนนี้แสดงคอลัมน์ **Responses** (`submitted / invited` พร้อม progress bar, `vendor_count` และ `vendors[].has_submitted` จาก list response) และ badge **Upcoming / Open (N days left) / Closed** ใต้ end date — badge คำนวณในเบราว์เซอร์จาก `start_date` / `end_date` เทียบกับวันปฏิทินปัจจุบัน (`rfp-window.ts`; backend ไม่มีฟิลด์นี้ และเมื่อจะปิดภายใน 3 วัน badge จะเป็นสีเหลืองอำพัน); โหมด view แสดง "N of M vendors submitted" แทน prompt เพิ่ม vendor; การลบ vendor ตอนนี้ส่ง **line id** ของ invitation (payload `{ vendor_id }` เดิมอาจ soft-delete แถว vendor ของ RFQ อื่นผิดใบ — แก้ทั้งสองฝั่ง ดู § 3); หน้าใช้ shell ลิสต์/ฟอร์มที่ใช้ร่วมกัน
 > **Re-sync 2026-09-22:** action **Send email** ต่อผู้ขาย (`POST …/request-for-pricings/:id/send-email`, 2026-09-16); ลิงก์ portal ตอนนี้หมดอายุที่ `end_date` ของ RFQ (`UrlTokenGuard`); Save/Submit ของ portal ทำงานได้และผลิต pricelist `submitted`; detail response expand `vendor`, `pricelist { id, no, name, status }` และ `pricelist_template { …, currency }` เป็น object
 
 ![คำขอใบเสนอราคา (Request for Quotation) screen](/screenshots/vendor-pricelist/request-price-list.png)
@@ -32,19 +33,21 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | เชิญผู้ขาย | ฟอร์ม create เดียวกัน → dialog **Add vendors** (multi-select, 2026-08-06) | แถว invitation ทั้งหมด (พร้อม `pricelist_url_token`, JWT และแถว `tb_shot_url` ที่ `expired_at = end_date` ของแต่ละแถว) ถูกสร้างใน `POST` call เดียวกันกับ header ของ RFQ — ไม่มีขั้นตอน "launch" แยกต่างหาก |
 | ส่ง email ลิงก์ให้ผู้ขาย | Detail → แถว vendor → **Send email** (คอลัมน์ action, 2026-09-10) | เปิด dialog เดียวกับ email ของ PO: เลือก email profile (`profile_id`), ป้อน `to` / `cc` optional และ `subject` / HTML `body` ที่เติมไว้ล่วงหน้าจาก email template ที่มี placeholder `rfp` (ลิงก์ portal `/pl/:url_token` ประกอบฝั่ง client); `POST …/request-for-pricings/:id/send-email` (`vendor_id` optional) → activity `email_sent` ส่งทีละผู้ขาย; ไม่มีปุ่ม "send to all" |
 | เพิ่มผู้ขายลงใน RFQ ที่มีอยู่ | Detail → edit → เพิ่มแถว vendor | `PATCH` รองรับ `vendors.add`/`vendors.remove`/`vendors.update`; unique constraint บน `(request_for_pricing_id, vendor_id)` บังคับไม่ให้เชิญซ้ำ |
-| ติดตามการตอบกลับ | RFQ detail → แถว vendor | `has_submitted` และ `pricelist { no, status }` ที่ลิงก์ต่อผู้ขาย (`submitted` เมื่อผู้ขายคลิก Submit; ยังคง `draft` ถ้าแค่เปิด/save) |
+| ติดตามการตอบกลับ | คอลัมน์ **Responses** ของลิสต์ RFQ; RFQ detail → แถว vendor | `has_submitted` และ `pricelist { no, status }` ที่ลิงก์ต่อผู้ขาย (`submitted` เมื่อผู้ขายคลิก Submit; ยังคง `draft` ถ้าแค่เปิด/save) **ข้อควรระวัง:** backend คำนวณ `has_submitted` เป็น `!!pricelist_id` และ `pricelist_id` ถูกเติมเมื่อผู้ขาย *เปิด* ลิงก์ครั้งแรก (draft ถูกสร้างอัตโนมัติตอนนั้น) ดังนั้น "N / M" ของลิสต์นับผู้ขายที่เปิด portal ไม่ใช่เฉพาะผู้ที่ submit — ให้อ่าน `status` ของ pricelist ที่ลิงก์สำหรับคำตอบจริง (open finding) |
 | เปรียบเทียบ / มอบ | Purchaser เปิด pricelist `submitted` ของ vendor บนหน้าจอ **Price List** | การมอบ = การตั้ง `tb_pricelist.status = active` ของผู้ชนะจากฟอร์ม edit ของ Price List — ไม่มีปุ่ม "Compare" หรือ "Activate" บนหน้าจอ RFQ เอง และไม่พบ UI เปรียบเทียบการเสนอราคาใด ๆ |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
 
 | อาการ / ข้อความ | สาเหตุ | ยืนยันแล้วหรือไม่ |
 |---|---|---|
+| การลบ vendor ไม่เกิดอะไรขึ้น / `RFP_VENDOR_REMOVE_ID_REQUIRED` | entry ของ `vendors.remove` ที่ไม่มี line id ของ invitation | **Confirmed (2026-10)** — ตรวจก่อนเขียนข้อมูลใด ๆ; การลบ scope เฉพาะบรรทัดที่ยังมีอยู่ของ RFQ นี้ ฟอร์ม React ส่ง `{ id }` ของบรรทัด (แถวที่เพิ่มในการแก้ไขเดียวกันและยังไม่บันทึกจะถูกข้าม) |
 | "Vendor already invited" | มีแถว detail ที่ไม่ถูกลบสำหรับ (RFQ, vendor) | **ยืนยันแล้ว** — `@@unique([request_for_pricing_id, vendor_id, deleted_at])` |
 | การสร้าง RFQ ถูก reject เพราะช่วงวันที่ไม่ถูกต้อง | `start_date > end_date` | **ยืนยันแล้ว** — `request-for-pricing.service.ts` `create()` เช็คสิ่งนี้อย่างชัดเจน (`RFP_INVALID_DATE_RANGE`) |
 | "Cannot change template — invitations sent" | `pricelist_template_id` immutable หลัง dispatch | **ไม่ยืนยัน** `update()` รับ `pricelist_template_id` ใหม่โดยไม่มีการเช็ค immutability เลย แม้จะมีแถว vendor อยู่แล้วก็ตาม |
 | การ submission สายถูก reject หลัง `end_date` | ลิงก์ portal หมดอายุ | **Confirmed (2026-09-22) — ที่ guard ไม่ใช่ใน service** `UrlTokenGuard` คืน 401 `url_token has expired` เมื่อ `tb_shot_url.expired_at` (ตั้งเป็น `end_date` ของ RFQ ตอนออก token) ผ่านไปแล้ว; ทุก call ของ portal รวมถึงการเปิดครั้งแรกถูก block และ portal React แสดง *This link has expired* การขยาย `end_date` ภายหลัง **ไม่** refresh token ที่มีอยู่ |
 | "Vendor must be active" | `tb_vendor.is_active = false` บล็อกการเชิญ | **ไม่ยืนยัน** ไม่พบการเช็ค `is_active` บน vendor ใน `create()` หรือ `update()` |
 | Invitation link คืน 401 | token ไม่รู้จัก หรือ `expired_at` ผ่านไปแล้ว | `UrlTokenGuard`; แถว detail ของ RFQ ที่ถูก soft-delete ถูกรายงานโดย `checkPriceList()` เป็น `Request for pricing detail not found` (404) ไม่มีโค้ด token-rotation หรือ revoke |
+| Send email ล้มเหลวด้วยข้อความแนว "reconnect" | credential ของ email profile ที่เลือกต้อง authorise ใหม่ | **Confirmed (2026-10)** — `resolveSmtpConfigForProfile` ทำงานก่อน; `EmailProfileAuthError` ถูกคืนเป็น invalid-argument error ที่อ่านเข้าใจได้ก่อนที่ state ใดจะเปลี่ยน |
 | Send email ล้มเหลวด้วย permission/login bounce | app-id `requestForPricing.sendEmail` หายไปจาก app-id allow-list ของ tenant | เพิ่มใน platform app catalog ก่อนใช้ (ระบุใน commit `2b750267e`) |
 
 ## 4. กรณีพิเศษ
@@ -120,13 +123,13 @@ RFQ **ไม่มีคอลัมน์สถานะและไม่ม�
 - [master-data/currency](/th/inventory/master-data/currency) — สกุลเงิน default จาก template
 - [purchase-request](/th/inventory/purchase-request) / [purchase-order](/th/inventory/purchase-order) — ผู้บริโภคปลายน้ำของ pricelist ที่ได้รับมอบ
 - [system-config/workflow](/th/inventory/system-config/workflow) — *ไม่ใช้* โดย RFQ; กล่าวเพื่อความตรงข้าม
-- [03-user-flow-vendor](/th/inventory/vendor-pricelist/03-user-flow-vendor) — confirmed gap ใน backend route ของ Save/Submit ของ portal
+- [03-user-flow-vendor](/th/inventory/vendor-pricelist/03-user-flow-vendor) — flow เปิด → save → submit ของ portal (confirmed gap ใน backend route ของ Save/Submit ที่รายงานเมื่อ 2026-07 ปิดแล้ว)
 
 ## 8. แหล่งอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (บรรทัด 4405), `tb_request_for_pricing_comment` (บรรทัด 4438), `tb_request_for_pricing_detail` (บรรทัด 4473), `tb_request_for_pricing_detail_comment` (บรรทัด 4511) *(แก้ไข 2026-07-16 — การอ้างอิงก่อนหน้าที่บรรทัด 4039-4176 ไม่ตรงกับไฟล์ schema ปัจจุบันอีกต่อไป)*
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_request_for_pricing` (บรรทัด 5165), `tb_request_for_pricing_comment` (5198), `tb_request_for_pricing_detail` (5233), `tb_request_for_pricing_detail_comment` (5271) ที่ backend `c9d788829` *(ตรวจสอบซ้ำ 2026-10-27; ไฟล์ schema โตขึ้นตลอด จึงให้ค้นด้วยชื่อ model แทนการเชื่อเลขบรรทัด)*
 - **Frontend route:** `../carmen-frontend/routes/vendor-management/request-price-list/`; external portal: `routes/external/pl/`
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`create`, `createVendorDetailWithToken`, `generateVendorToken`, `insertVendorPricelist`, `sendEmail`), `.../check-price-list/check-price-list.service.ts`; gateway `apps/backend-gateway/src/application/request-for-pricings/request-for-pricings.controller.ts` (`POST :id/send-email`, app-id `requestForPricing.sendEmail`; `GET :id/print-viewer`), `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; platform schema `tb_shot_url`
-- **Frontend:** `routes/vendor-management/request-price-list/` — `rfp-send-email-dialog.tsx`, `use-rfp-send-email.ts`, `rfp-vendor-add-dialog.tsx`, `rfp-vendor-cells.tsx`; `types/request-price-list.ts`
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/request-for-pricing/request-for-pricing.service.ts` (`create`, `update` + `readVendorRemoveIds`, `createVendorDetailWithToken`, `generateVendorToken`, `insertVendorPricelist`, `sendEmail`), `.../check-price-list/check-price-list.service.ts`; gateway `apps/backend-gateway/src/application/request-for-pricings/request-for-pricings.controller.ts` (`POST :id/send-email`, app-id `requestForPricing.sendEmail`; `GET :id/print-viewer`), `apps/backend-gateway/src/auth/guards/url-token.guard.ts`; platform schema `tb_shot_url`
+- **Frontend:** `routes/vendor-management/request-price-list/` — `rfp-send-email-dialog.tsx`, `use-rfp-send-email.ts`, `rfp-vendor-add-dialog.tsx`, `rfp-vendor-cells.tsx`, `rfp-list-cells.tsx` (`RfpResponses`, `RfpWindowBadge`), `rfp-window.ts` (`getRfpWindow`, `countSubmitted`); `types/request-price-list.ts`
 - **E2E:** ไม่มี spec สำหรับหน้าจอ RFQ; portal มี catalog แบบเอกสารเท่านั้น `../carmen-frontend-e2e/docs/test-cases/1002-external-price-list.md` (42 case, `TC-EPL-*`)
 - **Carmen docs:** `../carmen/docs/business-analysis/price-list-ba.md`; `../carmen/docs/business-analysis/procurement-ba.md` (ส่วน RFQ) — ถือเป็นเจตนาการออกแบบ ไม่ใช่พฤติกรรมที่ยืนยันแล้ว ตาม Section 6 ข้างต้น

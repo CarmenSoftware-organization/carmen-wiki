@@ -2,7 +2,7 @@
 title: รายการราคาผู้ขาย (Vendor Pricelist) — Test Scenarios
 description: Test case ตาม persona, scenario ข้าม persona และ E2E mapping สำหรับ vendor-pricelist
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: vendor-pricelist, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **โมดูล:** [vendor-pricelist](/th/inventory/vendor-pricelist) &nbsp;·&nbsp; **Persona ครอบคลุม:** Purchaser, Vendor (portal ภายนอก — save/submit ทำงานได้ตั้งแต่ 2026-08/09)
 > **Drill-down ของแต่ละ persona คือ `04-test-scenarios-<role>.md`**
 > **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/150-vendor.spec.ts` (31 case, 2 fixme) + `docs/test-cases/gaps/150-vendor-gap.md` (54), `tests/159-pl.spec.ts` (28, 4 fixme) + `gaps/159-pl-gap.md` (65), `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58), `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); vendor portal: catalog แบบเอกสารเท่านั้น `docs/test-cases/1002-external-price-list.md` (42 ไม่มี spec); Request for Pricing: ไม่มี spec หน้านี้ไม่ mirror case เหล่านั้น
+> **E2E gaps ที่พบ 2026-10-27** (spec/catalog ไม่เปลี่ยน ยกเว้นการแก้ถ้อยคำ "Carmen Inventory" → "Carmen Blue" ใน `160-pl-template.spec.ts`): ไม่มี spec ใดครอบคลุม price-list **void / restore / hard delete เฉพาะ admin**, แท็บ **Current / Expired / All**, **Responses / window badge** บนลิสต์ RFQ, ฟิลด์ **Rating / Tax ID / Branch No. / AP account** ของ vendor, vendor **comments** และ **Print**, **จำนวนผู้ถือ** ของ Certification, การกรอกราคาก่อนภาษี หรือตัวสลับภาษาและ Row-ID Excel import ของ portal `159-pl.spec.ts` TC-PL-900007 (Delete) ยังมองหา row action *Delete* พร้อมการจัดการ `.catch` แบบ best-effort แต่ row action ของลิสต์ตอนนี้คือ **Void** (Delete เฉพาะ admin บนหน้าเอกสาร) กรณีนั้นจึงไม่สามารถทดสอบการลบจริงได้อีก
 
 ## 1. ภาพรวม
 
@@ -51,7 +52,7 @@ Scenario ที่อธิบาย high-value approval เฉพาะ Manager
 
 มี Playwright spec จริงสำหรับสี่ในห้าหน้าจอ (ดู coverage note ด้านบนสำหรับจำนวน):
 
-- `../carmen-frontend-e2e/tests/150-vendor.spec.ts` — CRUD เต็ม, การนำทาง tab (address/contact/info), validation (required field, max-length, duplicate code) และ coverage admin-BU สำหรับหน้าจอ **Vendor**; ยังไม่มีอะไรสำหรับ section certificates หรือ `tax_no` / `branch_no` / `rating` ที่มีเฉพาะ backend
+- `../carmen-frontend-e2e/tests/150-vendor.spec.ts` — CRUD เต็ม, การนำทาง tab (address/contact/info), validation (required field, max-length, duplicate code) และ coverage admin-BU สำหรับหน้าจอ **Vendor**; ยังไม่มีอะไรสำหรับ section certificates หรือ `tax_no` / `branch_no` / `rating`
 - `../carmen-frontend-e2e/tests/043-certification.spec.ts` — master **Certification** (CRUD แบบ dialog) ใต้ `/vendor-management/certification`
 - `../carmen-frontend-e2e/tests/159-pl.spec.ts` — list/search/filter, create, view detail, edit และ Export สำหรับ **Price List** section Duplicate และ "Mark as Expired" ของมันใช้ assertion แบบ loose/best-effort (`.catch(() => {})`, `expect(true).toBe(true)`) และอ้างอิง action ที่ไม่พบใน list component จริง (row action ของ `use-pl-table.tsx` มีแค่ Edit + Delete บวกปุ่ม Export ฝั่ง client) — ถือว่าสองส่วนนี้เป็น test-plan scaffolding เชิงคาดหวัง ไม่ใช่ feature ที่ยืนยันแล้ว
 - `../carmen-frontend-e2e/tests/160-pl-template.spec.ts` — coverage ของ **Price List Template**
