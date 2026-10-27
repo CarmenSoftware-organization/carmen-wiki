@@ -2,7 +2,7 @@
 title: Report Template — Permissions
 description: Permission-key route guards, in-page Can gates, sidebar filter, and bootstrap exception for the report-templates surface. Updated for the Forbidden rename and the removal of the neighbouring print-template-mapping module.
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: '2026-05-19T18:30:00.000Z'
@@ -11,13 +11,13 @@ dateCreated: '2026-05-19T18:30:00.000Z'
 # Report Template — Permissions
 
 > **At a Glance**
-> **Gate:** the three report-templates routes carry `requiredPermission="report_template.read"` / `"report_template.create"` / `"report_template.update"` **and** `feature="report_templates"` on `PrivateRoute` (`src/App.tsx`, report-templates route block) &nbsp;·&nbsp; **In-page gates:** `<Can>` wraps Add Template (`report_template.create`, both the header button **and** the empty-state button — neither is ungated), row Edit (`report_template.update`), row Delete (`report_template.delete`), row/hero **View History** (`activity_log.read`, `clusterId={PLATFORM_SCOPED_RECORD}` — new cross-cutting Activity Trail feature), and the edit-page Edit toggle (`report_template.update`) — none pass a real `clusterId` &nbsp;·&nbsp; **`report_template.delete` is in-page only** — no route requires it &nbsp;·&nbsp; **Bootstrap exception:** `hasPermission` returns `true` unconditionally when `userCount !== null && userCount <= 1` &nbsp;·&nbsp; **On failure:** the `Forbidden` page (`src/pages/Forbidden.tsx`, renamed from an inline `AccessDenied`) renders in place inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Since 2026-07-23:** the sidebar/route permission key `report_template.read` is also shared with the Form Groups menu entry (`/report-form-groups`) — but its **feature key** is separate (`report_form_groups`, not `report_templates`); the sibling `print_template_mapping.*` keys this page used to reference no longer exist (module removed) &nbsp;·&nbsp; **Canonical model doc:** [rbac permissions](/en/platform/rbac/permissions)
+> **Gate:** the three report-templates routes carry `requiredPermission="report_template.read"` / `"report_template.create"` / `"report_template.update"` **and** `feature="report_templates"` on `PrivateRoute` (`src/App.tsx`, report-templates route block) &nbsp;·&nbsp; **In-page gates:** `<Can>` wraps Add Template (`report_template.create`, both the header button **and** the empty-state button — neither is ungated), row Edit (`report_template.update`), row Delete (`report_template.delete`), row/hero **View History** (`activity_log.read`, `clusterId={BACKSTAGE_SCOPED_RECORD}` — cross-cutting Activity Trail feature), the edit-page Edit toggle (`report_template.update`), and — new in 2026-10 — **Import** (`report_template.create`), **Backup all** / **Download backup** / the **XML versions** button (`report_template.read`) and version **Restore** (`report_template.update`) — none pass a real `clusterId` &nbsp;·&nbsp; **`report_template.delete` is in-page only** — no route requires it &nbsp;·&nbsp; **Bootstrap exception:** `hasPermission` returns `true` unconditionally when `userCount !== null && userCount <= 1` (`AuthContext.tsx:356`) &nbsp;·&nbsp; **On failure:** the `Forbidden` page (`src/pages/Forbidden.tsx`, renamed from an inline `AccessDenied`) renders in place inside `<Layout>` (sidebar stays visible) &nbsp;·&nbsp; **Since 2026-07-23:** the sidebar/route permission key `report_template.read` is also shared with the Form Groups menu entry (`/report-form-groups`) — but its **feature key** is separate (`report_form_groups`, not `report_templates`); the sibling `print_template_mapping.*` keys this page used to reference no longer exist (module removed) &nbsp;·&nbsp; **Canonical model doc:** [rbac permissions](/en/platform/rbac/permissions)
 
 ## 1. Overview
 
 Report Templates is a Carmen Blue-internal authoring surface for printable and exportable documents that ship as part of the platform's customisation contract. Templates are authored by Carmen Blue support engineers — not customers — using a structured XML/FastReport editor with database-source binding against tenant schemas. Because authoring a template requires platform-level operational knowledge and carries direct implications for what customers can print or export from their business units, access is governed by the platform's permission-based RBAC model ([rbac](/en/platform/rbac)): the backend catalog defines `report_template.read`, `report_template.create`, `report_template.update`, and `report_template.delete` keys; roles bundle those keys; and assignments bind roles to users.
 
-The gating mechanism has three layers, all resolving through the same `AuthContext.hasPermission` → `checkPermission` path (algorithm walkthrough in [rbac permissions](/en/platform/rbac/permissions) §4). At the route level, `PrivateRoute` receives a `requiredPermission` prop and renders the `Forbidden` page in place inside the normal `<Layout>` shell when the check fails (renamed from an inline `AccessDenied` component — see §5). At the navigation level, `platformNav.ts`'s `buildPlatformNav()` filters the sidebar so users without `report_template.read` never see the Report Templates entry. At the action level, `<Can permission="report_template.*">` wraps the mutating buttons on the report-templates screens (and, since 2026-07-23, the new Form Groups screen — §7). Unlike the cluster gates, **no report-template gate passes a `clusterId`** — report templates are tenant-global, so every check resolves through the broad branch with no per-cluster narrowing.
+The gating mechanism has three layers, all resolving through the same `AuthContext.hasPermission` → `checkPermission` path (algorithm walkthrough in [rbac permissions](/en/platform/rbac/permissions) §4). At the route level, `PrivateRoute` receives a `requiredPermission` prop and renders the `Forbidden` page in place inside the normal `<Layout>` shell when the check fails (renamed from an inline `AccessDenied` component — see §5). At the navigation level, `backstageNav.ts`'s `buildBackstageNav()` filters the sidebar so users without `report_template.read` never see the Report Templates entry. At the action level, `<Can permission="report_template.*">` wraps the mutating buttons on the report-templates screens (and, since 2026-07-23, the new Form Groups screen — §7). Unlike the cluster gates, **no report-template gate passes a `clusterId`** — report templates are tenant-global, so every check resolves through the broad branch with no per-cluster narrowing.
 
 Until 2026-06 these routes were instead gated by a hardcoded role-enum array (`platform_admin`, `support_manager`, `support_staff`) duplicated across the three route guards; that model has been fully removed from the SPA, the login gate, and the Prisma schema — the migration mapping is documented in [rbac](/en/platform/rbac) §5 and is not repeated here.
 
@@ -41,6 +41,8 @@ Four things to note:
 - **No key reuse.** The `report_template.*` keys gate only this module (now including Form Groups) — unlike the Business Units routes, which reuse the `cluster.*` keys (see [Clusters Permissions](/en/platform/clusters/permissions) §2).
 - **Removed 2026-07-24** (carmen-backstage commit `de11377`; its `print_template_mapping.*` keys were dropped from the permission-catalog seed the day before, 2026-07-23, carmen-turborepo-backend commit `c135bb21e`): the sibling print-template-mapping module and its keys no longer exist — that module was deleted outright, not merely disconnected from this one.
 
+Three **server-side** facts that the SPA gates above do not show (all in `apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts`, route `api-system/report-templates`): `GET .../:id/versions` and `GET .../:id/versions/:version_no` require `report_template.read` (lines 300, 352); `POST .../:id/versions/:version_no/restore` requires `report_template.update` (line 418); and `GET .../db-objects` — the Browse-in-BU probe's call — requires **`sql_workbench.read`** (line 130), a key from the SQL Workbench module, so a template author without that grant cannot use the probe. `GET .../forms` (line 185) carries only the `x-app-id` guard and no permission decorator.
+
 ## 3. Effective access matrix
 
 Read the table as "what a session holding exactly this grant can do on the report-templates surfaces". Grants combine additively; a **super-admin** session (`is_super_admin` flag) bypasses every row and can do everything. SPA gates are advisory — the backend's own permission enforcement is the real security boundary.
@@ -48,16 +50,16 @@ Read the table as "what a session holding exactly this grant can do on the repor
 | Grant held | `/report-templates` list | Add Template | Row Edit / edit page | Row Delete | Notes |
 |---|---|---|---|---|---|
 | None of `report_template.*` | `Forbidden`; sidebar entry hidden | — | — | — | Can still type the URL; route guard catches |
-| `report_template.read` | Full list, search, filters, CSV export | Hidden — both header and empty-state Add are `<Can permission="report_template.create">`-gated | Row Edit hidden; `/report-templates/:id/edit` route blocked | Hidden | Read-only persona; row-action menu renders empty (except a **View History** item when `activity_log.read` is also held) |
-| + `report_template.create` | — | Visible and functional | — | — | Create form is immediately editable once the route guard passes |
-| + `report_template.update` | — | — | Row Edit on every row; edit route opens; Edit toggle renders | — | Unlocks the full edit form incl. XML editors, BU scope chips, Browse-in-BU probe |
+| `report_template.read` | Full list, search, filters, CSV export | Hidden — both header and empty-state Add are `<Can permission="report_template.create">`-gated | Row Edit hidden; `/report-templates/:id/edit` route blocked | Hidden | Read-only persona; row-action menu offers only **Download backup** (plus **View History** when `activity_log.read` is also held); header shows **Backup all** and Export, no Import; the edit page is unreachable (route needs `.update`) |
+| + `report_template.create` | — | Visible and functional | — | — | Create form is immediately editable once the route guard passes; the list header also shows **Import** (create and skip only — **Overwrite** needs `.update`) |
+| + `report_template.update` | — | — | Row Edit on every row; edit route opens; Edit toggle renders | — | Unlocks the full edit form incl. XML editors, Dialog layout editor, BU scope chips, version **Restore**, Import **Overwrite** (the Browse-in-BU probe additionally needs `sql_workbench.read` server-side) |
 | + `report_template.delete` | — | — | — | Row Delete renders | In-page only; no route requires this key |
 
 Because no gate on this surface passes a `clusterId`, there is no scoped-grant row in this matrix — a cluster-scoped assignment behaves identically to a platform-scoped one here (§2). The bootstrap exception (§4) can override every column for any session while `userCount <= 1`.
 
 ## 4. Bootstrap exception
 
-`hasPermission()` in `AuthContext.tsx` (lines 210–214) carries the first-admin shortcut forward from the legacy model: when `userCount !== null && userCount <= 1`, the function returns `true` unconditionally — every route guard, sidebar filter, and `<Can>` gate passes, including all report-template gates. Full implementation detail — how `userCount` is populated, the login-gate interaction, and the resolution pseudo-code — is in [rbac permissions](/en/platform/rbac/permissions) §4. The same caveats apply to report-templates:
+`hasPermission()` in `AuthContext.tsx` (lines 354–357) carries the first-admin shortcut forward from the legacy model: when `userCount !== null && userCount <= 1`, the function returns `true` unconditionally — every route guard, sidebar filter, and `<Can>` gate passes, including all report-template gates. Full implementation detail — how `userCount` is populated, the login-gate interaction, and the resolution pseudo-code — is in [rbac permissions](/en/platform/rbac/permissions) §4. The same caveats apply to report-templates:
 
 - **During the API loading window** (`userCount === null`): the condition is `false`, so checks run strictly against the permission snapshot — the exception fails closed, not open. A session without `report_template.read` that visits `/report-templates` before the count fetch resolves sees `Forbidden`.
 - **Once `userCount > 1`**: the exception is dormant. The count refreshes only on mount and login — deleting users mid-session does not re-arm it until the next refresh.
@@ -65,9 +67,9 @@ Because no gate on this surface passes a `clusterId`, there is no scoped-grant r
 
 ## 5. Forbidden (renamed from AccessDenied)
 
-Same mechanism as [Clusters Permissions §5](/en/platform/clusters/permissions). `PrivateRoute` (`src/components/PrivateRoute.tsx`, 40 lines) implements two distinct rejection paths:
+Same mechanism as [Clusters Permissions §5](/en/platform/clusters/permissions). `PrivateRoute` (`src/components/PrivateRoute.tsx`, 110 lines) implements the rejection paths below (it also now redirects a session with **no Backstage authority at all** — one that holds only a cluster-admin scope — to `/cluster-admin`, and waits on a loading state while the permission snapshot or feature flags are still resolving, before any of them applies):
 
-**Auth-fail (no session):** if `isAuthenticated` is `false`, the component renders `<Navigate to="/login" replace />` — a hard redirect that replaces the current history entry. The user ends up on the login page with no visible error in the current view.
+**Auth-fail (no session):** if `isAuthenticated` is `false`, the component renders `<Navigate to={loginPathFor(<current path+search+hash>)} replace />` (a login path that remembers where to return) — a hard redirect that replaces the current history entry. The user ends up on the login page with no visible error in the current view.
 
 **Permission-fail (authenticated but missing the key):** if `requiredPermission` is set and `hasPermission(requiredPermission)` returns `false`, the component renders `<Forbidden />` **in place** — a dedicated page component (`src/pages/Forbidden.tsx`), no longer an `AccessDenied` component defined inline inside `PrivateRoute.tsx` as the last sync described. Rendering in place (rather than redirecting to `/403`) keeps the blocked URL in the address bar, so the page's own "Go Back" action doesn't bounce off the guard. Wrapped in `<Layout>` so the full sidebar and header remain visible, it shows a `ShieldX` icon, "403", the heading "Access Denied", the generic message "You don't have permission to access this page.", and now **two** actions — "Go Back" (context-aware, falls back to `/dashboard`) and "Go to Dashboard" — where the previous sync described only a single Back-to-Dashboard button. A direct `/403` route renders the same page. The message still does not quote the failing role — there is no single role value to display under the permission model.
 
@@ -75,7 +77,7 @@ Permission-fail users remain inside the SPA shell, can still use the sidebar to 
 
 ## 6. Sidebar filter
 
-**Stale citation fixed:** the sidebar nav array is defined in `../carmen-backstage/src/components/nav/platformNav.ts` (`ALL_PLATFORM_NAV_ITEMS`), not `Layout.tsx` — `Layout.tsx` defines no nav rows at all today; it only imports `buildPlatformNav()` from `platformNav.ts` and calls it. The Report Templates entry, in the "Content" group, is:
+**Stale citation fixed:** the sidebar nav array is defined in `../carmen-backstage/src/components/nav/backstageNav.ts` (`ALL_BACKSTAGE_NAV_ITEMS`), not `Layout.tsx` — `Layout.tsx` defines no nav rows at all today; it only imports `buildBackstageNav()` from `backstageNav.ts` and calls it. The Report Templates entry, in the "Content" group, is:
 
 ```
 { path: '/report-templates', labelKey: 'nav.reportTemplates', icon: FileText, permission: 'report_template.read', groupKey: 'navGroup.content', feature: 'report_templates' }
@@ -83,10 +85,10 @@ Permission-fail users remain inside the SPA shell, can still use the sidebar to 
 
 Immediately below it (added 2026-07-23): `{ path: '/report-form-groups', labelKey: 'nav.formGroups', icon: LayoutGrid, permission: 'report_template.read', groupKey: 'navGroup.content', feature: 'report_form_groups' }` — the Form Groups screen reuses the same **permission** key (`report_template.read`) but has its **own feature key** (`report_form_groups`), not `report_templates`. Both rows now carry `labelKey`/`groupKey` (i18n keys resolved by the sidebar), not literal `label`/`group` strings.
 
-`buildPlatformNav()` filters the full `ALL_PLATFORM_NAV_ITEMS` array before rendering:
+`buildBackstageNav()` filters the full `ALL_BACKSTAGE_NAV_ITEMS` array before rendering:
 
 ```
-return ALL_PLATFORM_NAV_ITEMS.filter(
+return ALL_BACKSTAGE_NAV_ITEMS.filter(
   (item) =>
     (!item.permission || opts.hasPermission(item.permission)) &&
     (!item.superAdminOnly || opts.isSuperAdmin) &&
@@ -100,35 +102,41 @@ return ALL_PLATFORM_NAV_ITEMS.filter(
 
 This is a **third** check beyond permission and `superAdminOnly` that the previous sync's quoted snippet did not have: a row whose `feature` flag resolves to `hide` is removed from the sidebar entirely (consistent with the route-level `NotFound` in §2); a row whose flag resolves to `inactive` stays in the sidebar but is marked `comingSoon` (rendered greyed out, matching the route-level `ComingSoon` page).
 
-The sidebar `permission` value (`report_template.read`) matches the `/report-templates` route guard exactly, so there is no divergence where a visible entry leads to `Forbidden`. **Removed 2026-07-24:** the previously-neighbouring **Print Mapping** entry (which filtered on its own `print_template_mapping.read` key) no longer exists — the module was deleted, not merely regrouped. Any future change to which key gates Report Templates must be applied in BOTH `src/App.tsx` (the route guard) AND `src/components/nav/platformNav.ts` (the sidebar entry's `permission`/`feature` fields); pulling one and not the other would expose the entry while blocking the route, or vice versa.
+The sidebar `permission` value (`report_template.read`) matches the `/report-templates` route guard exactly, so there is no divergence where a visible entry leads to `Forbidden`. **Removed 2026-07-24:** the previously-neighbouring **Print Mapping** entry (which filtered on its own `print_template_mapping.read` key) no longer exists — the module was deleted, not merely regrouped. Any future change to which key gates Report Templates must be applied in BOTH `src/App.tsx` (the route guard) AND `src/components/nav/backstageNav.ts` (the sidebar entry's `permission`/`feature` fields); pulling one and not the other would expose the entry while blocking the route, or vice versa.
 
 A user without `report_template.read` simply does not see the Report Templates or Form Groups entries. They can still reach `/report-templates` by typing the URL directly, but the route guard renders `Forbidden` before any template data is loaded.
 
 ## 7. Within the report-templates surface
 
-Unlike the legacy model, passing the route guard no longer unlocks every button — the mutating actions carry their own `<Can>` gates (added alongside the RBAC migration). None of them pass a real `clusterId` — the View History gates below pass the `PLATFORM_SCOPED_RECORD` sentinel instead, which is not a cluster:
+Unlike the legacy model, passing the route guard no longer unlocks every button — the mutating actions carry their own `<Can>` gates (added alongside the RBAC migration). None of them pass a real `clusterId` — the View History gates below pass the `BACKSTAGE_SCOPED_RECORD` sentinel instead, which is not a cluster:
 
 | Action | In-page gate |
 |---|---|
 | View template list (pagination, search, filters) | None — route key (`report_template.read`) suffices |
 | Export list as CSV | None — any `report_template.read` holder; disabled only while loading or empty |
 | Add Template (header button) | `<Can permission="report_template.create">` |
-| Add Template (empty-state button) | `<Can permission="report_template.create">` — **not ungated.** `ReportTemplateManagement.tsx`'s `addAction` wraps the empty-state button in the identical `<Can>` gate as the header button (`src/pages/ReportTemplateManagement.tsx:529-536`); a `report_template.read`-only session sees neither button |
+| Add Template (empty-state button) | `<Can permission="report_template.create">` — **not ungated.** `ReportTemplateManagement.tsx`'s `addAction` wraps the empty-state button in the identical `<Can>` gate as the header button (`ReportTemplateManagement.tsx`, the `addAction` prop of the empty state); a `report_template.read`-only session sees neither button |
 | Row Edit (list dropdown) | `<Can permission="report_template.update">` |
-| Row **View History** (list dropdown, new) | `<Can permission="activity_log.read" clusterId={PLATFORM_SCOPED_RECORD}>` — cross-cutting Activity Trail feature, same as [clusters](/en/platform/clusters)/[business-units](/en/platform/business-units)/[users](/en/platform/users)/[applications](/en/platform/applications) |
+| Row **Download backup** (list dropdown, new) | `<Can permission="report_template.read">` |
+| Header **Backup all** (new) | `<Can permission="report_template.read">` |
+| Selection bar **Download backup (N)** (new) | none beyond the page's read access — the bar only appears once rows are selected |
+| Header **Import** (new) | `<Can permission="report_template.create">`; per-row **Overwrite** choice and **Overwrite all** only when `hasPermission('report_template.update')` |
+| Edit-page **Download backup** and **XML versions** buttons (new) | `<Can permission="report_template.read">` |
+| Version **Restore** (new, inside the versions sheet) | `<Can permission="report_template.update">`, additionally disabled while the page is in edit mode |
+| Row **View History** (list dropdown) | `<Can permission="activity_log.read" clusterId={BACKSTAGE_SCOPED_RECORD}>` — cross-cutting Activity Trail feature, same as [clusters](/en/platform/clusters)/[business-units](/en/platform/business-units)/[users](/en/platform/users)/[applications](/en/platform/applications) |
 | Row Delete (list dropdown) | `<Can permission="report_template.delete">` |
 | Edit toggle (edit page header) | `<Can permission="report_template.update">` |
-| Hero **View History** (edit page header, new) | `<Can permission="activity_log.read" clusterId={PLATFORM_SCOPED_RECORD}>` — sits in the `PageHeader`'s own `actions` row alongside the Edit/Cancel button, shown whenever `!isNew && !loading` (independent of `editing` state) |
+| Hero **View History** (edit page header) | `<Can permission="activity_log.read" clusterId={BACKSTAGE_SCOPED_RECORD}>` — sits in the `PageHeader`'s own `actions` row alongside the Edit/Cancel button, shown once the record has loaded and `!isNew` (independent of `editing` state) |
 | Save / Cancel on edit form | None — unreachable without the gated Edit toggle |
-| XML editing + file upload (Dialog/Content tabs) | None — but `readOnly={!editing}`, so effectively behind the Edit toggle's `report_template.update` gate |
+| XML editing + file upload (Dialog/Content/Export tabs) and the Dialog layout editor | None — but `readOnly={!editing}` (the layout editor only mounts in edit mode), so effectively behind the Edit toggle's `report_template.update` gate |
 | Browse-in-BU probe (views/functions/procedures lookup) | None — rendered in edit mode only, so behind the Edit toggle |
 | Standard / Custom and Active / Inactive checkboxes | None — rendered in edit mode only, so behind the Edit toggle |
 | **Form Groups screen** (`/report-form-groups`) — set group default | `<Can>` not used here; the "Set default" action is available to any `report_template.update` holder (button visibility on the screen is driven by `hasPermission`, not a `<Can>` wrapper) — **added 2026-07-23**, gated by the same permission-key family as the rest of this module |
 | **Form Groups screen** — "New Form Template" button | Visible only when `report_template.create` is held |
 
-`PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (report template) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); a template created earlier shows an empty history, not a broken one.
+`BACKSTAGE_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (report template) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); a template created earlier shows an empty history, not a broken one.
 
-Call sites: list-page gates in `ReportTemplateManagement.tsx` (row Edit/Delete/View History `<Can>` wraps in the `actions` column definition, Add Template in the `PageHeader` actions); edit-page Edit toggle and View History in `ReportTemplateEdit.tsx` (header `actions`).
+Call sites: list-page gates in `ReportTemplateManagement.tsx` (row Edit/View History/Download backup/Delete `<Can>` wraps in the `actions` column definition; Import, Backup all and Add Template in the `PageHeader` actions); edit-page Edit toggle, View History, XML versions and Download backup in `ReportTemplateEdit.tsx` (header `actions`); Restore in `pages/reportTemplates/ReportTemplateVersionsSheet.tsx`; overwrite gating in `ReportTemplateImportDialog.tsx`.
 
 Tester-relevant consequences. First, a `report_template.read`-only session sees a fully read-only catalogue: the row-action dropdown renders but is empty (unless the session also holds `activity_log.read`, in which case only View History appears), and there is no Add Template escape hatch at all — both the header and empty-state buttons are gated identically, so a read-only session never reaches the create route by clicking anything in the UI (typing `/report-templates/new` directly still hits the route guard). Second, the `/report-templates/:id/edit` route opens for any `report_template.update` holder, but the page still starts in view mode — the in-page Edit toggle re-checks the same key, so route and toggle cannot disagree. Test plans should cover the per-key gates (§3) and the bootstrap exception (§4), not per-role differentiation — there are no role-enum personas anymore. **Removed 2026-07-23/24:** any test plan referencing `print_template_mapping.*` keys is testing a module that no longer exists.
 
@@ -138,12 +146,12 @@ Tester-relevant consequences. First, a `report_template.read`-only session sees 
 - `../carmen-backstage/src/App.tsx` — the report-templates + Form Groups routes with `requiredPermission` props.
 - `../carmen-backstage/src/context/AuthContext.tsx` — `hasPermission`, `userCount` state, login permission gate.
 - `../carmen-backstage/src/utils/permissions.ts` — pure `checkPermission` resolution (super-admin → platform keys → cluster keys).
-- `../carmen-backstage/src/components/PrivateRoute.tsx` — auth-fail redirect, permission-fail render (40 lines total).
+- `../carmen-backstage/src/components/PrivateRoute.tsx` — auth-fail redirect, no-authority redirect, permission-fail render (110 lines total).
 - `../carmen-backstage/src/pages/Forbidden.tsx` — the renamed 403 page.
 - `../carmen-backstage/src/components/Can.tsx` — the in-page gate component (`permission`, optional `clusterId`, optional `fallback`).
-- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` (Report Templates line 24, Form Groups line 25 — both `permission: 'report_template.read'`, distinct `feature` keys) and `buildPlatformNav()`, the filter function; `src/components/Layout.tsx` no longer defines nav rows, it only calls `buildPlatformNav()`.
-- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature (`PLATFORM_SCOPED_RECORD` is defined in `src/utils/permissions.ts`, above); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31.
-- `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` — the `<Can>` / `hasPermission` call sites listed in §7.
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — `ALL_BACKSTAGE_NAV_ITEMS` (Report Templates line 28, Form Groups line 29 — both `permission: 'report_template.read'`, distinct `feature` keys) and `buildBackstageNav()`, the filter function; `src/components/Layout.tsx` no longer defines nav rows, it only calls `buildBackstageNav()`.
+- `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature (`BACKSTAGE_SCOPED_RECORD` is defined in `src/utils/permissions.ts`, above); `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31.
+- `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` / `ReportTemplateEdit.tsx` / `ReportFormGroupManagement.tsx` / `pages/reportTemplates/{ReportTemplateVersionsSheet,ReportTemplateImportDialog}.tsx` — the `<Can>` / `hasPermission` call sites listed in §7; `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts` — the server-side keys (list, versions, restore, db-objects).
 
 **Cross-links:**
 - [rbac](/en/platform/rbac) — the permission model: catalog, roles, scoped assignments, super-admin flag, and the legacy-model migration table (§5)

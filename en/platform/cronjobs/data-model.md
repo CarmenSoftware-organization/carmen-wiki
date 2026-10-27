@@ -2,7 +2,7 @@
 title: Cronjobs — Data Model
 description: The full "CRONJOBS"."Cronjob" field table (owned by micro-cronjobs' own SQL migrations, not Prisma), every job type's config shape, scheduler mechanics, and exactly where a failed run becomes visible.
 published: true
-date: '2026-09-06T23:10:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, cronjobs, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -13,16 +13,17 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 > **Source of truth:** read these before updating this page.
 > - `../micro-cronjobs/internal/model/cronjob.go` — the Go struct and its GORM column mapping (read in full)
 > - `../micro-cronjobs/migrations/*.up.sql` — every DDL change to `"CRONJOBS"."Cronjob"`, in order (all nine files read)
-> - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go}` — the six dispatch targets (read in full)
+> - `../micro-cronjobs/internal/executor/{executor.go,report.go,notification.go,cleanup.go,dashboard.go,activity_rollup.go,activity_retention.go,gl_run_due.go,pos_simphony_pull.go}` — the eight dispatch targets (the last two are not creatable from the console, §3.7)
+> - `../micro-cronjobs/internal/model/skipped.go` — the `SkippedError` that makes a refused report run non-retryable (§4.3)
 > - `../micro-cronjobs/internal/scheduler/scheduler.go`, `cmd/server/main.go` — polling, retry, timezone (read in full)
 > - `../micro-cronjobs/internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go` — the REST surface and the row-level write path (read in full)
-> - `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/{platform_cronjobs.controller.ts,platform_cronjobs.service.ts}` — the only permission gate in front of the above (read in full)
+> - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/{backstage_cronjobs.controller.ts,backstage_cronjobs.service.ts}` — the only permission gate in front of the above (read in full)
 >
-> Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04), `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06), and `micro-cronjobs` HEAD `d17d8eb9bc3` (2026-09-04). Each hash confirmed with `git -C <repo> cat-file -e <hash>`.
+> Verified against `carmen-backstage` HEAD `8405788f`, `carmen-turborepo-backend` HEAD `c9d788829`, and `micro-cronjobs` HEAD `c5464da` (all origin/main, 2026-10-27).
 
 ## 1. Overview
 
-The seeded skeleton for this page pointed at `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` as the source for this table. **That is wrong, and worth stating plainly rather than quietly fixing:** grepping the platform's Prisma schema for `Cronjob`/`CRONJOBS` returns nothing. The table is not a Prisma model at all — it is owned entirely by `../micro-cronjobs`'s own hand-written SQL migrations, in its own Postgres schema (`"CRONJOBS"`), read and written through `gorm`, not Prisma. Every claim on this page traces back to that repository's migrations and Go source, not to the platform's shared schema.
+The seeded skeleton for this page pointed at `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` as the source for this table. **That is wrong, and worth stating plainly rather than quietly fixing:** grepping the platform's Prisma schema for `Cronjob`/`CRONJOBS` returns nothing. The table is not a Prisma model at all — it is owned entirely by `../micro-cronjobs`'s own hand-written SQL migrations, in its own Postgres schema (`"CRONJOBS"`), read and written through `gorm`, not Prisma. Every claim on this page traces back to that repository's migrations and Go source, not to the platform's shared schema.
 
 `"CRONJOBS"."Cronjob"` is also a **shared** table in a second sense: rows are written both by this module's own create/edit form and by other backend services acting on a business unit's behalf (most notably recurring report schedules — see the landing page §2). One row, one job; nothing here associates a job with the business unit it might logically belong to except whatever `bu_codes` happen to sit inside that row's own `job_config`.
 
@@ -67,7 +68,7 @@ The table has been renamed and restructured twice since its first migration, ent
 
 ## 3. Job Types and Their Configs
 
-`job_config` is a discriminated-by-`job_type` JSON blob with no shared shape across the six types (the frontend's own `CronJobConfig` union has almost no overlapping property names — `../carmen-backstage/src/types/index.ts:1691-1697`). Every field below is optional at the Go struct level; the executor is what actually enforces which ones are required at run time.
+`job_config` is a discriminated-by-`job_type` JSON blob with no shared shape across the types (the frontend's own `CronJobConfig` union has almost no overlapping property names — `../carmen-backstage/src/types/index.ts:1946-1953`; it models six of the eight, §3.7). Every field below is optional at the Go struct level; the executor is what actually enforces which ones are required at run time.
 
 ### 3.1 `report`
 
@@ -126,11 +127,20 @@ Full write path and enforcement point documented in [Activity Events — Data Mo
 
 Full write path and enforcement point documented in [Activity Events — Data Model](/en/platform/activity-events/data-model) §4.1; this page agrees with that account (landing page §3.2).
 
+### 3.7 `gl_run_due` and `pos_simphony_pull` (worker-only)
+
+| Field | Required at run time? | Notes |
+|---|---|---|
+| `bu_codes` | **Yes** — both executors return an error naming the missing key if empty | The job loops over the list sequentially, one gateway call per BU |
+| `user_id` | **Yes** — both return an error naming the missing key if empty | `gl_run_due`: actor stamped on auto-posted vouchers. `pos_simphony_pull`: actor recorded on created POS imports and recipient of the failure notification; must be a member of **every** BU listed |
+
+Both call back into the gateway (`GATEWAY_URL`) with the `x-internal-token` header (`INTERNAL_JOB_TOKEN`); a missing URL or token is a hard error. Failures are collected per BU and returned together (`errors.Join`), so one failing BU never stops the rest, but the job's `last_error` carries all of them. `gl_run_due` allows 120 s per BU and `pos_simphony_pull` 60 s, inside the row's own `timeout_seconds` (default 300), so size `timeout_seconds` to `len(bu_codes) × per-BU budget`. For `pos_simphony_pull` only an outcome of `failed` fails a BU; `unlicensed`, `not_configured` and "not due yet" are normal, and a 2xx response with no `outcome` is logged as a warning only. Source: `internal/executor/{gl_run_due.go,pos_simphony_pull.go}`, `internal/model/cronjob.go` (`GlRunDueJobConfig`, `PosSimphonyPullJobConfig`), `README.md` job-config table. The SPA's `CronJobType` union and the gateway's create DTO enum list only the first six types, so these two cannot be created or edited with a proper form from this console.
+
 ## 4. Scheduler Behavior
 
 ### 4.1 Polling and reconciliation
 
-`micro-cronjobs` holds every active job (`isActive = true AND "deletedAt" IS NULL`) in an in-memory `go-cron` scheduler (`gocron/v2`). A background loop reloads that set from the database once a minute (`pollInterval = 1 * time.Minute`, `scheduler.go`) and reconciles three ways:
+`micro-cronjobs` holds every active job (`isActive = true AND "deletedAt" IS NULL`) in an in-memory `go-cron` scheduler (`gocron/v2`). A background loop reloads that set from the database once a minute (`pollInterval = 1 * time.Minute`, `scheduler.go`; the schema-name env var read by `internal/config/config.go` is now `BACKSTAGE_SCHEMA`, was `PLATFORM_SCHEMA`) and reconciles three ways:
 
 - A job no longer in the active set is removed from the in-memory scheduler.
 - A job present but not yet scheduled is added.
@@ -140,11 +150,12 @@ Every create, update, delete, start, or stop call from the gateway also triggers
 
 ### 4.2 Timezone
 
-Resolved **once**, at process startup (`cmd/server/main.go:142-166`): the primary business unit's configured IANA timezone (`BusinessUnitRepo.PrimaryTimezone()`), falling back to `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) if that lookup errors or returns empty, and falling back to UTC if the resolved name fails to load. The chosen location becomes both `time.Local` for the whole process and the location every cron expression is interpreted in — including the seeded jobs in the landing page §3.2, whose "03:30"/"04:00" times are in this zone, normally Asia/Bangkok. [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 states those same two times but does not itself discuss timezone resolution — the mechanism above is sourced from `cmd/server/main.go` alone.
+Resolved **once**, at process startup (`cmd/server/main.go`: `resolveTimezone` called at line 87, defined from line 150, `PrimaryTimezone` lookup at line 155): the primary business unit's configured IANA timezone (`BusinessUnitRepo.PrimaryTimezone()`), falling back to `DEFAULT_TIMEZONE` (env, default `Asia/Bangkok`) if that lookup errors or returns empty, and falling back to UTC if the resolved name fails to load. The chosen location becomes both `time.Local` for the whole process and the location every cron expression is interpreted in — including the seeded jobs in the landing page §3.2, whose "03:30"/"04:00" times are in this zone, normally Asia/Bangkok. [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 states those same two times but does not itself discuss timezone resolution — the mechanism above is sourced from `cmd/server/main.go` alone.
 
 ### 4.3 Retries, timeouts, concurrency
 
 - **Timeout:** `timeout_seconds` (row field, default 300s) wraps the run in a `context.WithTimeout`, for both a scheduled fire (`addJob`'s task closure) and a manual "Run Now" (the handler's own detached goroutine uses the identical value).
+- **Skip, not retry:** if the executor error is a `model.SkippedError` (micro-report answered `403` with `code = REPORT_TEMPLATE_UNAVAILABLE` to the viewer-mint or async-render call), `addJob` logs `job skipped` at info level and does not call `retryJob`; `retryJob` itself also stops on a skip. The row still gets `last_error = "skipped: <reason>"` through `UpdateLastRun`, which increments `retry_count` for any non-nil error, so a skipped run is indistinguishable from a failed one on the list page except by its `skipped:` prefix (`internal/scheduler/scheduler.go:238-243, 295-299`, `internal/model/skipped.go`).
 - **Retry:** on failure, `retryJob()` retries synchronously — blocking the same goroutine, not queuing a new scheduled fire — up to `max_retries` times, waiting `attempt² × 10s` between attempts (10s, 40s, 90s, 160s, ...). Every attempt, success or failure, writes `last_run_at`/`last_error`/`retry_count` to the row as it happens, so a job's `retry_count` reflects the number of retry attempts made on its most recent run, reset to 0 the moment any attempt (initial or retry) succeeds.
 - **Concurrency:** `gocron.WithLimitConcurrentJobs(5, gocron.LimitModeWait)` caps the whole process at 5 simultaneously-running jobs; a sixth due job waits rather than running alongside the others.
 - **Manual execution** (`POST /:id/execute`): detaches from the inbound HTTP request's context specifically so that closing the browser tab or the request timing out does not cancel an in-flight report render or notification dispatch, then runs in a background goroutine and returns `{"message": "execution triggered"}` before the outcome is known.
@@ -185,12 +196,12 @@ The list page's summary band shows **"Active in Scheduler"** from `GET /api/cron
 |---|---|---|
 | A `cleanup` job is scheduled and runs | Logs its config, reports success, deletes nothing — the executor has no implementation | `cleanup.go` (full, `// TODO`) |
 | `dashboard_refresh` partially fails (some materialized views error) | Job still reports success; `last_error` stays `NULL`; per-MV errors are logged only, not surfaced in the console | `dashboard.go` (§5.4) |
-| An operator wants to change when a `report` job's recipients are notified relative to the run, on a day other than the run day | Cannot — the create/edit form has no field for `notify_day_offset`; every job authored through this console keeps the column's default (0, same-day) even though the backend and executor fully support 0–7 | `types/index.ts:1735-1746` (no field in `CronJobWriteInput`), `CronJobEdit.tsx` (no input rendered) |
-| A `cronjob.read`-only session opens `/cronjobs/new` | Sees and can fill every field of the create form; cannot submit — Save is not rendered, and `handleSave()` returns before calling the API | `CronJobEdit.tsx:171`, `App.tsx:531-551` |
-| The gateway responds `409 FOREIGN_OWNED_JOB` | Frontend still has a branch for this code, but the current gateway's `update()`/`delete()` run no ownership check and cannot produce it — dead code kept for backward compatibility with an older gateway build | `CronJobEdit.tsx` (comment), `platform_cronjobs.service.ts` ("No ownership check") |
-| An operator wants to see every currently-failing job across the whole table, not just the loaded page | No server-side filter exists for "has `last_error`"; the "With Errors" stat and the sortable columns do not include one | `CronJobManagement.tsx` (§5.2), `platform_cronjobs.service.ts` (`SORTABLE` set has no error column) |
+| An operator wants to change when a `report` job's recipients are notified relative to the run, on a day other than the run day | Cannot — the create/edit form has no field for `notify_day_offset`; every job authored through this console keeps the column's default (0, same-day) even though the backend and executor fully support 0–7 | `types/index.ts:1990-2010` (no field in `CronJobWriteInput`), `CronJobEdit.tsx` (no input rendered) |
+| A `cronjob.read`-only session opens `/cronjobs/new` | Sees and can fill every field of the create form; cannot submit — Save is not rendered, and `handleSave()` returns before calling the API | `CronJobEdit.tsx:171`, `App.tsx:577-600` |
+| The gateway responds `409 FOREIGN_OWNED_JOB` | Frontend still has a branch for this code, but the current gateway's `update()`/`delete()` run no ownership check and cannot produce it — dead code kept for backward compatibility with an older gateway build | `CronJobEdit.tsx` (comment), `backstage_cronjobs.service.ts` ("No ownership check") |
+| An operator wants to see every currently-failing job across the whole table, not just the loaded page | No server-side filter exists for "has `last_error`"; the "With Errors" stat and the sortable columns do not include one | `CronJobManagement.tsx` (§5.2), `backstage_cronjobs.service.ts` (`SORTABLE` set has no error column) |
 | A schedule is edited and saved | Applied to the in-memory scheduler on the next `ForceSync()` (typically near-immediate) or, failing that, the next poll (up to ~1 minute later) — no confirmation of either is returned to the browser | `scheduler.go` (`ForceSync`, `syncJobs`) |
-| A caller reaches `micro-cronjobs` directly, bypassing the gateway | Every operation succeeds — the service has no authentication of its own | `platform_cronjobs.controller.ts` (doc comment), `platform_cronjobs.service.ts` (doc comment) |
+| A caller reaches `micro-cronjobs` directly, bypassing the gateway | Every operation succeeds — the service has no authentication of its own | `backstage_cronjobs.controller.ts` (doc comment), `backstage_cronjobs.service.ts` (doc comment) |
 
 ## 7. Recommendations
 
@@ -202,14 +213,14 @@ The list page's summary band shows **"Active in Scheduler"** from `GET /api/cron
 
 ## 8. References
 
-- `../micro-cronjobs/internal/model/cronjob.go` (139 lines) — the Go struct, table name, and every job-type config struct.
-- `../micro-cronjobs/internal/executor/executor.go` (85 lines), `report.go` (422 lines), `notification.go` (102 lines), `cleanup.go` (40 lines), `dashboard.go` (98 lines), `activity_rollup.go` (80 lines), `activity_retention.go` (64 lines) — all read in full.
-- `../micro-cronjobs/internal/scheduler/scheduler.go` (345 lines) — polling, reconciliation, retry, `ForceSync`, `ExecuteNow`.
+- `../micro-cronjobs/internal/model/cronjob.go` (159 lines) — the Go struct, table name, and every job-type config struct.
+- `../micro-cronjobs/internal/executor/executor.go` (93 lines), `report.go` (433 lines), `notification.go` (102 lines), `cleanup.go` (40 lines), `dashboard.go` (98 lines), `activity_rollup.go` (80 lines), `activity_retention.go` (64 lines) — all read in full.
+- `../micro-cronjobs/internal/scheduler/scheduler.go` (357 lines) — polling, reconciliation, retry, `ForceSync`, `ExecuteNow`.
 - `../micro-cronjobs/internal/handler/cronjob_handler.go` (451 lines) — the REST surface (`list`, `status`, `getByID`, `create`, `update`, `delete`, `start`, `stop`, `execute`, `getBySource`, `updateBySource`, `deleteBySource`).
 - `../micro-cronjobs/internal/repository/cronjob_repo.go` (207 lines) — `UpdateLastRun`, optimistic-lock `Update`, `FindActive`/`FindBySource`.
-- `../micro-cronjobs/cmd/server/main.go` (166 lines) — wiring, timezone resolution.
+- `../micro-cronjobs/cmd/server/main.go` (174 lines) — wiring, timezone resolution.
 - `../micro-cronjobs/migrations/{20260405120000,20260406010000,20260406135707,20260610120000,20260730092930,20260730093731,20260824100000,20260902104533,20260903100000}_*.up.sql` — all nine migration files, read in full.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_cronjobs/platform_cronjobs.service.ts` — the ownership-check removal comments (§6, edge cases).
-- `../carmen-backstage/src/types/index.ts:1660-1746` — frontend type shapes, cross-checked against the Go struct field-for-field.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/backstage_cronjobs.service.ts` — the ownership-check removal comments (§6, edge cases).
+- `../carmen-backstage/src/types/index.ts:1915-2010` — frontend type shapes, cross-checked against the Go struct field-for-field.
 - [Activity Events — Data Model](/en/platform/activity-events/data-model) §4 — the `activity_rollup`/`activity_retention` account this page agrees with.
 - [Database Pools — Data Model](/en/platform/database-pools/data-model) §2 — the sibling module's name-uniqueness enforcement, contrasted in §2 above.
