@@ -2,7 +2,7 @@
 title: Broadcasts — UI Screens
 description: The three Broadcasts screens — BroadcastManagement (list/filters/CSV export), BroadcastCompose (target/expiry/preview), and BroadcastEdit (content lock).
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, broadcasts, ui
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -161,6 +161,6 @@ The same glassy `.unsaved-bar` as Compose appears only while editing, showing Ca
 - `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (the flat `created_by: { id, name }` shape broadcasts use, named directly in this file's own source comment as one of the endpoints without a nested `audit.*` shape).
 - `../carmen-backstage/src/utils/docVersion.ts` — `isVersionConflict`/`notifyVersionConflict`/`getDocVersion`.
 - `../carmen-backstage/src/components/KeyboardShortcuts.tsx`, `src/hooks/useUnsavedChanges.ts` — shortcuts and the navigation guard.
-- `../carmen-backstage/src/App.tsx` (three routes), `src/components/nav/platformNav.ts` ("Broadcasts" nav entry).
+- `../carmen-backstage/src/App.tsx` (three routes), `src/components/nav/backstageNav.ts` ("Broadcasts" nav entry).
 
 **Cross-links:** [Broadcasts landing](/en/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/en/platform/broadcasts/data-model) &nbsp;·&nbsp; [Permissions](/en/platform/broadcasts/permissions)

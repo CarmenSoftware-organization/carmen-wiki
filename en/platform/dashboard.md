@@ -2,7 +2,7 @@
 title: Dashboard
 description: The signed-in home hub (/dashboard) — a unified recent-activity stream across six domains plus a sticky per-domain active/total counts rail. No requiredPermission of its own; every domain silently drops out of both if the session can't read it.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Dashboard
 
 > **At a Glance**
-> **Screen:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **Access:** authenticated-only — the route carries no `requiredPermission` **and no `feature` key** (`platformNav.ts`'s only nav row with neither), same as [Profile](/en/platform/profile), so it is always visible/reachable regardless of grants or feature-flag state &nbsp;·&nbsp; **Sidebar:** top nav item, ungated, above every `groupKey` group (Organization, License Management, Content, Analytics, Scheduling, Platform, Database — see §4) &nbsp;·&nbsp; **Content:** a merged recent-activity stream over 6 domains + a sticky active/total counts rail &nbsp;·&nbsp; **Reached from:** post-login redirect (from [Landing](/en/platform/landing) or Login), the sidebar brand mark, or the "Dashboard" nav item itself — though a membership-only cluster admin who lands here is immediately bounced onward to `/cluster-admin` (§5)
+> **Screen:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **Access:** authenticated-only — the route carries no `requiredPermission` **and no `feature` key** (`backstageNav.ts`'s only nav row with neither), same as [Profile](/en/platform/profile), so it is always visible/reachable regardless of grants or feature-flag state &nbsp;·&nbsp; **Sidebar:** top nav item, ungated, above every `groupKey` group (Organization, License Management, Content, Analytics, Scheduling, Platform, Database — see §4) &nbsp;·&nbsp; **Content:** a merged recent-activity stream over 6 domains + a sticky active/total counts rail &nbsp;·&nbsp; **Reached from:** post-login redirect (from [Landing](/en/platform/landing) or Login), the sidebar brand mark, or the "Dashboard" nav item itself — though a membership-only cluster admin who lands here is immediately bounced onward to `/cluster-admin` (§5)
 
 ![Dashboard screen](/screenshots/platform/dashboard/index.png)
 
@@ -33,7 +33,7 @@ The same six domains (in the same order) each contribute an **active** count and
 
 ## 4. What's Not on the Dashboard
 
-`ACTIVITY_SOURCES` (the six domains listed in §2) has not grown since the module was last built — every other row in the sidebar's live navigation list, `ALL_PLATFORM_NAV_ITEMS` in `platformNav.ts`, is absent from both panels. That list has grown substantially since this page's own last sync (many of the rows below are modules added after 2026-07-29), so the gap is wider than a first read of the page suggests:
+`ACTIVITY_SOURCES` (the six domains listed in §2) has not grown since the module was last built — every other row in the sidebar's live navigation list, `ALL_BACKSTAGE_NAV_ITEMS` in `backstageNav.ts`, is absent from both panels. That list has grown substantially since this page's own last sync (many of the rows below are modules added after 2026-07-29), so the gap is wider than a first read of the page suggests:
 
 | `groupKey` | Sidebar items not on the Dashboard |
 |---|---|
@@ -42,16 +42,16 @@ The same six domains (in the same order) each contribute an **active** count and
 | `navGroup.content` | Report Form Groups, Broadcasts (Report Templates and News, the group's other two rows, *are* covered) |
 | `navGroup.analytics` | Usage Analytics, Activity Events — the whole group |
 | `navGroup.scheduling` | Cronjobs — the whole group |
-| `navGroup.platform` | Platform Config, Email Settings, Platform Roles, User Platform, Super Admins, Feature Flags (Applications, the group's other row, *is* covered) |
+| `navGroup.backstage` | Platform Config, Email Settings, Platform Roles, User Platform, Super Admins, Feature Flags (Applications, the group's other row, *is* covered) |
 | `navGroup.database` | Platform Migrations, SQL Workbench, Database Pools — the whole group |
 
-Also outside the Dashboard's reach entirely: the **cluster-admin** persona (`/cluster-admin/...`), which is not part of `ALL_PLATFORM_NAV_ITEMS` at all and has no dashboard-equivalent landing page of its own.
+Also outside the Dashboard's reach entirely: the **cluster-admin** persona (`/cluster-admin/...`), which is not part of `ALL_BACKSTAGE_NAV_ITEMS` at all and has no dashboard-equivalent landing page of its own.
 
 Broadcasts is worth a specific correction: this page previously said it "has no list endpoint at all," which was true when Broadcasts was a fire-and-forget compose-only screen, but is no longer true — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) has existed since the 2026-08-10/11 notification redesign that gave Broadcasts its own admin list/edit surface (see [Broadcasts](/en/platform/broadcasts)). Dashboard's `ACTIVITY_SOURCES` simply has not been updated to add it as a seventh domain — a real gap now, not an architectural impossibility. Report Form Groups was always a view over the Report Templates resource, not a domain of its own, so its absence is by design rather than a gap. None of these rows' activity or counts appear anywhere on this page — a change to a role, a super-admin grant, a tenant migration, a cronjob, or a form-group default will not surface in the Activity Stream or the Counts Rail no matter how recent.
 
 ## 5. Roles and Personas
 
-The `/dashboard` route is wrapped in a plain `<PrivateRoute>` with no `requiredPermission` and no `feature` prop — the same bare wrapping [Profile](/en/platform/profile)'s platform-side `/profile` route gets. "Authentication is the only gate" is not the whole story, though: `PrivateRoute` (`src/components/PrivateRoute.tsx`) carries a platform-authority/cluster-admin resolution branch that runs for every route it guards, gated or not. Once `effectivePermissions` has resolved, a session that lacks platform authority is not rendered here at all — if it holds cluster-admin scope for at least one cluster (`hasClusterAdminScope`) it is redirected to `/cluster-admin` instead (`PrivateRoute.tsx:72-73`); a session with neither platform authority nor cluster-admin scope falls through and still renders the page, a deliberate exception so a fresh install's first (bootstrap) administrator is not locked out of `/dashboard` while their own super-admin-count check is still in flight. In other words: reaching `/dashboard` at all already implies platform authority (or that narrow bootstrap window) — a membership-only cluster admin never sees this page, redirected away by the guard itself rather than by anything the Dashboard component checks. There is no `<Can>` gate anywhere inside the page. Beyond that guard, access to each panel's content is indirect: each of the six underlying `getAll` calls still passes through that domain's own backend permission check, so a session lacking (for example) `report_template.read` will have its Report Templates fetch fail at the API and that domain will simply be missing from both panels (§2/§3) — the Dashboard does not itself check `hasPermission` for any domain, it inherits whatever the domain's own list endpoint enforces, one failed request at a time.
+The `/dashboard` route is wrapped in a plain `<PrivateRoute>` with no `requiredPermission` and no `feature` prop — the same bare wrapping [Profile](/en/platform/profile)'s platform-side `/profile` route gets. "Authentication is the only gate" is not the whole story, though: `PrivateRoute` (`src/components/PrivateRoute.tsx`) carries a platform-authority/cluster-admin resolution branch that runs for every route it guards, gated or not. Once `effectivePermissions` has resolved, a session that lacks platform authority is not rendered here at all — if it holds cluster-admin scope for at least one cluster (`hasClusterAdminScope`) it is redirected to `/cluster-admin` instead (`PrivateRoute.tsx:74-75`); a session with neither platform authority nor cluster-admin scope falls through and still renders the page, a deliberate exception so a fresh install's first (bootstrap) administrator is not locked out of `/dashboard` while their own super-admin-count check is still in flight. In other words: reaching `/dashboard` at all already implies platform authority (or that narrow bootstrap window) — a membership-only cluster admin never sees this page, redirected away by the guard itself rather than by anything the Dashboard component checks. There is no `<Can>` gate anywhere inside the page. Beyond that guard, access to each panel's content is indirect: each of the six underlying `getAll` calls still passes through that domain's own backend permission check, so a session lacking (for example) `report_template.read` will have its Report Templates fetch fail at the API and that domain will simply be missing from both panels (§2/§3) — the Dashboard does not itself check `hasPermission` for any domain, it inherits whatever the domain's own list endpoint enforces, one failed request at a time.
 
 ## 6. Related Modules
 
@@ -66,9 +66,9 @@ The `/dashboard` route is wrapped in a plain `<PrivateRoute>` with no `requiredP
 - `../carmen-backstage/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (the six domains, in display order), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`.
 - `../carmen-backstage/src/pages/dashboard/ActivityStream.tsx` — filter chips, day grouping, timeline rendering, loading/error/empty states.
 - `../carmen-backstage/src/pages/dashboard/CountsRail.tsx` — the Estate total and per-domain active/total rows.
-- `../carmen-backstage/src/App.tsx:103-109` — the bare `<PrivateRoute>` (no `requiredPermission`, no `feature`) on `/dashboard`.
+- `../carmen-backstage/src/App.tsx:108-114` — the bare `<PrivateRoute>` (no `requiredPermission`, no `feature`) on `/dashboard`.
 - `../carmen-backstage/src/components/PrivateRoute.tsx:66-84` — the platform-authority/cluster-admin resolution branch described in §5 (`effectivePermissions`, `hasClusterAdminScope`, the redirect to `/cluster-admin`, and the bootstrap-admin fall-through).
-- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list §4 is compared against; the ungated, feature-less `/dashboard` row sits outside every `groupKey` group. `Layout.tsx` itself no longer defines nav rows — it only calls `buildPlatformNav()` (`Layout.tsx:107`) and computes the brand-mark's destination (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — so the brand mark's "reached from anywhere" framing in §1 holds only for a session with platform authority).
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — `ALL_BACKSTAGE_NAV_ITEMS`, the live sidebar list §4 is compared against; the ungated, feature-less `/dashboard` row sits outside every `groupKey` group. `Layout.tsx` itself no longer defines nav rows — it only calls `buildBackstageNav()` (`Layout.tsx:107`) and computes the brand-mark's destination (`Layout.tsx:111`, `hasBackstageAuthority ? '/dashboard' : '/cluster-admin'` — so the brand mark's "reached from anywhere" framing in §1 holds only for a session with platform authority).
 
 ## 8. Pages in This Module
 

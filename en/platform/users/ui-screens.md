@@ -2,7 +2,7 @@
 title: User — UI Screens
 description: UserManagement (list) and UserEdit (BU assignment matrix).
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -114,7 +114,7 @@ The create mode renders a single card titled **"Account details"** (`isNew ? "Ac
 
 **`firstname` and `lastname` are now required** — both carry the HTML `required` attribute and are checked by a client-side preflight (`validateOne`) before submit; this is new since the last sync, when all fields but `username`/`email` were optional. A footer hint below the Save/Cancel buttons in create mode reads "Next you will set a password and assign business units" — the account created here has no password and no BU assignment yet.
 
-There is no `password` field on the create form — credentials are set later via the Change Password admin-reset dialog or via Keycloak — and no access/role field: the legacy `platform_role` select was removed with the RBAC migration. Granting Platform admin access is a separate step on `/platform/user-platform` (see [Platform RBAC](/en/platform/rbac)).
+There is no `password` field on the create form — credentials are set later via the Change Password admin-reset dialog or via Keycloak — and no access/role field: the legacy `platform_role` select was removed with the RBAC migration. Granting Platform admin access is a separate step on `/backstage/user-backstage` (see [Platform RBAC](/en/platform/rbac)).
 
 Submit calls `POST /api-system/user`. On success, if the response includes an `id`, the page redirects to `/users/:id/edit` with `{ replace: true }` (so Back goes to the list, not the create form). If no `id` is returned, it redirects to `/users`.
 

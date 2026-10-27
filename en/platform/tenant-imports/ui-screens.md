@@ -2,7 +2,7 @@
 title: Tenant Imports — UI Screens
 description: TenantImportWizard's four-screen sequence — pick a business unit, upload Preconfig.xlsx, review the file check, then step through the import screens.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, tenant-imports, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -135,9 +135,9 @@ All paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turb
 - `src/pages/tenantImport/StepPanel.tsx:112,267,517` — the clear-existing checkbox's disabled condition, the typed-BU-code confirmation, and the verdict filter/caption logic (§5.2-§5.3).
 - `src/pages/tenantImport/CompanyProfilePanel.tsx` — the diff table, currency resolution states, and the BU-code mismatch banner (§7).
 - `src/services/preconfigImportService.ts` — `check`/`preview`/`importStream` request shapes.
-- `src/i18n/en.ts:3188-3283` (`tenantImport` namespace) — every quoted UI string on this page.
+- `src/i18n/en.ts:3527-3622` (`tenantImport` namespace) — every quoted UI string on this page.
 - `src/types/index.ts:20-24` (`ApiListResponse`) — the unread `total`/`paginate` fields cited in §2.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
 - `../carmen-turborepo-backend/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — row coercion/lookup/related-row validation invoked by Preview and Import (§5.2, §5.4).
 
 **Cross-links:** [Tenant Imports landing](/en/platform/tenant-imports) &nbsp;·&nbsp; [Business Units](/en/platform/business-units) &nbsp;·&nbsp; [Tenant Migrations](/en/platform/tenant-migrations)

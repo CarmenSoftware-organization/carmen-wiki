@@ -2,7 +2,7 @@
 title: Applications — Permissions
 description: The application.* gate matrix, how machine-client access (x-app-id + api_names) differs from user RBAC, and edge cases for testers.
 published: true
-date: 2026-09-06T23:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -26,7 +26,7 @@ All gates resolve through the single `hasPermission` resolver documented in [Pla
 | `/applications` | `PrivateRoute requiredPermission` + `feature` | `application.read` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
 | `/applications/new` | `PrivateRoute requiredPermission` + `feature` | `application.create` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
 | `/applications/:id/edit` | `PrivateRoute requiredPermission` + `feature` | `application.update` + `feature="applications"` | `../carmen-backstage/src/App.tsx` |
-| Sidebar "Applications" (Platform group) | nav filter | `application.read`, `feature: 'applications'` | `../carmen-backstage/src/components/nav/platformNav.ts` (line 40) — **not** `Layout.tsx`, which no longer defines nav rows |
+| Sidebar "Applications" (Platform group) | nav filter | `application.read`, `feature: 'applications'` | `../carmen-backstage/src/components/nav/backstageNav.ts` (line 40) — **not** `Layout.tsx`, which no longer defines nav rows |
 | Add Application (list header **and** empty state) | `<Can>` | `application.create` | `ApplicationManagement.tsx` |
 | Row Edit (actions dropdown) | `<Can>` | `application.update` | `ApplicationManagement.tsx` |
 | Row Delete (actions dropdown) | `<Can>` | `application.delete` | `ApplicationManagement.tsx` |
@@ -36,7 +36,7 @@ All gates resolve through the single `hasPermission` resolver documented in [Pla
 
 `PLATFORM_SCOPED_RECORD` is an alias of `UNRESOLVED_CLUSTER_ID` (`../carmen-backstage/src/utils/permissions.ts`): a sentinel `clusterId` that forces `checkPermission`'s scoped branch to evaluate false for every real cluster, leaving only a platform-wide `activity_log.read` grant as a path to `true` — the correct shape for a record type (application) that has no cluster of its own. Activity recording started 2026-08-31 (`AUDIT_RECORDING_STARTED_ON_PHASE_2`); an application created earlier shows an empty history, not a broken one.
 
-**Feature flag.** All three routes and the sidebar entry additionally require the `applications` feature flag, checked by `PrivateRoute` **after** the permission check. A session without the right `application.*` key still sees `<Forbidden>` regardless of the flag; a session that does have the key sees `NotFound` or a "Coming Soon" placeholder instead of the page if the flag itself is toggled to `hide`/`inactive` from the platform's [Feature Flags](/en/platform/feature-flags) screen (`/platform/features`).
+**Feature flag.** All three routes and the sidebar entry additionally require the `applications` feature flag, checked by `PrivateRoute` **after** the permission check. A session without the right `application.*` key still sees `<Forbidden>` regardless of the flag; a session that does have the key sees `NotFound` or a "Coming Soon" placeholder instead of the page if the flag itself is toggled to `hide`/`inactive` from the platform's [Feature Flags](/en/platform/feature-flags) screen (`/backstage/features`).
 
 Two asymmetries worth a tester's attention (a third, historical one — the empty-state gate gap — is resolved, see below):
 
@@ -56,9 +56,9 @@ The `resource.action` grammar is shared; almost everything else differs:
 | Aspect | User RBAC | Application grants |
 |---|---|---|
 | Caller identifies by | `Authorization: Bearer <token>` (session) | `x-app-id: <tb_application.id>` header |
-| Key vocabulary | `tb_platform_permission` rows (Postgres, seeded by backend migration); verb set `read`/`create`/`update`/… | `api_name`s harvested from `new AppIdGuard('...')` calls by `scripts/generate-app-api-catalog/run.ts` (generated file, no table); verbs follow controller methods (`findAll`, `findOne`, `uploadLogo`) — same grammar, different strings |
+| Key vocabulary | `tb_backstage_permission` rows (Postgres, seeded by backend migration); verb set `read`/`create`/`update`/… | `api_name`s harvested from `new AppIdGuard('...')` calls by `scripts/generate-app-api-catalog/run.ts` (generated file, no table); verbs follow controller methods (`findAll`, `findOne`, `uploadLogo`) — same grammar, different strings |
 | Grant storage | role→permission join rows plus scoped user→role assignment rows (five tables — see [Platform RBAC data-model](/en/platform/rbac/data-model)) | flat `tb_application_api` rows per application (no roles, no scopes) |
-| Wildcard | super-admin flag (`tb_platform_super_admin`) per user | `allow_all` boolean per application |
+| Wildcard | super-admin flag (`tb_backstage_super_admin`) per user | `allow_all` boolean per application |
 | Scope dimension | platform-wide or per-cluster (`cluster_id` on the assignment) | none — a grant applies wherever the endpoint does |
 | Write semantics (SPA) | role permissions sent as deltas `{ add, remove }` | full-set replace via `details.add[]` on every `PUT` |
 | Enforcement point | SPA gates (advisory) + backend session checks | backend `AppIdGuard` per endpoint; the SPA never evaluates `api_name`s |
@@ -92,5 +92,5 @@ Both headers travel together on every **authenticated** Platform SPA request —
 - **Prefer explicit lists over `allow_all` outside dev.** `allow_all` is the machine equivalent of super-admin — useful for bootstrap and internal tooling, but it makes the grant list meaningless and hides missing-grant defects, exactly like testing RBAC from a super-admin session.
 - ~~Close the empty-state gate gap at the source.~~ **Done** — the `EmptyState` CTA is now wrapped in `<Can permission="application.create">`, matching the header button; no further action needed here.
 
-**References:** all paths `../carmen-backstage` unless noted. `src/App.tsx` (the three `application.*` route guards, each also `feature="applications"`) · `src/components/nav/platformNav.ts` (sidebar entry, line 40 — not `Layout.tsx`, which defines no nav rows today) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state, row View History) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate, hero View History) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` (catalog generation).
+**References:** all paths `../carmen-backstage` unless noted. `src/App.tsx` (the three `application.*` route guards, each also `feature="applications"`) · `src/components/nav/backstageNav.ts` (sidebar entry, line 40 — not `Layout.tsx`, which defines no nav rows today) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state, row View History) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate, hero View History) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` (catalog generation).
 **Cross-links:** [Applications landing](/en/platform/applications) &nbsp;·&nbsp; [Data Model](/en/platform/applications/data-model) &nbsp;·&nbsp; [UI Screens](/en/platform/applications/ui-screens) &nbsp;·&nbsp; [Platform RBAC — Permissions](/en/platform/rbac/permissions)

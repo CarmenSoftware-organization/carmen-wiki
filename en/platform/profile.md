@@ -2,7 +2,7 @@
 title: Profile
 description: Self-service page where a signed-in user views and edits their own identity fields and changes their password. Mounted at two routes sharing one component.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: platform/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -34,7 +34,7 @@ What *does* differ is the chrome each `Shell` supplies:
 | | `/profile` (`Layout`) | `/cluster-admin/:clusterId/profile` (`ClusterAdminLayout`) |
 |---|---|---|
 | Route guard | Bare `<PrivateRoute>` — no `requiredPermission`, no `feature` (§4) | `<ClusterAdminRoute>` — no `feature` prop passed, so no feature gate; requires `isClusterAdminOf(clusterId)` (§4) |
-| Sidebar nav | The full platform nav (`buildPlatformNav()`), if the session has platform authority | The cluster-admin nav (`buildClusterAdminNav()`), scoped to that one cluster |
+| Sidebar nav | The full platform nav (`buildBackstageNav()`), if the session has platform authority | The cluster-admin nav (`buildClusterAdminNav()`), scoped to that one cluster |
 | Brand identity | "Carmen Blue Backstage" product brand | The administered cluster's own name/code/logo |
 | Brand-mark destination | `/dashboard` | `/cluster-admin/:clusterId/cluster` |
 | Header extra | none | A `ClusterSwitcher` for jumping to another administered cluster |
@@ -57,6 +57,14 @@ Profile is a self-service maintenance page; it has no external business driver b
 - **Inline field validation**: Alias Name and Telephone validate on blur via the shared `validateField` helper — Alias Name against `^[a-zA-Z0-9]{0,3}$` ("Alias must be 1-3 alphanumeric characters"), Telephone against `^\+?[\d\s\-()]{8,20}$` ("Invalid phone number format"). Errors render inline in edit mode only and clear as soon as the field changes; both checks pass silently on an empty value (neither field is required).
 - **Fetch-failure visibility**: A failed initial `GET /api/user/profile` now surfaces a visible error banner ("Failed to load profile: …") in addition to the existing dev-console log — previously a failed fetch left the page silently stuck with no data and no on-screen explanation.
 
+## 3.1 Related auth routes: `/login/callback` and `/403`
+
+These two routes sit next to Profile in `App.tsx` but are not Profile screens.
+
+- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** is where the gateway sends the browser after a Google sign-in. The Login page shows the Google button only when `GET /api/auth/google/status?app=backstage` answers `enabled: true` (`googleSignInService.ts`; the switch is the `google_sign_in.backstage` flag on [Platform Config](/en/platform/platform-config)), and the button navigates to `/api/auth/google/authorize` (`Login.tsx:182`). The callback reads `access_token`, `refresh_token` and `next` from the URL **fragment** (never sent to a server), immediately strips the fragment with `history.replaceState`, and passes the tokens to `loginWithTokens()`, which applies the same authority gate as password login. On success it navigates to `resolveNextPath(next)`; a missing token, or a failed gate, returns to `/login?error=<code>` (`google_failed`, or `access_denied_backstage` when the gate refuses the account). A `next` value is forwarded only if it is a safe same-site path. The page renders nothing (`return null`) and guards against React StrictMode's double effect with a ref.
+- **`/403` (`Forbidden`, `App.tsx:617-623`)** is a direct route wrapped in a bare `<PrivateRoute>` (signed-in users only); the same component is what route gates render in place when a permission check fails.
+- Token refresh lives in `services/tokenRefresh.ts` (`refreshAccessToken()` shares one in-flight promise across concurrent callers and uses the stored `refresh_token`).
+
 ## 4. Roles and Personas
 
 Used by the signed-in user themselves, from either of the two mounts (§1.1). The two routes are guarded differently, even though the page content is identical:
@@ -76,7 +84,7 @@ No `<Can>` gates appear within the `Profile` component itself at either mount, a
 
 ## 6. Reference Sources
 
-- Frontend: `../carmen-backstage/SITEMAP.md`, `../carmen-backstage/src/pages/Profile.tsx` (calls `GET` / `PATCH /api/user/profile` directly via the shared axios instance in `src/services/api.ts` — there is no dedicated profile service file; lines 53-57 hold the `clusterId`/`Shell` branch described in §1.1), `../carmen-backstage/src/App.tsx:563-568` (the bare `<PrivateRoute>` on `/profile`) and `:603-604` (`<ClusterAdminRoute><Profile /></ClusterAdminRoute>` on `/cluster-admin/:clusterId/profile`), `../carmen-backstage/src/components/ClusterAdminRoute.tsx` (the `isClusterAdminOf(clusterId)` membership check described in §4), `../carmen-backstage/src/components/ClusterAdminLayout.tsx` (the cluster-identity brand, `ClusterSwitcher` header slot, and `buildClusterAdminNav()` nav described in §1.1's comparison table), `../carmen-backstage/src/utils/validation.ts` (`validateField`, the Alias Name / Telephone regexes), `../carmen-backstage/src/components/PageHeader.tsx` and `EmptyState.tsx` (shared header and empty-state components adopted on this page), `../carmen-backstage/src/components/AuditMeta.tsx` and `src/utils/audit.ts` (`normalizeAudit`, feeding the member-since date in §3)
+- Frontend: `../carmen-backstage/SITEMAP.md`, `../carmen-backstage/src/pages/Profile.tsx` (calls `GET` / `PATCH /api/user/profile` directly via the shared axios instance in `src/services/api.ts` — there is no dedicated profile service file; lines 53-57 hold the `clusterId`/`Shell` branch described in §1.1), `../carmen-backstage/src/App.tsx:594-599` (the bare `<PrivateRoute>` on `/profile`) and `:603-604` (`<ClusterAdminRoute><Profile /></ClusterAdminRoute>` on `/cluster-admin/:clusterId/profile`), `../carmen-backstage/src/components/ClusterAdminRoute.tsx` (the `isClusterAdminOf(clusterId)` membership check described in §4), `../carmen-backstage/src/components/ClusterAdminLayout.tsx` (the cluster-identity brand, `ClusterSwitcher` header slot, and `buildClusterAdminNav()` nav described in §1.1's comparison table), `../carmen-backstage/src/utils/validation.ts` (`validateField`, the Alias Name / Telephone regexes), `../carmen-backstage/src/components/PageHeader.tsx` and `EmptyState.tsx` (shared header and empty-state components adopted on this page), `../carmen-backstage/src/components/AuditMeta.tsx` and `src/utils/audit.ts` (`normalizeAudit`, feeding the member-since date in §3)
 
 ## 7. Pages in This Module
 

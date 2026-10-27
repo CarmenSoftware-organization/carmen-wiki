@@ -2,7 +2,7 @@
 title: Landing
 description: The public marketing page at / — redirects an authenticated session straight to Dashboard, and shows a hardcoded module index that has drifted from the real sidebar.
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: platform/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -38,9 +38,9 @@ The index is a hardcoded array in `Landing.tsx` (`groups`), not derived from the
 
 ## 4. Confirmed Drift: Index vs. Real Sidebar
 
-Direct comparison of `Landing.tsx`'s `groups` array against `ALL_PLATFORM_NAV_ITEMS` — the live sidebar list in `src/components/nav/platformNav.ts` (the same source [Business Units](/en/platform/business-units), [Report Templates](/en/platform/report-templates), and every other module page in this book cites for its own sidebar entry; `Layout.tsx` itself no longer defines nav rows, it only calls `buildPlatformNav()`) — shows the marketing index has drifted much further out of sync than it had at this page's own last review. The real sidebar today has **seven** `groupKey` groups (Organization, License Management, Content, Analytics, Scheduling, Platform, Database, in that order) plus the ungated Dashboard row; Landing's hardcoded index still only knows about three of them:
+Direct comparison of `Landing.tsx`'s `groups` array against `ALL_BACKSTAGE_NAV_ITEMS` — the live sidebar list in `src/components/nav/backstageNav.ts` (the same source [Business Units](/en/platform/business-units), [Report Templates](/en/platform/report-templates), and every other module page in this book cites for its own sidebar entry; `Layout.tsx` itself no longer defines nav rows, it only calls `buildBackstageNav()`) — shows the marketing index has drifted much further out of sync than it had at this page's own last review. The real sidebar today has **seven** `groupKey` groups (Organization, License Management, Content, Analytics, Scheduling, Platform, Database, in that order) plus the ungated Dashboard row; Landing's hardcoded index still only knows about three of them:
 
-| Group | Landing's index (as shown) | Sidebar today (`platformNav.ts`) | Gap |
+| Group | Landing's index (as shown) | Sidebar today (`backstageNav.ts`) | Gap |
 |---|---|---|---|
 | Organization | Clusters, Business Units, Users, Tenant Migrations | + Tenant Imports | missing 1 of 5 |
 | License Management | *(group does not exist on Landing)* | Licenses, License Feature Groups, License Features | missing 3 of 3 — whole group absent |
@@ -54,7 +54,7 @@ In prose:
 
 - **Print Mapping is no longer listed** — the dead row this page flagged in its 2026-09-06 revision (the print-template-mapping module was deleted on 2026-07-24, commit `de11377`, but Landing's hardcoded copy kept the item) was removed from `Landing.tsx`'s Content group on 2026-09-07 (commit `344be13`, PR #283, which also dropped the `pages.landing.itemPrintMapping`/`descPrintMapping` i18n keys). Content now lists three items, all of which exist.
 - **Report Form Groups is still missing from Content** — it shipped the same week as the Print Mapping removal (2026-07-24) and sits in the sidebar's Content group today, but PR #283 only deleted the dead row; it did not add the missing one.
-- **The Platform group is missing four of its current seven rows**: User Platform (part of [Platform RBAC](/en/platform/rbac)), SQL Workbench, and two rows added since this page's own last review — Platform Config and Email Settings (both `navGroup.platform`) — plus Feature Flags, whose own nav entry carries a permission (`feature_flag.manage`) but deliberately no `feature` key of its own, per `platformNav.ts`'s comment: "a switch that could hide itself could never be restored from the UI." Feature Flags now has its own wiki module — [Feature Flags](/en/platform/feature-flags).
+- **The Platform group is missing four of its current seven rows**: User Platform (part of [Platform RBAC](/en/platform/rbac)), SQL Workbench, and two rows added since this page's own last review — Platform Config and Email Settings (both `navGroup.backstage`) — plus Feature Flags, whose own nav entry carries a permission (`feature_flag.manage`) but deliberately no `feature` key of its own, per `backstageNav.ts`'s comment: "a switch that could hide itself could never be restored from the UI." Feature Flags now has its own wiki module — [Feature Flags](/en/platform/feature-flags).
 - **Three entire groups the current sidebar organizes work into — License Management, Analytics, and Scheduling — have no representation on Landing at all.** These are all modules added after this page's last review: Licenses, License Feature Groups, and License Features (License Management); Usage Analytics and Activity Events (Analytics); Cronjobs (Scheduling).
 - **The Database group is also entirely absent**, including SQL Workbench (already flagged above), plus Platform Migrations and Database Pools, both added after this page's last review.
 
@@ -74,9 +74,9 @@ No authentication and no permission grant of any kind is required to view this p
 
 - `../carmen-backstage/src/pages/Landing.tsx` — the page: auth-redirect effect, loading state, hero, the hardcoded `groups` array, footer.
 - `../carmen-backstage/src/pages/Login.tsx` — the sibling public route with the identical already-authenticated redirect pattern.
-- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS`, the live sidebar list this page's index was compared against in §4. `Layout.tsx` no longer defines nav rows itself — it only calls `buildPlatformNav()`.
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — `ALL_BACKSTAGE_NAV_ITEMS`, the live sidebar list this page's index was compared against in §4. `Layout.tsx` no longer defines nav rows itself — it only calls `buildBackstageNav()`.
 - `../carmen-backstage/src/components/PrivateRoute.tsx` — the platform-authority/cluster-admin resolution branch quoted in §1, documented in full on [Dashboard](/en/platform/dashboard) §5.
-- `../carmen-backstage/src/App.tsx:99` — the unwrapped `<Route path="/" element={<Landing />} />` (no `<PrivateRoute>`).
+- `../carmen-backstage/src/App.tsx:103` — the unwrapped `<Route path="/" element={<Landing />} />` (no `<PrivateRoute>`).
 - `../carmen-backstage/src/components/VersionBadge.tsx` — the shared version-badge component, documented in full in [Changelog](/en/platform/changelog) §3.
 
 ## 8. Pages in This Module

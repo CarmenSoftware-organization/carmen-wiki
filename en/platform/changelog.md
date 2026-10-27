@@ -50,6 +50,7 @@ Categories use the full Keep a Changelog set, rendered in this order: **Added, C
 | `/changelog` page | Public route; lists the `unreleased` block (if non-empty) then each released version newest-first, filtered by the search box (§4) when a term is active |
 | Sidebar footer | `VersionBadge` shows `v{latest}` linking to `/changelog` |
 | Landing page | `VersionBadge` next to the build date |
+| Backend build version | `VersionStamp` (`components/VersionStamp.tsx`) shows the SPA version (linking to `/changelog` unless `linkChangelog` is false), the build SHA, and the backend's own version fetched by `versionService.get()` from the public `GET /version` at the API root (not under `/api` or `/api-system`), cached as one promise per session; a failed fetch returns `null` and the backend part silently disappears. It uses plain `fetch`, not the authenticated `api` instance, because it is called from pages without a session (login, landing) where the interceptor would redirect to `/login` in a loop. |
 
 The current version for the badge is derived from `versions[0].version` (fallback `0.0.0`). `/changelog` is registered as a **public path in the auth guard**, so it renders for signed-out visitors.
 

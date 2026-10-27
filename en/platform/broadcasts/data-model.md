@@ -2,7 +2,7 @@
 title: Broadcasts — Data Model
 description: The tb_broadcast_notification and tb_user_broadcast_action field tables after the notification redesign — new enums and a real optimistic-lock doc_version.
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T13:15:00.000Z
 > **Tables:** `tb_broadcast_notification` (one row per `system_all`/`bu` broadcast) + `tb_user_broadcast_action` (lazy per-user read state, unique per broadcast×user) &nbsp;·&nbsp; **Targeted fork:** `system_users` sends (`userIds`) skip both tables and fan out into `tb_notification` (one personal row per recipient) — invisible to the admin List/Edit screens &nbsp;·&nbsp; **Enums, not varchar:** `scope` (`enum_broadcast_scope`), `doc_type`/`event` (`enum_notification_doc_type`/`enum_notification_event`, shared with `tb_notification`) replaced the old `category`/`type` varchar columns &nbsp;·&nbsp; **No severity column:** the sender's Info/Warning/Critical/Maintenance/Other… label lives only in `metadata.severity`; `event` is hardcoded `info` on every broadcast &nbsp;·&nbsp; **`end_at` is mandatory** and drives the derived `status` (never a stored column) &nbsp;·&nbsp; **`doc_version` is a real optimistic lock** now, checked by both `PATCH` and `DELETE` &nbsp;·&nbsp; **Endpoints:** `POST /api/notifications/broadcasts/system` / `/bu` (send) plus `GET`/`GET :id`/`PATCH :id`/`DELETE :id` — `/api`, **not** `/api-system`
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -24,7 +24,7 @@ The module owns two tables, plus a fork into a third. `tb_broadcast_notification
 
 A **`system_users`** send (an explicit `userIds` list) bypasses both broadcast tables entirely and fans out into `tb_notification` — one row **per existing recipient id** (unknown ids silently dropped). This is not a legacy leftover being phased out: it is the module's only supported way to notify a hand-picked list of people, and it is also the one target mode the sender-side admin **List** and **Edit** screens cannot see, search, edit, or soft-delete afterward — `GET .../broadcasts` (§6) queries `tb_broadcast_notification` exclusively. The Compose screen's own subtitle says so: *"Broadcasts sent to specific users don't appear here — they're recorded as individual notifications."*
 
-The persistence path is backend-gateway (`api/notifications/broadcasts/*`, `KeycloakGuard` + `PlatformPermissionGuard`) → RPC → micro-notification. Two services split the work on the notification side: **`BroadcastService`** owns the create path (resolving `bu_code`, writing the row, the read-state upserts, and the recipient-resolution helpers the live push uses) and **`BroadcastAdminService`** owns the sender-side list/get/update/delete surface, including status derivation. **`NotificationWriteService`** is the single write entry point for `notifications.create`: it delegates to `BroadcastService` for any non-`users` audience and writes `tb_notification` rows directly, in one transaction, for a `users` audience.
+The persistence path is backend-gateway (`api/notifications/broadcasts/*`, `KeycloakGuard` + `BackstagePermissionGuard`) → RPC → micro-notification. Two services split the work on the notification side: **`BroadcastService`** owns the create path (resolving `bu_code`, writing the row, the read-state upserts, and the recipient-resolution helpers the live push uses) and **`BroadcastAdminService`** owns the sender-side list/get/update/delete surface, including status derivation. **`NotificationWriteService`** is the single write entry point for `notifications.create`: it delegates to `BroadcastService` for any non-`users` audience and writes `tb_notification` rows directly, in one transaction, for a `users` audience.
 
 ## 2. Entities
 
@@ -146,9 +146,9 @@ REST surface (backend-gateway), all under `/api/notifications/...` — **not** `
 No Bruno collection exists for the broadcast endpoints (verified still absent) — the Swagger annotations on the gateway controller are the closest contract document.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403), enums (lines 112–131).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — the enum introduction, backfill, and column drops.
-- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (create, recipient resolution), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (single write entry point), `schedule.worker.ts` (due-notification push, `tb_notification` only).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403), enums (lines 112–131).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — the enum introduction, backfill, and column drops.
+- `../micro-notification/src/notification/broadcast.service.ts` (create, recipient resolution), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (single write entry point), `schedule.worker.ts` (due-notification push, `tb_notification` only).
 
 **Secondary (gateway + consumer shape):**
 - `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — all six broadcast routes, payload builders, TCP forwarding.
