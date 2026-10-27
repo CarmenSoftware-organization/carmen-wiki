@@ -163,7 +163,7 @@ For FK cascade behaviour affecting these joins on hard delete, see §5.2 (and it
 - `../carmen-backstage/src/context/AuthContext.tsx` — `login()` effective-permissions gate and bootstrap exception (§4).
 
 **Schema source:**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (backend HEAD `3bae0679d`) — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 476); `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (backend HEAD `3bae0679d`) — FK `onDelete: NoAction` on `tb_cluster_user.user_id` and `tb_user_tb_business_unit.user_id`; `tb_user` model (line 582, as of backend HEAD `c9d788829`); `doc_version` added to `tb_user`/`tb_user_profile` on 2026-07-16.
 
 **Cross-links:**
 - [users](/en/platform/users) — module landing: overview, key concepts, navigation map.

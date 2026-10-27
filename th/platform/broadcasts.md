@@ -44,7 +44,7 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 - **`doc_version` เป็น optimistic lock จริงแล้ว** ไม่ใช่แค่ตกแต่ง schema เฉย ๆ ทั้ง endpoint update และ delete ต้องใช้มันและปฏิเสธค่าที่เก่าด้วย 409
 - **Content lock** — title, message และ metadata แก้ได้ก็ต่อเมื่อสถานะปัจจุบันของ row เป็น `scheduled` การเลื่อน schedule ของ broadcast ที่ออกอากาศไปแล้วกลับไปในอนาคต (การ "ถอน") จะเปิดให้แก้เนื้อหาได้อีกครั้งอย่างถูกต้อง (เป็นสองขั้นที่ตั้งใจ ไม่ใช่รูรั่ว)
 - **หนึ่ง row, read state แบบ lazy** — broadcast แบบ `system_all` หรือ `bu` ยังเป็น row ของ `tb_broadcast_notification` ตัวเดียว; ใครอ่านแล้วอยู่ใน `tb_user_broadcast_action` ที่สร้างแบบ lazy ตอน action แรก
-- **การส่งแบบระบุผู้รับยัง fork ออกไปเต็มตัว** การส่งแบบ `system_users` ที่มี `userIds` ไม่แตะ `tb_broadcast_notification` เลย — มัน fan out เป็น row ของ `tb_notification` หนึ่งตัวต่อผู้รับที่มีอยู่จริง เหมือนเดิม นี่ยังเป็น target mode เดียวที่ List/Edit มองไม่เห็น จัดการไม่ได้ หรือลบภายหลังไม่ได้เลย
+- **การส่งแบบระบุผู้รับยัง fork ออกไปเต็มตัว** การส่งแบบ `system_users` ที่มี `userIds` ไม่แตะ `tb_broadcast_notification` เลย — มัน fan out เป็น row ของ `tb_notification` หนึ่งตัวต่อ id ใน `userIds` เหมือนเดิม (ไม่มีการเช็คว่า id มีอยู่จริง — id ที่ไม่มี row ใน `tb_user` ละเมิด foreign key ของ `to_user_id` และทำให้การส่งทั้งก้อนล้มเหลว ดู [Data Model](/th/platform/broadcasts/data-model) §1) นี่ยังเป็น target mode เดียวที่ List/Edit มองไม่เห็น จัดการไม่ได้ หรือลบภายหลังไม่ได้เลย
 - **การลบใช้งานได้แล้ว** `DELETE /api/notifications/broadcasts/:id` ลบแบบ soft สำหรับ broadcast แบบ `system_all`/`bu` (`deleted_at`/`deleted_by_id`) ซึ่งแทนที่ผลการตรวจสอบเดิมที่บอกว่า "ไม่มี code path ใดเขียน `deleted_at`"
 
 ## 4. บทบาทและ Persona
