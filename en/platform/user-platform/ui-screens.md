@@ -61,7 +61,7 @@ Net effect: the "renders title and a non-empty user table" smoke test in `user-b
 
 All paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turborepo-backend` (HEAD `937cf5ac4`) or `../carmen-backstage-e2e` (HEAD `a8e3b31`).
 
-- `src/pages/UserBackstageManagement.tsx` (commit `fc690cb`) — list screen, columns, filters, export, revoke-all loop (lines 248-262).
+- `src/pages/UserBackstageManagement.tsx` (commit `fc690cb`) — list screen, columns, filters, export, revoke-all loop (lines 244-258).
 - `src/pages/userBackstageManagement/{BackstageAccessSummary,roleChips,GrantAccessDialog}.tsx` — summary band, `ScopeRail`/`RoleChips`, grant dialog.
 - `src/pages/UserBackstageEdit.tsx` (commit `f6e91c9`) — detail screen, header badges, error/warning banners.
 - `src/pages/userBackstageEdit/{AccessReachBand,RoleGrantList,MembershipCard,AddRoleSheet}.tsx` — reach band, grant list with provenance, membership card, add-role sheet.

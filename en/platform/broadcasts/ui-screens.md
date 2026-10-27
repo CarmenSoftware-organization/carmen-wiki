@@ -37,7 +37,7 @@ A `PageHeader` ("Broadcasts") with a subtitle plus an explicit note — *"Broadc
 
 - A debounced (400 ms) `SearchInput` matches title or message, case-insensitively, resetting to page 1 on each new term.
 - A **Filters** sheet (`BroadcastFilters`) offers: Status toggle-buttons (Active/Scheduled/Expired, multi-select), Scope toggle-buttons (System/Business Unit, multi-select), and a "Show deleted broadcasts" checkbox — plus a "Clear all" button once any filter is active. The header's Filters button carries a numeric badge counting active filter groups (status-any, scope-any, deleted).
-- **Seven `localStorage` keys** persist List-screen state across visits: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts`, `sort_broadcasts` (default `created_at:desc`).
+- **Seven `localStorage` keys** persist List-screen state across visits: `search_broadcasts`, `filters_broadcast_status` (JSON array), `filters_broadcast_scope` (JSON array), `filter_broadcast_deleted` (JSON boolean), `page_broadcasts`, `perpage_broadcasts` (restored only when it is a whole number 1–100, else the default of 20 — `readStoredPerpage()`), `sort_broadcasts` (default `created_at:desc`).
 
 ### 2.3 Columns
 

@@ -28,7 +28,7 @@ The persistence path is gateway → TCP → micro-cluster (`PRISMA_SYSTEM` clien
 
 ### 2.1 `tb_news`
 
-One announcement/article. Schema line 884.
+One announcement/article. Schema line 1141.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -120,7 +120,7 @@ via Prisma's `update({ where: { id, doc_version } })`. If another write changed 
 
 ## 4. Enums
 
-### `enum_news_status` (schema line 798)
+### `enum_news_status` (schema line 1019)
 
 | Value | Meaning |
 |---|---|
@@ -159,7 +159,7 @@ REST surface (backend-gateway). **Note the prefix: `/api/news`, not `/api-system
 | `POST /api/news` | Bearer + `x-app-id` (`news.create`) **+ platform permission `news.create`** (`BackstagePermissionGuard`, added 2026-08-20 — see §6 notes) | Create | `multipart/form-data` (binary `image` field; `business_unit_ids`/`tags` as JSON-encoded strings) **or** plain JSON without an image. Returns 201 `{ id, doc_version }`. Failed create rolls the uploaded file back |
 | `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) **+ platform permission `news.update`** (`BackstagePermissionGuard`, added 2026-08-20) | Update | Same multipart/JSON fork; **requires `doc_version`** (400 if missing, 409 on a stale value); a new image replaces and deletes the old file; JSON-only updates leave the image unchanged. Returns `{ id, doc_version }` only |
 | `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) **+ platform permission `news.delete`** (`BackstagePermissionGuard`, added 2026-08-20) | Soft delete | Sets `deleted_at`/`deleted_by_id`; best-effort deletes the MinIO file |
-| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query; published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), `published_at DESC` |
+| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query (`perpage` 1–100, default 20 — `public-news.controller.ts` answers `400 INVALID_PERPAGE` for anything else since `fe80fc14b`, 2026-09-30); published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), `published_at DESC` |
 | `GET /api/public/news/:news_id` | **None (anonymous)** | Public detail | 404 for draft/archived/deleted/future-dated/unknown alike |
 
 **Server-side permission enforcement is asymmetric, and deliberately so.** Before 2026-08-20, `news.controller.ts` carried zero `@RequireBackstagePermission` decorators at all — only `KeycloakGuard` (must be logged in) and `AppIdGuard` (the calling application must hold the key in its allowlist). A fix that same day added `BackstagePermissionGuard` + `@RequireBackstagePermission` to the three write routes only. The four `GET` routes were left as-is on purpose: the DEV database shows the `mobile-app` application (`allow_all: false`) holds `news.findAll`/`news.findOne` in its allowlist and serves tenant-level users who hold no platform role whatsoever — requiring `news.read` there would lock every mobile user out of news. Reading `/api/news` therefore stays authenticated-but-unauthorized-by-role; `news.read` remains purely a client-side "show the admin menu item" key. Unauthenticated public reads have their own separate, unguarded controller (`PublicNewsController` at `/api/public/news`).
@@ -167,7 +167,7 @@ REST surface (backend-gateway). **Note the prefix: `/api/news`, not `/api-system
 Multipart format details (create/update): field `image` carries the binary; the gateway's `validateImageUpload` enforces MIME `image/jpeg`/`png`/`webp`, ≤5 MB, and ≤2048×2048 px (parse failure → 400 `BAD_DIMENSIONS`). Text fields arrive as strings; `business_unit_ids` and `tags` are JSON-decoded.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_news` (line 1141), `enum_news_status` (line 1019).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public filters, the `updated_at` sort override.
 
 **Secondary (gateway + consumer shape):**

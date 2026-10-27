@@ -30,7 +30,7 @@ The persistence path is backend-gateway (`api/notifications/broadcasts/*`, `Keyc
 
 ### 2.1 `tb_broadcast_notification`
 
-One `system_all`/`bu` broadcast message. Schema line 369.
+One `system_all`/`bu` broadcast message. Schema line 475.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -60,7 +60,7 @@ One `system_all`/`bu` broadcast message. Schema line 369.
 
 ### 2.2 `tb_user_broadcast_action`
 
-Lazy per-user state for one `system_all`/`bu` broadcast. Schema line 403. **Unchanged** from the pre-redesign shape.
+Lazy per-user state for one `system_all`/`bu` broadcast. Schema line 509. **Unchanged** from the pre-redesign shape.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -79,7 +79,7 @@ Rows are written by exactly two paths in micro-notification: single mark-as-read
 
 ### 2.3 `tb_notification` (referenced — the targeted-send fork)
 
-The personal-notification table (schema line 332). **Reshaped by the same redesign**: `type` (varchar), `category` (varchar), and `is_sent` (boolean) were all **dropped**; `doc_type`/`event` (the same two enums broadcasts use) and a new `pushed_at` timestamp were added.
+The personal-notification table (schema line 438). **Reshaped by the same redesign**: `type` (varchar), `category` (varchar), and `is_sent` (boolean) were all **dropped**; `doc_type`/`event` (the same two enums broadcasts use) and a new `pushed_at` timestamp were added.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -146,7 +146,7 @@ REST surface (backend-gateway), all under `/api/notifications/...` — **not** `
 No Bruno collection exists for the broadcast endpoints (verified still absent) — the Swagger annotations on the gateway controller are the closest contract document.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (line 332), `tb_broadcast_notification` (line 369), `tb_user_broadcast_action` (line 403), enums (lines 112–131).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (line 438), `tb_broadcast_notification` (line 475), `tb_user_broadcast_action` (line 509), enums (lines 148–167).
 - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — the enum introduction, backfill, and column drops.
 - `../micro-notification/src/notification/broadcast.service.ts` (create, recipient resolution), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (single write entry point), `schedule.worker.ts` (due-notification push, `tb_notification` only).
 

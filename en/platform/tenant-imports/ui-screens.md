@@ -23,11 +23,11 @@ The four screens run strictly forward. Nothing on this page is reachable out of 
 
 **What it asks for:** nothing yet — a centered prompt ("Pick the business unit that will receive the data," `pages.tenantImport.pickBuHint`) and a "Select business unit" button that opens `BuSwitcher`, the same command-palette component [SQL Workbench](/en/platform/sql-workbench) uses: type to filter by code/name/cluster, arrow keys to navigate, Enter to pick. This is also the header's persistent "BU: `{code}`" button on every later screen — reopening it from anywhere resets the wizard (§6).
 
-**What it validates:** nothing — no file has been touched yet. In parallel with rendering this screen, the wizard fires two independent calls (`Promise.allSettled`, `TenantImportWizard.tsx`): `businessUnitService.getAll({ perpage: 200 })` to populate the picker, and `preconfigImportService.getSteps()` (`GET /steps`) to load the step catalog. Each failure is toasted independently and does not block the other — a session that can list business units but lacks `data_import.manage` still sees the picker populate, but with a catalog-load error banner waiting on the next screen (§3).
+**What it validates:** nothing — no file has been touched yet. In parallel with rendering this screen, the wizard fires two independent calls (`Promise.allSettled`, `TenantImportWizard.tsx`): `fetchAllBusinessUnits()` (pages through the business-unit list, 100 per page, up to 10 pages) to populate the picker, and `preconfigImportService.getSteps()` (`GET /steps`) to load the step catalog. Each failure is toasted independently and does not block the other — a session that can list business units but lacks `data_import.manage` still sees the picker populate, but with a catalog-load error banner waiting on the next screen (§3).
 
 **What happens on failure:** a failed BU list fetch toasts an error and leaves the picker empty; a failed catalog fetch toasts an error, sets `catalogError`, and is shown as a persistent banner once the wizard reaches `upload` (§3) — the wizard does not retry either automatically. The banner's own copy volunteers a likely cause: *"this usually means the platform permission for Preconfig imports has not been granted yet"* (`pages.tenantImport.catalogError`) — a useful first thing to check when a session sees a blank Upload screen.
 
-**Caveat, not a bug:** the BU fetch is capped at `perpage: 200` and the effect reads only `.data` from the response — the `total`/`paginate` fields `ApiListResponse` carries (`types/index.ts:20-24`) are never consulted. Unlike [Tenant Migrations](/en/platform/tenant-migrations) (§3.1 there), which explicitly warns when its own 1000-row fetch doesn't cover every business unit, this picker gives no on-screen signal if a cluster fleet exceeds 200 BUs — the list would simply stop at 200 with nothing said.
+**Caveat, not a bug:** the BU fetch is capped at 10 pages of 100 (`fetchAllBusinessUnits` → `fetchAllPages`, `maxPages: 10`) — 1,000 business units. When the cap is reached before `paginate.total` is satisfied the only trace is a dev-console log (`devLog`); this picker gives no on-screen signal, so a fleet above 1,000 BUs would simply stop there with nothing said. (Before 2026-09-30 the cap was a single `perpage: 200` request that read only `.data`.)
 
 **Revisit:** trivially — this is the starting screen, and reopening `BuSwitcher` from any later screen returns here only if the operator clears the selection; picking a (possibly different) BU always advances to `upload`.
 
@@ -38,7 +38,7 @@ The four screens run strictly forward. Nothing on this page is reachable out of 
 **What it validates, and where:**
 
 - **Client-side, before any request is sent:** the dropped/picked file's name must end in `.xlsx` (case-insensitive) — `WorkbookDropzone.tsx:26-29`. A wrong extension is rejected with a toast ("Only .xlsx workbooks are supported," `pages.tenantImport.onlyXlsx`) and never reaches the network.
-- **Server-side, independently, on every call that accepts a file:** `assertXlsx()` (`preconfig-imports.controller.ts:29-36`) re-checks the extension **and** the exact multipart MIME type (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`) **and** a 10 MB size cap (`MAX_FILE_SIZE_BYTES`, line 11; also enforced independently by Multer's own `FileInterceptor` limit at each route). A file that passes the browser's extension-only check can still be rejected by the server (e.g. a `.xlsx`-renamed file of a different type, or one over 10 MB) — this is the case a tester needs the API, not just the UI, to reproduce.
+- **Server-side, independently, on every call that accepts a file:** `assertXlsx()` (`preconfig-imports.controller.ts:33-34,53-61`) re-checks the extension **and** the exact multipart MIME type (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`) **and** a 10 MB size cap (`MAX_FILE_SIZE_BYTES`, line 33; also enforced independently by Multer's own `FileInterceptor` limit at each route). A file that passes the browser's extension-only check can still be rejected by the server (e.g. a `.xlsx`-renamed file of a different type, or one over 10 MB) — this is the case a tester needs the API, not just the UI, to reproduce.
 
 While the check request (`preconfigImportService.check()`) is in flight, the panel shows a "Checking workbook…" spinner in place of the dropzone (`busy` state).
 
@@ -135,9 +135,9 @@ All paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turb
 - `src/pages/tenantImport/StepPanel.tsx:112,267,517` — the clear-existing checkbox's disabled condition, the typed-BU-code confirmation, and the verdict filter/caption logic (§5.2-§5.3).
 - `src/pages/tenantImport/CompanyProfilePanel.tsx` — the diff table, currency resolution states, and the BU-code mismatch banner (§7).
 - `src/services/preconfigImportService.ts` — `check`/`preview`/`importStream` request shapes.
-- `src/i18n/en.ts:3527-3622` (`tenantImport` namespace) — every quoted UI string on this page.
-- `src/types/index.ts:20-24` (`ApiListResponse`) — the unread `total`/`paginate` fields cited in §2.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/preconfig-imports/preconfig-imports.controller.ts:11,29-36` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
+- `src/i18n/en.ts:3565-3669` (`tenantImport` namespace) — every quoted UI string on this page.
+- `src/utils/fetchAllBusinessUnits.ts`, `src/utils/fetchAllPages.ts` — the paged BU fetch and its 10-page cap cited in §2.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/preconfig-imports/preconfig-imports.controller.ts:33-34,53-61` — `MAX_FILE_SIZE_BYTES`, `assertXlsx()` (§3).
 - `../carmen-turborepo-backend/apps/micro-business/src/preconfig-import/preconfig-import.service.ts` — row coercion/lookup/related-row validation invoked by Preview and Import (§5.2, §5.4).
 
 **Cross-links:** [Tenant Imports landing](/en/platform/tenant-imports) &nbsp;·&nbsp; [Business Units](/en/platform/business-units) &nbsp;·&nbsp; [Tenant Migrations](/en/platform/tenant-migrations)

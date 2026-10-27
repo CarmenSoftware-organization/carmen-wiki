@@ -80,7 +80,7 @@ As in Applications, `news.delete` has **no SPA route that requires it** — dele
 ## 6. Reference Sources
 
 - `../carmen-backstage/src/App.tsx` — the three `news.*` route guards.
-- `../carmen-backstage/src/components/nav/backstageNav.ts` — "News" sidebar entry (line 27: Content group, Newspaper icon, `news.read`, `feature: 'news'`, `dividerBefore: true`). Not `Layout.tsx`, which defines no nav rows.
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — "News" sidebar entry (line 32: Content group, Newspaper icon, `news.read`, `feature: 'news'`, `dividerBefore: true`). Not `Layout.tsx`, which defines no nav rows.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/news.controller.ts` — `BackstagePermissionGuard`/`RequireBackstagePermission` on the three write routes (added 2026-08-20) and the `/summary` route (added 2026-08-24).
 - `../carmen-backstage/src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` — the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` (2026-08-31).
 - `../carmen-backstage/src/utils/permissions.ts` — `PLATFORM_SCOPED_RECORD`, the sentinel `clusterId` the View History gate uses.
@@ -89,7 +89,7 @@ As in Applications, `news.delete` has **no SPA route that requires it** — dele
 - `../carmen-backstage/src/services/newsService.ts` — REST client, multipart builder, `getTags`.
 - `../carmen-backstage/src/components/MarkdownEditor.tsx`, `ImageUpload.tsx`, `BusinessUnitMultiSelect.tsx`, `ui/chip-input.tsx`, `ReadOnlyField.tsx` — the module's form components.
 - `../carmen-backstage/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_news` (line 1141), `enum_news_status` (line 1019).
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (guards, multipart, `GET tags`), `news.service.ts` (file upload/rollback/cleanup), `news-image.helper.ts` (presigned `image_url`), `news-body.parser.ts`, `public-news.controller.ts` / `public-news.service.ts` (anonymous delivery).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — persistence: BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public visibility filters.
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — request/response contracts, including the `public/` pair and `GET-find-tags-master-data-news.bru`.

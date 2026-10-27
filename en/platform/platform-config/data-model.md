@@ -26,7 +26,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. Entity: `tb_backstage_config`
 
-Schema line 1462 (`../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1773-1788`).
+Schema line 1793 (`../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1793-1808`).
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -87,7 +87,7 @@ Every write — `PUT` or `PATCH`, either one — is validated and persisted by t
 - **`PUT` (`upsert`)** — the caller's payload is validated *as-is* against the write schema (defaults stripped, §3). Every field the schema knows about must be present, or `safeParse` fails and the whole call returns `COMMON_VALIDATION_FAILED`. No card in this module's UI calls this path (landing page §3.4).
 - **`PATCH` (`patch`)** — the caller's payload is checked field-by-field against the key's known field list first (`rejectBadPatchShape()`, lines 324-337): an empty object is rejected outright (it would otherwise silently create a full-default row for a key nobody had touched), and any field name the schema does not recognize is rejected by name, never dropped silently. The existing stored value is then read and run through `parseStored()` — not used as raw JSON — specifically so a row saved before a field existed is filled in with that field's default *before* the caller's partial payload is merged on top; only the merged, complete object is validated against the write schema and persisted.
 
-Both paths perform their **own** independent unknown-key check (`isBackstageConfigKey()`, micro-cluster) in addition to the gateway's `KEY_REGEX` (`^[a-zA-Z0-9_.-]+$`) path-segment check (`backstage_configs.controller.ts:37`) — a key that passes the regex but is not one of the ten registry entries (e.g. a typo, or a key retired from the registry) is still rejected, with the full list of supported keys echoed back in the error.
+Both paths perform their **own** independent unknown-key check (`isBackstageConfigKey()`, micro-cluster) in addition to the gateway's `KEY_REGEX` (`^[a-zA-Z0-9_.-]+$`) path-segment check (`backstage_configs.controller.ts:47`) — a key that passes the regex but is not one of the ten registry entries (e.g. a typo, or a key retired from the registry) is still rejected, with the full list of supported keys echoed back in the error.
 
 `user_id` is required on every write (`upsert`/`patch` both reject a missing one with `COMMON_VALIDATION_FAILED`) — every saved row's `created_by_id`/`updated_by_id` is always attributable.
 
@@ -114,7 +114,7 @@ Both paths perform their **own** independent unknown-key check (`isBackstageConf
 
 ## 8. References
 
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_backstage_config` (line 1462).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_backstage_config` (line 1793).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts` — `BACKSTAGE_CONFIG_REGISTRY`, every key's schema/default (§3), `toWriteSchema()` (§3, §5).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/backstage-config/backstage-config.service.ts` — `findAll`/`findOne`/`upsert`/`patch`/`writeValue`/`getInvitationConfig` (§2, §5).
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_configs/{backstage_configs.controller.ts,backstage_configs.service.ts}` — the gateway proxy, RBAC gates, `KEY_REGEX` (§5).

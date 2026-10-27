@@ -24,7 +24,7 @@ The page (`UsageAnalytics.tsx`, 251 lines, read in full) renders, top to bottom:
 4. Five **StatCards** (`events`, `clicks`, `page_views`, `sessions`, `users`).
 5. Below that, one of two mutually exclusive views: an **empty-state card** when the window has zero events, or a **daily area chart** plus two **Top List** cards (Top Pages, Top Elements).
 
-Every value on the page comes from one response shape, `AnalyticsOverview` (`src/types/index.ts:1510-1515`, under the file's own `// ==================== Usage Analytics (tb_activity_event) ====================` section header) — `summary`, `daily[]`, `top_pages[]`, `top_elements[]`. All four are computed by one backend call in one round trip; there is no per-widget endpoint.
+Every value on the page comes from one response shape, `AnalyticsOverview` (`src/types/index.ts:1526-1531`, under the file's own `// ==================== Usage Analytics (tb_activity_event) ====================` section header) — `summary`, `daily[]`, `top_pages[]`, `top_elements[]`. All four are computed by one backend call in one round trip; there is no per-widget endpoint.
 
 ## 2. Business Context
 
@@ -37,7 +37,7 @@ No prior conceptual documentation exists for this module. A search of `../carmen
 ### 3.1 The time window and filters
 
 - The backend requires `from`/`to` as ISO 8601 UTC and treats the window as **half-open**: `server_ts >= from AND server_ts < to` (`activity-event.query.ts`'s `buildWhere()`). The cutoff column is `server_ts` — the timestamp the platform database recorded on write — not `client_ts`, the timestamp the browser reported for when the event actually happened.
-- The window is capped at **90 days** (`MAX_RANGE_DAYS`, `analytics-range.ts`), enforced by `parseRange()` with a `400 Bad Request` past that span (`analytics-range.ts:16-32`). The frontend mirrors the same constant (`utils/analyticsRange.ts:14`, comment: "ต้องตรงกับ MAX_RANGE_DAYS ฝั่ง backend" / "must match the backend's MAX_RANGE_DAYS") purely to reject an over-wide custom range client-side before firing a request the server would 400 anyway.
+- The window is capped at **90 days** (`MAX_RANGE_DAYS`, `analytics-range.ts`), enforced by `parseRange()` with a `400 Bad Request` past that span (`analytics-range.ts:17-33`). The frontend mirrors the same constant (`utils/analyticsRange.ts:14`, comment: "ต้องตรงกับ MAX_RANGE_DAYS ฝั่ง backend" / "must match the backend's MAX_RANGE_DAYS") purely to reject an over-wide custom range client-side before firing a request the server would 400 anyway.
 - The default on load is the **last 7 days**, computed by `presetRange(7)` (`UsageAnalytics.tsx:30`). Preset boundaries are cut at **Thailand midnight**, not UTC midnight (`presetRange()`/`tzMidnightToUtc()`, `analyticsRange.ts:72-93`) — the file's own header comment states why (`analyticsRange.ts:1-7`): cutting at UTC midnight would show the first and last day in the chart as partial days, because daily bucketing on the backend also groups by Thailand date (§3.3).
 - Three further filters narrow — never widen — the same window: **Business Unit**, **Application**, and **Event type** (`click`/`page_view`). The BU and Application dropdowns load once on mount from `businessUnitService`/`applicationService`, each capped at `perpage: 100` (`useAnalyticsFilterOptions.ts:32-33`) — a fleet with more than 100 business units or 100 applications will not show every option in these two dropdowns; this is a structural cap in the hook, not a runtime failure, and was not checked against any live deployment's actual counts.
 - On the wire, the BU filter is sent as `filter_bu_code`, not `bu_code` — deliberately. `analyticsService.ts`'s own comment explains: `KeycloakGuard` (which wraps the whole controller) branches on the mere *presence* of a query parameter literally named `bu_code` and then requires the caller to be a member of that BU or a super-admin, throwing `401` otherwise — which would 401 every `support_manager` call that filters by BU, and 401 everyone (even a super-admin) whose typed code doesn't match a real BU. The backend controller repeats the same warning verbatim above its own parameter (`backstage-analytics.controller.ts`, comment above `filter_bu_code` on both routes): "อย่า 'จัดระเบียบ' กลับ" — "do not 'tidy this up' back to `bu_code`."
@@ -101,7 +101,7 @@ Top Elements is never clickable, for anyone: `TopList.tsx` only makes a row a `<
 
 ### 4.1 The two keys — what each grants, and which screen each opens
 
-The permission catalog states the distinction between the two `activity_event` actions directly (`seed.backstage-permission.data.ts:95-96`, `../carmen-turborepo-backend`):
+The permission catalog states the distinction between the two `activity_event` actions directly (`seed.backstage-permission.data.ts:249-258`, `../carmen-turborepo-backend`):
 
 | Key | Catalog description | Opens |
 | --- | --- | --- |
@@ -116,7 +116,7 @@ A caller can hold either key without the other — they are independent grants, 
 | Route (`PrivateRoute`) | `requiredPermission="activity_event.read"` `feature="usage_analytics"` | `requiredPermission="activity_event.detail"` `feature="activity_events"` |
 | Backend endpoint | `GET .../analytics/overview` — `@RequireBackstagePermission('activity_event.read')` | `GET .../analytics/records` — `@RequireBackstagePermission('activity_event.detail')` |
 
-Sources: `backstageNav.ts:35-38` (rows at 32-33, kept deliberately contiguous per the comment at 30-31: splitting them would render two separate "Analytics" sidebar headings); `App.tsx:475-489`; `backstage-analytics.controller.ts` (`@RequireBackstagePermission` on `overview()` and `events()`). Neither row carries `superAdminOnly`.
+Sources: `backstageNav.ts:35-38` (rows at 37-38, kept deliberately contiguous per the comment at 35-36: splitting them would render two separate "Analytics" sidebar headings); `App.tsx:521-536`; `backstage-analytics.controller.ts` (`@RequireBackstagePermission` on `overview()` and `events()`). Neither row carries `superAdminOnly`.
 
 `PrivateRoute.tsx` (read in full) checks permission **before** the feature flag: a session without the required key sees `<Forbidden />` regardless of the flag; only a session that already passed the permission check can then hit `hide` (→ `<NotFound />`) or `inactive` (→ `<ComingSoon />`) on the `usage_analytics` feature key (`src/constants/featureFlags.ts:68`, `groupKey: 'navGroup.analytics'`, `defaultState: 'active'`).
 
@@ -137,7 +137,7 @@ This drill-down is itself wrapped in `<Can permission="activity_event.detail">` 
 | `GET /api-system/backstage/analytics/overview` | `KeycloakGuard` (class-level) + `AppIdGuard('analytics.overview')` + `BackstagePermissionGuard` | `activity_event.read` |
 | `GET /api-system/backstage/analytics/records` | `KeycloakGuard` (class-level) + `AppIdGuard('analytics.events')` + `BackstagePermissionGuard` | `activity_event.detail` |
 
-`AppIdGuard` (`apps/backend-gateway/src/common/guard/app-id.guard.ts`, read in full) checks only that the `x-app-id` request header is a UUID present in an in-memory allowlist for the given `api_name` (`appAllowlistStore.isAllowed(appId, this.api_name)`) — it never reads `request.user` or any permission; it answers "is this application build allowed to call this API," not "is this user allowed." The frontend's shared `api.ts` client (read directly, lines 1-23) attaches `x-app-id` from a build-time env var to every request (line 8) and a `Bearer` token from `localStorage` on top of it via a request interceptor (line 23) — this is a genuine per-user session call layered under an app-identity check, not a service-to-service call `AppIdGuard` alone would be gating.
+`AppIdGuard` (`apps/backend-gateway/src/common/guard/app-id.guard.ts`, read in full) checks only that the `x-app-id` request header is a UUID present in an in-memory allowlist for the given `api_name` (`appAllowlistStore.isAllowed(appId, this.api_name)`) — it never reads `request.user` or any permission; it answers "is this application build allowed to call this API," not "is this user allowed." The frontend's shared `api.ts` client (read directly, lines 1-30) attaches `x-app-id` from a build-time env var to every request (line 10) and a `Bearer` token from `localStorage` on top of it via a request interceptor (lines 22-26) — this is a genuine per-user session call layered under an app-identity check, not a service-to-service call `AppIdGuard` alone would be gating.
 
 `BackstagePermissionGuard.canActivate()` (`auth/guards/backstage-permission.guard.ts`, read in full) is documented in its own header comment as a **"coarse-grained platform RBAC gate"**: it passes if the required key exists in the caller's platform-wide scope **or in any cluster scope at all** (line 13), attaches the resolved `EffectiveBackstagePermissions` object onto the request either way, and short-circuits to `true` for `is_super_admin === true` before checking the key. Both analytics routes are correctly decorated with `@RequireBackstagePermission`, so the guard's fail-open branch for an *undecorated* route (which would otherwise log a warning and pass every caller by default, per the same file) is not in play here.
 
@@ -151,14 +151,14 @@ The service's own comment on `getOverview()` states this scoping applies to **al
 
 ### 4.4 Role-bundle assignment
 
-The permission catalog seeds exactly two actions on the `activity_event` resource — `read` and `detail` (`seed.backstage-permission.data.ts:95-96`) — and its own comment distinguishes the resource from `activity_log` (`tb_activity`, the separate change-history/"View History" audit trail used elsewhere in the product): "คนละตารางกับ activity_event ข้างบนซึ่งเป็น UI telemetry" — "a different table from `activity_event` above, which is UI telemetry" (line 97). The two are unrelated mechanisms that happen to share the word "activity"; a reader should not assume the audit-trail permission (`activity_log.read`) has any bearing on this page.
+The permission catalog seeds exactly two actions on the `activity_event` resource — `read` and `detail` (`seed.backstage-permission.data.ts:249-258`) — and its own comment distinguishes the resource from `activity_log` (`tb_activity`, the separate change-history/"View History" audit trail used elsewhere in the product): "คนละตารางกับ activity_event ข้างบนซึ่งเป็น UI telemetry" — "a different table from `activity_event` above, which is UI telemetry" (`seed.backstage-permission.data.ts:259`). The two are unrelated mechanisms that happen to share the word "activity"; a reader should not assume the audit-trail permission (`activity_log.read`) has any bearing on this page.
 
-Of the four seeded platform role bundles (`seed.backstage-role-permission.data.ts:11-52`, read in full):
+Of the four seeded platform role bundles (`seed.backstage-role-permission.data.ts:10-121`, read in full):
 
 | Role | `activity_event.read` (this page) | `activity_event.detail` (drill-down / `/activity-events`) |
 | --- | --- | --- |
-| Backstage Admin | Yes — via `activity_event.*` (line 14) | Yes — via `activity_event.*` |
-| Support Manager | Yes — explicit `activity_event.read` (line 40) | **No** |
+| Backstage Admin | Yes — via `activity_event.*` (line 31) | Yes — via `activity_event.*` |
+| Support Manager | Yes — explicit `activity_event.read` (line 76) | **No** |
 | Support Staff | No | No |
 | Security Officer | No | No |
 
@@ -177,22 +177,22 @@ A source comment above Backstage Admin's grant states the reasoning for Support 
 
 ## 6. Reference Sources
 
-All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e`, 2026-09-04) unless prefixed `../carmen-turborepo-backend` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06) or `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25).
+All paths below are `../carmen-backstage` (the Backstage admin SPA, HEAD `8405788ff`, 2026-10-27) unless prefixed `../carmen-turborepo-backend` (the backend monorepo, HEAD `937cf5ac4`, 2026-09-06) or `../carmen-backstage-e2e` (HEAD `a8e3b31`, 2026-08-25).
 
 - `../carmen-backstage/src/pages/UsageAnalytics.tsx` (full, 251 lines) — the screen, `fetchOverview`, `goToEvents` (93-99), `handleExport` (101-118), `isEmpty` (120), the `<Can>`-wrapped Top Pages drill-down (184-236).
 - `../carmen-backstage/src/pages/usageAnalytics/StatCards.tsx`, `TopList.tsx`, `UsageChart.tsx` — the five KPI cards and their em-dash-on-failure rule; the clickable/non-clickable row rendering; the two-series (sessions/users) area chart.
 - `../carmen-backstage/src/services/analyticsService.ts` — `getOverview`/`getEvents`, the `filter_bu_code` rename comment (§3.1), the `analytics/records` vs. `analytics/event*` ad-blocker naming comment.
-- `../carmen-backstage/src/types/index.ts:1477-1515` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview`, under the file's own `tb_activity_event` section header.
+- `../carmen-backstage/src/types/index.ts:1495-1531` — `AnalyticsSummary`, `AnalyticsDaily`, `AnalyticsTopPage`, `AnalyticsTopElement`, `AnalyticsOverview`, under the file's own `tb_activity_event` section header.
 - `../carmen-backstage/src/utils/analyticsRange.ts` (full) — `ANALYTICS_TZ`, `MAX_RANGE_DAYS`, `TZ_OFFSET_MS` and its lockstep-with-backend comment, `presetRange`/`customRange`/`rangeSpanDays`.
 - `../carmen-backstage/src/components/analytics/DateRangeFilter.tsx` — preset/custom UI, client-side range-cap validation.
 - `../carmen-backstage/src/hooks/useAnalyticsFilterOptions.ts` — BU/Application dropdown load, the 100-row cap, `Promise.allSettled` reasoning.
 - `../carmen-backstage/src/utils/csvExport.ts:1-13` — `neutraliseFormulaPrefix()` and `isValidNegativeNumber()`, read directly (§3.3's hyphen finding); `generateCSV`, `downloadCSV`.
 - `../carmen-backstage/src/components/Can.tsx`, `src/components/PrivateRoute.tsx` (both full) — permission-then-feature-flag gate order; `Forbidden`/`ComingSoon`/`NotFound` outcomes.
 - `../carmen-backstage/src/context/AuthContext.tsx:354-358`, `src/utils/permissions.ts` (full) — `hasPermission`'s bootstrap escape hatch and `checkPermission`'s with/without-`clusterId` semantics (§4.2).
-- `../carmen-backstage/src/App.tsx:475-489` — the `/analytics` and `/activity-events` route registrations.
+- `../carmen-backstage/src/App.tsx:521-536` — the `/analytics` and `/activity-events` route registrations.
 - `../carmen-backstage/src/components/nav/backstageNav.ts:35-38` — the two nav rows (32-33) and the contiguity comment above them (30-31).
 - `../carmen-backstage/src/constants/featureFlags.ts:68` — the `usage_analytics` feature-catalog entry.
-- `../carmen-backstage/src/i18n/en.ts` (lines 99-102, 4089-4116) and `src/i18n/th.ts` (lines 3112-3129) — page copy quoted in §3.2/§3.3/§3.7.
+- `../carmen-backstage/src/i18n/en.ts` (lines 31-32, 110-111, 4728-4781) and `src/i18n/th.ts` (lines 3727-3745) — page copy quoted in §3.2/§3.3/§3.7.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/backstage-analytics.controller.ts` (full) — both routes, their guards, and every naming-trap comment cited in §3.1/§4.3.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/backstage-analytics.service.ts` — the gateway-to-microservice proxy and `IAnalyticsQuery` shape.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-analytics/analytics-range.ts` (full) — `parseRange`, `MAX_RANGE_DAYS`.
@@ -202,8 +202,8 @@ All paths below are `../carmen-backstage` (the Platform admin SPA, HEAD `157a65e
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts` (full, 348 lines) — `getOverview()`'s four raw-SQL queries, `resolveBuScope()`, `findEvents()`.
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.types.ts` (full) — `ANALYTICS_TZ`, row shapes, the `allowed_cluster_ids` null/`[]`/`undefined` semantics comment.
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.query.ts` (full) — `buildWhere()` (the `server_ts` window), `NEVER_MATCH`, `buildBuCodeScope()` (the deleted-BU/NULL-bu_code exclusion), `buildScopedWhere()`.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts:93-99` — the `activity_event.read`/`.detail` catalog descriptions and the `activity_log` distinction comment.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-role-permission.data.ts:11-52` (full) — the four role bundles' exact permission arrays.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts:249-258` — the `activity_event.read`/`.detail` catalog descriptions and the `activity_log` distinction comment.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-role-permission.data.ts:10-121` (full) — the four role bundles' exact permission arrays.
 - `../carmen-backstage-e2e/tests/` — listed directly to confirm no `usage-analytics`/`analytics`/`activity-events` suite exists (§4.5).
 
 ## 7. Pages in This Module

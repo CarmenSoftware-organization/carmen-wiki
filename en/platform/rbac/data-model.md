@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 ## 1. Overview
 
-The RBAC module owns five tables, grouped under the `// Platform RBAC` and `// Platform Super Admin` banners in the Prisma schema (lines 933–1032). `tb_backstage_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_backstage_role` holds the named bundles, and `tb_backstage_role_tb_permission` is the M:N join that records which catalog rows a role grants.
+The RBAC module owns five tables, grouped under the `// ==== Backstage RBAC ====` and `// ==== Backstage Super Admin ====` banners in the Prisma schema (lines 1286–1390). `tb_backstage_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_backstage_role` holds the named bundles, and `tb_backstage_role_tb_permission` is the M:N join that records which catalog rows a role grants.
 
 `tb_user_tb_backstage_role` binds a role to a user with a scope: its nullable `cluster_id` column is the entire scope mechanism — `null` means the assignment applies platform-wide, a UUID means it applies inside that cluster only. `tb_backstage_super_admin` is deliberately not part of the role graph: it is a flag table (just `user_id` + `is_active` beyond the audit trio) whose rows mark users that bypass every permission check.
 
@@ -224,7 +224,7 @@ REST surface consumed by the SPA services (`roleService.ts`, `permissionService.
 ## 6. References
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (backend HEAD `2378c3b`, 2026-09-05) — models `tb_backstage_permission` (line 1007), `tb_backstage_role` (line 1026), `tb_backstage_role_tb_permission` (line 1046), `tb_user_tb_backstage_role` (line 1067), `tb_backstage_super_admin` (line 1090). Field lists are unchanged since the last sync — only line numbers shifted, from tables other modules added earlier in the file.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (backend origin/main `c9d788829`, 2026-10-27) — models `tb_backstage_permission` (line 1288), `tb_backstage_role` (line 1307), `tb_backstage_role_tb_permission` (line 1327), `tb_user_tb_backstage_role` (line 1348), `tb_backstage_super_admin` (line 1371). Line numbers re-read 2026-10-27; they shift whenever other modules add tables earlier in the file.
 
 **Secondary (consumer shape):**
 - `../carmen-backstage/src/types/index.ts` — `Role`, `PermissionCatalogItem`, `UserRoleAssignment`, `Scope`, `EffectivePermissions`, `RolesSummaryData`.
