@@ -2,7 +2,7 @@
 title: Report Templates — สิทธิ์ (Permissions)
 description: Route guard ตาม permission key, gate Can ภายในหน้า, filter ของ sidebar และข้อยกเว้น bootstrap ของ surface report-templates รวมการเปลี่ยนเป็น Forbidden และการลบโมดูล print-template-mapping
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -41,7 +41,7 @@ Report Templates เป็น surface สำหรับ authoring ภายใ�
 - **ไม่มีการใช้ key ซ้ำข้ามโมดูล** key `report_template.*` gate เฉพาะโมดูลนี้ (รวม Form Groups แล้วตอนนี้) — ต่างจาก route ของ Business Units ที่ใช้ key `cluster.*` ซ้ำ (ดู [Clusters Permissions](/th/platform/clusters/permissions) §2)
 - **ถูกลบเมื่อ 2026-07-24** (carmen-backstage commit `de11377`; key `print_template_mapping.*` ถูกลบออกจาก permission-catalog seed ก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend commit `c135bb21e`): โมดูล print-template-mapping พี่น้องและ key ของมันไม่มีอยู่แล้ว — โมดูลนั้นถูกลบไปเลย ไม่ใช่แค่ตัดการเชื่อมโยงจากโมดูลนี้
 
-**ข้อเท็จจริงฝั่ง server** สามข้อที่ gate ของ SPA ข้างบนไม่ได้แสดง (ทั้งหมดอยู่ใน `apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts`, route `api-system/report-templates`): `GET .../:id/versions` และ `GET .../:id/versions/:version_no` ต้องมี `report_template.read` (บรรทัด 300, 352); `POST .../:id/versions/:version_no/restore` ต้องมี `report_template.update` (บรรทัด 418); และ `GET .../db-objects` — การเรียกของ probe Browse-in-BU — ต้องมี **`sql_workbench.read`** (บรรทัด 130) ซึ่งเป็น key ของโมดูล SQL Workbench ผู้เขียนเทมเพลตที่ไม่มี grant นั้นจึงใช้ probe ไม่ได้ `GET .../forms` (บรรทัด 185) มีแค่ guard `x-app-id` และไม่มี decorator permission
+**ข้อเท็จจริงฝั่ง server** สามข้อที่ gate ของ SPA ข้างบนไม่ได้แสดง (ทั้งหมดอยู่ใน `apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts`, route `api-system/report-templates`): `GET .../:id/versions` และ `GET .../:id/versions/:version_no` ต้องมี `report_template.read` (บรรทัด 300, 352); `POST .../:id/versions/:version_no/restore` ต้องมี `report_template.update` (บรรทัด 418); และ `GET .../db-objects` — การเรียกของ probe Browse-in-BU — ต้องมี **`sql_workbench.read`** (บรรทัด 130) ซึ่งเป็น key ของโมดูล SQL Workbench ผู้เขียนเทมเพลตที่ไม่มี grant นั้นจึงใช้ probe ไม่ได้ `GET .../forms` (บรรทัด 185) มีแค่ guard `x-app-id` และไม่มี decorator permission — โดยตั้งใจ: ตัวเลือกแบบฟอร์มของหน้า Default Setting ในแอป inventory เรียก endpoint นี้ และผู้ใช้ BU ไม่มีสิทธิ์ Backstage เลย จึงเปิดให้ใช้ (BE `685da259b`, คอมเมนต์ที่บรรทัด 162-174) ค่าที่คืนเป็นแค่ metadata และ dialog ของ form template ที่เปิดใช้งาน ไม่มี content XML ส่วนรายการเต็ม `GET /` ยังต้องมี `report_template.read`
 
 ## 3. เมทริกซ์ effective access
 

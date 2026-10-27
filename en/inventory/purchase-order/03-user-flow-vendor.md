@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -22,7 +22,7 @@ The **Vendor** is an **external party with no Carmen Blue system login**. The ve
 
 ```mermaid
 graph LR
-    approved(("approved")) -->|"Send Email (PDF optional)<br/>or mark-sent"| sent(("sent_or_print"))
+    approved(("approved")) -->|"Send to vendor (PDF optional)<br/>or mark-sent"| sent(("sent_or_print"))
     sent -->|"PO transmitted"| vendor["Vendor receives PO"]:::current
     vendor -.->|"Acknowledges (unconfirmed)"| sent
     vendor -->|"Ships goods"| recv["Physical delivery"]:::current
@@ -39,7 +39,7 @@ The Vendor has **no direct write access** in Carmen Blue. The table below maps e
 
 | Vendor event | System surface | `po_status` effect |
 |---|---|---|
-| Receives the PO | Purchaser's **Send Email** (`send-email`, `tb_activity` `email_sent`) or `mark-sent` | `approved → sent_or_print` (`PO_POST_004b`) |
+| Receives the PO | Purchaser's **Send to vendor** (`send-email`, `tb_activity` `email_sent`) or `mark-sent` | `approved → sent_or_print` (`PO_POST_004b`) |
 | Acknowledges PO | **Unconfirmed** — no specific comment/portal-callback code was located this pass | Presumed none; `po_status` stays `sent_or_print` if it happens at all |
 | Ships partial qty | Receiver's GRN posting | `{approved, sent_or_print} → partial` (`PO_POST_006`) |
 | Ships full / final balance | Receiver's GRN posting | `{approved, sent_or_print} → completed` or `partial → completed` (`PO_POST_007`) |
@@ -79,7 +79,7 @@ The vendor's involvement on a given PO ends at **physical delivery** (confirmed)
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md) — global PO state machine and cross-persona handoff table.
-- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona that emails the PO (Send Email dialog) and runs the cancel / close loop on the vendor's behalf.
+- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona that emails the PO (Send to vendor dialog) and runs the cancel / close loop on the vendor's behalf.
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — downstream internal persona that physically accepts the vendor's delivery and posts the GRN that drives `{approved, sent_or_print} → partial → completed`.
 - Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7111+), `markSent` (L5966+), `EMAILABLE_PO_STATUSES` (L6976); email templates seeded by `ccc72e78b`; PDF via `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — documents why no invoice / three-way-match feature was confirmed in current source.

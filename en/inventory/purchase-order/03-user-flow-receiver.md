@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Receiver
 description: Receiver's flow within the purchase-order module — physically accepts goods, raises GRN against PO, triggers receipt state transition.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: purchase-order, user-flow, receiver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -47,7 +47,7 @@ The Store Keeper drives the per-shipment GRN; the Inventory Manager handles the 
 | Early-close `→ closed` (`PO_POST_011`; no role gate, no reason field) | ✅ | ✅ | ✅ | ❌ | — |
 | Refuse delivery at dock (no GRN, no system effect) | ✅ | ✅ | ✅ | — | — |
 | Edit PO header / lines | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Approve / Send Email / Void | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Approve / Send to vendor / Void | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Post GRN against own-buyer PO | Unconfirmed — no segregation-of-duties check found in current source | — | — | — | — |
 
 > ℹ️ **No separate acceptance quantity:** a repo-wide search of the Prisma schema and the GRN application code found no `accepted_qty` (or any per-line acceptance/rejection) field anywhere — see the [good-receive-note](/en/inventory/good-receive-note) module's own corrected data model. Inventory on-hand is incremented by `received_qty` alone; a quality issue or receiving shortfall is recorded simply by entering a lower `received_qty` than what was ordered, with the discrepancy noted as a free-text GRN comment. Any agreed write-off against the outstanding balance goes to `cancelled_qty` via the Inventory Manager's close action, not to a distinct acceptance field.

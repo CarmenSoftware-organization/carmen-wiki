@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Procurement Manager
 description: เส้นทางผู้ใช้งานของ Procurement Manager ภายในโมดูล purchase-order — การอนุมัติตาม workflow-stage และ override authority
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: purchase-order, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -20,7 +20,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. บทบาทในโมดูลนี้
 
-**Procurement Manager** engage กับโมดูล PO ในฐานะ **workflow-stage approver** — mechanism แบบ generic เดียวกับที่ user ใด ๆ ที่มี `stage_role = approve` ใช้ เมื่อ PO ถูก submit (`draft → in_progress`), workflow definition ที่ `tb_purchase_order.workflow_id` อ้างอิงจะกำหนดว่ามีกี่ stage และใคร assign ให้แต่ละ stage (`user_action.execute[]`); Procurement Manager ก็คือ user (หรือ role) ใดก็ตามที่ workflow configuration ของ tenant วางไว้บน stage เหล่านั้นหนึ่งหรือมากกว่าหนึ่ง stage ที่ stage สุดท้าย การ approve จะ authorize commitment — `po_status: in_progress → approved`, ตั้ง `approval_date` (`performApprove` ใน `purchase-order.logic.ts` L455-466, `PO_POST_004`) — **แต่ไม่ส่งอะไรออกไป**; การส่งเป็นขั้นตอน **Send Email** แยกต่างหากของ Purchaser (`PO_POST_004b`) ที่ stage ใด ๆ ที่ไม่ใช่ final การ approve จะเพียง advance `workflow_current_stage` (`po_status` ยังคงเป็น `in_progress`) Manager ยังสามารถ **send back** PO ที่ in-progress ได้ — การนี้ reset `workflow_current_stage` เป็น stage ก่อนหน้า (โดยทั่วไปกลับไปยังผู้สร้าง) โดยไม่เปลี่ยน `po_status` (`PO_POST_005`) — หรือ **reject** ซึ่งเป็น transition แบบตรงและ terminal `in_progress → voided` (ไม่มี state กลาง ไม่กลับไปที่ `draft`) จาก mobile client Manager สามารถ **swipe-approve** PO หลายใบพร้อมกัน (`POST .../purchase-orders/swipe-approve`, `PO_AUTH_012`) เช่นเดียวกับ user ใดก็ตามที่เปิด PO อยู่ Manager สามารถ **Close** PO ที่ `in_progress` / `approved` / `sent_or_print` / `partial` ก่อนกำหนด (`PO_POST_011`) หรือ **Cancel** PO ที่ `draft` / `in_progress` / `approved` / `sent_or_print` (`PO_POST_010`) — ทั้งคู่เขียนปริมาณที่ยังเปิดค้างเป็น `cancelled_qty` **แก้ไข 2026-09-22:** soft-delete-in-draft **ไม่ใช่** สิทธิ์ของ Manager — `remove()` อนุญาตเฉพาะผู้สร้างเอกสารหรือ Backstage super-admin (`PO_AUTH_005`) **ยืนยันแล้ว แก้ไขในรอบนี้:** workflow ที่ assign ให้ PO สามารถมี `routing_rules` ที่ skip หรือกระโดดข้าม stage ตาม `total_amount` (ผลรวม `total_price` ของแต่ละบรรทัด) ได้ — ประเมินทุกครั้งที่ submit/approve ตั้งค่าได้แบบทั่วไปจากแท็บ **Routing** ใน `/system-admin/workflow` (ใช้ร่วมกันระหว่าง PR/PO/SR ไม่ใช่เฉพาะของ PO หรือของ Manager) ไม่พบ field routing ตาม pricelist-deviation-percentage, การตั้งค่า vendor-ranking, หรือ bulk-action surface ใด ๆ ใน source ปัจจุบัน ถือว่าข้อกล่าวอ้างใด ๆ ในลักษณะนี้ที่อื่นเป็นเพียง design intent ที่ยังไม่ยืนยัน ไม่ใช่ behavior ที่ใช้งานจริง
+**Procurement Manager** engage กับโมดูล PO ในฐานะ **workflow-stage approver** — mechanism แบบ generic เดียวกับที่ user ใด ๆ ที่มี `stage_role = approve` ใช้ เมื่อ PO ถูก submit (`draft → in_progress`), workflow definition ที่ `tb_purchase_order.workflow_id` อ้างอิงจะกำหนดว่ามีกี่ stage และใคร assign ให้แต่ละ stage (`user_action.execute[]`); Procurement Manager ก็คือ user (หรือ role) ใดก็ตามที่ workflow configuration ของ tenant วางไว้บน stage เหล่านั้นหนึ่งหรือมากกว่าหนึ่ง stage ที่ stage สุดท้าย การ approve จะ authorize commitment — `po_status: in_progress → approved`, ตั้ง `approval_date` (`performApprove` ใน `purchase-order.logic.ts` L455-466, `PO_POST_004`) — **แต่ไม่ส่งอะไรออกไป**; การส่งเป็นขั้นตอน **Send to vendor** แยกต่างหากของ Purchaser (`PO_POST_004b`) ที่ stage ใด ๆ ที่ไม่ใช่ final การ approve จะเพียง advance `workflow_current_stage` (`po_status` ยังคงเป็น `in_progress`) Manager ยังสามารถ **send back** PO ที่ in-progress ได้ — การนี้ reset `workflow_current_stage` เป็น stage ก่อนหน้า (โดยทั่วไปกลับไปยังผู้สร้าง) โดยไม่เปลี่ยน `po_status` (`PO_POST_005`) — หรือ **reject** ซึ่งเป็น transition แบบตรงและ terminal `in_progress → voided` (ไม่มี state กลาง ไม่กลับไปที่ `draft`) จาก mobile client Manager สามารถ **swipe-approve** PO หลายใบพร้อมกัน (`POST .../purchase-orders/swipe-approve`, `PO_AUTH_012`) เช่นเดียวกับ user ใดก็ตามที่เปิด PO อยู่ Manager สามารถ **Close** PO ที่ `in_progress` / `approved` / `sent_or_print` / `partial` ก่อนกำหนด (`PO_POST_011`) หรือ **Cancel** PO ที่ `draft` / `in_progress` / `approved` / `sent_or_print` (`PO_POST_010`) — ทั้งคู่เขียนปริมาณที่ยังเปิดค้างเป็น `cancelled_qty` **แก้ไข 2026-09-22:** soft-delete-in-draft **ไม่ใช่** สิทธิ์ของ Manager — `remove()` อนุญาตเฉพาะผู้สร้างเอกสารหรือ Backstage super-admin (`PO_AUTH_005`) **ยืนยันแล้ว แก้ไขในรอบนี้:** workflow ที่ assign ให้ PO สามารถมี `routing_rules` ที่ skip หรือกระโดดข้าม stage ตาม `total_amount` (ผลรวม `total_price` ของแต่ละบรรทัด) ได้ — ประเมินทุกครั้งที่ submit/approve ตั้งค่าได้แบบทั่วไปจากแท็บ **Routing** ใน `/system-admin/workflow` (ใช้ร่วมกันระหว่าง PR/PO/SR ไม่ใช่เฉพาะของ PO หรือของ Manager) ไม่พบ field routing ตาม pricelist-deviation-percentage, การตั้งค่า vendor-ranking, หรือ bulk-action surface ใด ๆ ใน source ปัจจุบัน ถือว่าข้อกล่าวอ้างใด ๆ ในลักษณะนี้ที่อื่นเป็นเพียง design intent ที่ยังไม่ยืนยัน ไม่ใช่ behavior ที่ใช้งานจริง
 
 ### ตำแหน่งใน Workflow (PM approver + override paths)
 
@@ -29,7 +29,7 @@ graph LR
     inprog(("in_progress")):::current -->|"Approve (stage สุดท้าย)<br/>ไม่ส่งอะไร"| approved(("approved"))
     inprog -->|"Send-back<br/>(stage reset, status ไม่เปลี่ยน)"| inprog
     inprog -->|"Reject (ตรง, terminal)"| voided(("voided"))
-    approved -.->|"Send Email (Purchaser)"| sent(("sent_or_print"))
+    approved -.->|"Send to vendor (Purchaser)"| sent(("sent_or_print"))
     approved -.->|"Close / Cancel"| closed(("closed"))
     sent -.->|"Close / Cancel"| closed
     partial(("partial")) -.->|"Close (PO_POST_011)"| closed
@@ -47,7 +47,7 @@ graph LR
 | Send-back (stage reset, `po_status` ไม่เปลี่ยน) | ✅ เมื่อถูก assign ให้ stage ปัจจุบัน (`PO_POST_005`) |
 | Reject (`in_progress → voided`, ตรง, terminal) | ✅ เมื่อถูก assign ให้ stage ปัจจุบัน — ไม่ได้ผูกขาดเฉพาะ role นี้ |
 | Soft-delete draft (`PO_AUTH_005`) | ❌ เว้นแต่ Manager เป็นผู้สร้าง draft (เจ้าของ) หรือเป็น Backstage super-admin |
-| Send Email / mark-sent (`approved → sent_or_print`) | ✅ ไม่มี role gate — แต่โดยธรรมเนียมเป็นขั้นตอนของ Purchaser |
+| Send to vendor / mark-sent (`approved → sent_or_print`) | ✅ ไม่มี role gate — แต่โดยธรรมเนียมเป็นขั้นตอนของ Purchaser |
 | Close (`{in_progress, approved, sent_or_print, partial} → closed`, `PO_POST_011`) | ✅ ไม่มี role gate ใน `closePO()` |
 | Cancel (`{draft, in_progress, approved, sent_or_print} → closed`) | ✅ ไม่มี role gate ใน `cancel()` |
 | Edit header / lines (qty, price, tax, FOC) | ❌ (ขอบเขตของ Purchaser, `PO_AUTH_002`) |
@@ -80,7 +80,7 @@ graph LR
 
 การมีส่วนร่วมของ Procurement Manager บน PO ที่กำหนดจบที่หนึ่งใน handoffs ต่อไปนี้
 
-- **Final approval → กลับไปที่ Purchaser เพื่อส่ง** — `po_status: in_progress → approved` ผ่าน `PO_POST_004` Handoff ไปยัง **Purchaser** (Send Email, `PO_POST_004b`) และคู่ขนานกัน **Receiver** อาจรับของกับ PO ที่ `approved` ได้แล้ว; document state ที่ handoff คือ `approved` ดู [03-user-flow-vendor.md](./03-user-flow-vendor.md) สำหรับสิ่งที่ vendor เห็น
+- **Final approval → กลับไปที่ Purchaser เพื่อส่ง** — `po_status: in_progress → approved` ผ่าน `PO_POST_004` Handoff ไปยัง **Purchaser** (Send to vendor, `PO_POST_004b`) และคู่ขนานกัน **Receiver** อาจรับของกับ PO ที่ `approved` ได้แล้ว; document state ที่ handoff คือ `approved` ดู [03-user-flow-vendor.md](./03-user-flow-vendor.md) สำหรับสิ่งที่ vendor เห็น
 - **Reject → terminal voided** — transition แบบตรง ไม่มี state กลาง Handoff ไปยัง **Auditor** สำหรับ review post-hoc เท่านั้น; document state คือ `voided` (terminal)
 - **Send back → revision โดยเจ้าของ stage ที่ assign** — `workflow_current_stage` reset; `po_status` ยังคงเป็น `in_progress` (ไม่ใช่ `draft`) Handoff ไปยังใครก็ตามที่ stage ก่อนหน้า assign ไว้ (โดยทั่วไปคือ Purchaser) การมีส่วนร่วมของ Manager resume หาก PO ที่ resubmit มาถึง stage นี้อีกครั้ง
 - **Close** — `{in_progress, approved, sent_or_print, partial} → closed`, remainder เขียนเป็น `cancelled_qty` Terminal

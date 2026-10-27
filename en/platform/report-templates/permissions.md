@@ -2,7 +2,7 @@
 title: Report Template — Permissions
 description: Permission-key route guards, in-page Can gates, sidebar filter, and bootstrap exception for the report-templates surface. Updated for the Forbidden rename and the removal of the neighbouring print-template-mapping module.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-28T00:00:00.000Z
 tags: book/platform, report-templates, permissions
 editor: markdown
 dateCreated: '2026-05-19T18:30:00.000Z'
@@ -41,7 +41,7 @@ Four things to note:
 - **No key reuse.** The `report_template.*` keys gate only this module (now including Form Groups) — unlike the Business Units routes, which reuse the `cluster.*` keys (see [Clusters Permissions](/en/platform/clusters/permissions) §2).
 - **Removed 2026-07-24** (carmen-backstage commit `de11377`; its `print_template_mapping.*` keys were dropped from the permission-catalog seed the day before, 2026-07-23, carmen-turborepo-backend commit `c135bb21e`): the sibling print-template-mapping module and its keys no longer exist — that module was deleted outright, not merely disconnected from this one.
 
-Three **server-side** facts that the SPA gates above do not show (all in `apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts`, route `api-system/report-templates`): `GET .../:id/versions` and `GET .../:id/versions/:version_no` require `report_template.read` (lines 300, 352); `POST .../:id/versions/:version_no/restore` requires `report_template.update` (line 418); and `GET .../db-objects` — the Browse-in-BU probe's call — requires **`sql_workbench.read`** (line 130), a key from the SQL Workbench module, so a template author without that grant cannot use the probe. `GET .../forms` (line 185) carries only the `x-app-id` guard and no permission decorator.
+Three **server-side** facts that the SPA gates above do not show (all in `apps/backend-gateway/src/backstage/backstage_report-templates/backstage_report-templates.controller.ts`, route `api-system/report-templates`): `GET .../:id/versions` and `GET .../:id/versions/:version_no` require `report_template.read` (lines 300, 352); `POST .../:id/versions/:version_no/restore` requires `report_template.update` (line 418); and `GET .../db-objects` — the Browse-in-BU probe's call — requires **`sql_workbench.read`** (line 130), a key from the SQL Workbench module, so a template author without that grant cannot use the probe. `GET .../forms` (line 185) carries only the `x-app-id` guard and no permission decorator — deliberately: the inventory app's Default Setting form picker calls it and BU users hold no Backstage permission, so it was reopened to them (BE `685da259b`, comment at lines 162-174). It returns active form templates' metadata and dialog only, no content XML; the full list `GET /` still requires `report_template.read`.
 
 ## 3. Effective access matrix
 

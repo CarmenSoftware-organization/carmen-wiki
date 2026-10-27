@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order) — User Flow — Vendor
 description: เส้นทางผู้ใช้งานของ Vendor ภายในโมดูล purchase-order — ฝ่ายภายนอก (ไม่มี system login); รับ PO ตอบรับ ส่งของ และออก invoice
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -22,7 +22,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ```mermaid
 graph LR
-    approved(("approved")) -->|"Send Email (PDF optional)<br/>หรือ mark-sent"| sent(("sent_or_print"))
+    approved(("approved")) -->|"Send to vendor (PDF optional)<br/>หรือ mark-sent"| sent(("sent_or_print"))
     sent -->|"PO ส่งแล้ว"| vendor["Vendor รับ PO"]:::current
     vendor -.->|"ตอบรับ (ยังไม่ยืนยัน)"| sent
     vendor -->|"ส่งสินค้า"| recv["การส่งของจริง"]:::current
@@ -39,7 +39,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 
 | Vendor event | System surface | Effect ของ `po_status` |
 |---|---|---|
-| รับ PO | **Send Email** ของ Purchaser (`send-email`, `tb_activity` `email_sent`) หรือ `mark-sent` | `approved → sent_or_print` (`PO_POST_004b`) |
+| รับ PO | **Send to vendor** ของ Purchaser (`send-email`, `tb_activity` `email_sent`) หรือ `mark-sent` | `approved → sent_or_print` (`PO_POST_004b`) |
 | ตอบรับ PO | **ยังไม่ยืนยัน** — ไม่พบ code เฉพาะสำหรับ comment/portal-callback ในรอบนี้ | สันนิษฐานว่าไม่มี; `po_status` ยังคงเป็น `sent_or_print` ถ้าเกิดขึ้นจริง |
 | ส่งของ partial qty | GRN posting ของ Receiver | `{approved, sent_or_print} → partial` (`PO_POST_006`) |
 | ส่งของเต็ม / final balance | GRN posting ของ Receiver | `{approved, sent_or_print} → completed` หรือ `partial → completed` (`PO_POST_007`) |
@@ -79,7 +79,7 @@ Vendor มี **สิทธิ์เขียนโดยตรงไม่ม�
 ## 5. แหล่งอ้างอิง
 
 - ภาพรวม parent: [03-user-flow.md](./03-user-flow.md) — global PO state machine และตาราง cross-persona handoff
-- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ที่ส่งอีเมล PO (dialog Send Email) และรัน cancel / close loop แทน vendor
+- Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona ที่ส่งอีเมล PO (dialog Send to vendor) และรัน cancel / close loop แทน vendor
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — internal persona ปลายน้ำที่รับการส่งของจริงของ vendor และ post GRN ที่ขับเคลื่อน `{approved, sent_or_print} → partial → completed`
 - Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7111+), `markSent` (L5966+), `EMAILABLE_PO_STATUSES` (L6976); email template seed โดย `ccc72e78b`; PDF ผ่าน `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — บันทึกเหตุผลที่ไม่พบ feature invoice / three-way-match ใน source ปัจจุบัน

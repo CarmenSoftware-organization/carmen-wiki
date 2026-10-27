@@ -2,7 +2,7 @@
 title: Purchase Order
 description: Formal commitment to a vendor to purchase goods at agreed prices, quantities, and delivery terms.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -80,7 +80,7 @@ Financial accuracy is enforced at the calculation layer. Item subtotal, discount
 
 | Role | Responsibility |
 |------|----------------|
-| Procurement Officer / Purchaser | Creates POs manually, by converting approved PRs, or from a vendor price list; validates vendor allocation and pricelist pricing; sets delivery and payment terms; submits into the approval workflow; once the PO is `approved`, sends it to the vendor by email (**Send Email** button, `po-send-email-dialog.tsx`) — which is what moves it to `sent_or_print` — and manages follow-up. |
+| Procurement Officer / Purchaser | Creates POs manually, by converting approved PRs, or from a vendor price list; validates vendor allocation and pricelist pricing; sets delivery and payment terms; submits into the approval workflow; once the PO is `approved`, sends it to the vendor by email (**Send to vendor** button, `po-send-email-dialog.tsx`) — which is what moves it to `sent_or_print` — and manages follow-up. |
 | Procurement Manager | Acts as an approver on a configured workflow stage (same generic stage-based approve / send-back / reject mechanism as any other approver). **Confirmed this pass:** the assigned workflow's `routing_rules` (configured from the generic **Routing** tab of `/system-admin/workflow`) can amount-route which stage comes next via `total_amount` — a per-workflow configuration choice, not a Procurement-Manager-specific mechanism; no pricelist-deviation-percentage routing field exists (see `02-business-rules.md` `PO_AUTH_004`). Delete-in-draft is **not** a Manager right — `remove()` allows the document owner or a Backstage super-admin only. |
 | Vendor | External party that receives the PO (email with optional PDF, or an out-of-band print/fax recorded via `mark-sent`) and fulfils delivery against the agreed terms. No confirmed in-system acknowledgement exists; the AP invoice flow (§ 1) starts from GRN items, not from the PO. |
 | Receiver / Store Keeper | Downstream role that physically accepts the goods and raises the GRN against the PO line by line. GRN creation is allowed from `approved`, `sent_or_print`, or `partial`; the GRN posting increments `received_qty` on the PO line (and `foc_received_qty` on the bridge row) and drives the `→ partial → completed` transition; inventory on-hand is incremented by the GRN / inventory module, not by the PO. |

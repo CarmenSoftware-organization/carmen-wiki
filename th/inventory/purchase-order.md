@@ -2,7 +2,7 @@
 title: ใบสั่งซื้อ (Purchase Order)
 description: เอกสารผูกพันอย่างเป็นทางการกับผู้ขายเพื่อจัดซื้อสินค้าตามราคา ปริมาณ และเงื่อนไขการส่งมอบที่ตกลงกัน
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: '2026-10-28T00:00:00.000Z'
 tags: purchase-order, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -80,7 +80,7 @@ PO คือจุดที่คำขอภายในกลายเป็�
 
 | Role | ความรับผิดชอบ |
 |------|----------------|
-| Procurement Officer / Purchaser | สร้าง PO ด้วยมือ โดยการแปลง PR ที่อนุมัติแล้ว หรือจาก vendor price list; ตรวจสอบการจัดสรรผู้ขายและราคา pricelist; ตั้งเงื่อนไขการส่งของและการชำระเงิน; ส่งเข้าสู่ workflow การอนุมัติ; เมื่อ PO เป็น `approved` แล้ว ส่งให้ผู้ขายทางอีเมล (ปุ่ม **Send Email**, `po-send-email-dialog.tsx`) — ซึ่งเป็นสิ่งที่ย้ายมันไป `sent_or_print` — และบริหารการติดตามผล |
+| Procurement Officer / Purchaser | สร้าง PO ด้วยมือ โดยการแปลง PR ที่อนุมัติแล้ว หรือจาก vendor price list; ตรวจสอบการจัดสรรผู้ขายและราคา pricelist; ตั้งเงื่อนไขการส่งของและการชำระเงิน; ส่งเข้าสู่ workflow การอนุมัติ; เมื่อ PO เป็น `approved` แล้ว ส่งให้ผู้ขายทางอีเมล (ปุ่ม **Send to vendor**, `po-send-email-dialog.tsx`) — ซึ่งเป็นสิ่งที่ย้ายมันไป `sent_or_print` — และบริหารการติดตามผล |
 | Procurement Manager | ทำหน้าที่เป็นผู้อนุมัติในขั้นตอน workflow ที่กำหนดไว้ (ใช้กลไก approve / send-back / reject แบบ stage-based ทั่วไปเหมือนผู้อนุมัติรายอื่น) **ยืนยันแล้วในรอบนี้:** `routing_rules` ของ workflow ที่ assign ให้ (ตั้งค่าได้จากแท็บ **Routing** ทั่วไปใน `/system-admin/workflow`) สามารถ auto-route stage ถัดไปตาม `total_amount` ได้ — เป็นทางเลือกการตั้งค่าต่อ workflow ไม่ใช่กลไกเฉพาะของ Procurement Manager; ไม่มี field routing ตาม pricelist-deviation-percentage (ดู `02-business-rules.md` `PO_AUTH_004`) delete-in-draft **ไม่ใช่** สิทธิ์ของ Manager — `remove()` อนุญาตเฉพาะเจ้าของเอกสารหรือ Backstage super-admin เท่านั้น |
 | Vendor | ฝ่ายภายนอกที่รับ PO (อีเมลพร้อม PDF แบบ optional หรือการพิมพ์/แฟกซ์นอกระบบที่บันทึกผ่าน `mark-sent`) และส่งของตามเงื่อนไขที่ตกลงกัน ยังไม่พบฟีเจอร์การตอบรับในระบบที่ยืนยันได้; flow AP invoice (§ 1) เริ่มจากรายการ GRN ไม่ใช่จาก PO |
 | Receiver / Store Keeper | บทบาทปลายน้ำที่รับสินค้าจริงและสร้าง GRN กับ PO ทีละบรรทัด GRN สร้างได้จาก `approved`, `sent_or_print`, หรือ `partial`; การ post GRN เพิ่มค่า `received_qty` บนบรรทัด PO (และ `foc_received_qty` บนแถวสะพาน) และขับเคลื่อนการเปลี่ยนสถานะ `→ partial → completed`; on-hand ของ inventory จะถูกเพิ่มโดยโมดูล GRN / inventory ไม่ใช่โดย PO |

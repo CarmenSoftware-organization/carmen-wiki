@@ -2,7 +2,7 @@
 title: Access Control
 description: Users, roles, permissions, and multi-business-unit access. Re-verified 2026-10-27 — tb_location_user (renamed), tb_user_invitation replaces tb_temp_bu_user, user access edited via PATCH /api/config/:bu_code/users/:user_id.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -82,7 +82,7 @@ Sysadmin owns the configuration end-to-end. Security Officer audits credentials,
 
 - **Prisma platform:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_invitation`, `tb_user_invitation_business_unit`, and the supporting `enum_token_type`, `enum_user_business_unit_role`, `enum_user_invitation_status`. `tb_temp_bu_user` was dropped on 2026-08-05 (`20260805100000_drop_temp_bu_user`). There is no `enum_platform_role` — it was dropped 2026-06-10 in favor of the relational `tb_backstage_role` system (Carmen Blue Backstage admin scope; see [access-control/user](/en/inventory/access-control/user) Edge Cases).
 - **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_user`, `tb_department_user`.
-- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/{config_users,config_user-application-roles,config_application-roles,config_permissions,config_department-users,config_locations-users,config_user-locations}/`, `apps/backend-gateway/src/application/{user,user-business-units,user-locations,invitations}/`, `apps/backend-gateway/src/backstage/backstage_cluster-invitations/`.
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/{config_users,config_user-application-roles,config_application-roles,config_permissions,config_department-users,config_locations-users}/`, `apps/backend-gateway/src/application/{user,user-business-units,user-locations,invitations}/`, `apps/backend-gateway/src/backstage/backstage_cluster-invitations/`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/{users,user-application-roles,application-roles,permissions,department-user,locations-user,user-location}/`, `user-management/user/`.
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — describes how workflow-stage role types (requester / purchaser / approver / reviewer) layer on top of the application-role permission grants documented here. Frozen 2026-04-27; the actual `enum_stage_role` is `create / approve / purchase / issue / view_only` (see [system-config/workflow](/en/inventory/system-config/workflow)).
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.

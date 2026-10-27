@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Audit & Config
 description: Auditor (read-only activity log) and System Administrator (workflow / RBAC / numbering configuration) flows for purchase-order.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -55,7 +55,7 @@ graph LR
 | Edit workflow stages / `stage_role` / `user_action.execute[]` (generic system-config) | ❌ | ✅ |
 | Edit running-code (`po_no`) scheme (generic system-config) | ❌ | ✅ |
 | Edit RBAC permission map | ❌ | ✅ (via generic system-config, not confirmed as a PO-specific screen). Keys the SPA declares: `procurement.purchase_order` (view-only resource), `procurement.credit_note` (CRUD), `system_admin.workflow.purchase_order` (`constant/permissions.ts`); the gateway enforces only `procurement.purchase_order: create` on `GET .../purchase-orders/grn/:id` |
-| Configure BU email profiles used by PO Send Email | ❌ | ✅ ([system-config/config-email](/en/inventory/system-config/config-email); PO / RFP templates seeded per BU) |
+| Configure BU email profiles used by PO Send to vendor | ❌ | ✅ ([system-config/config-email](/en/inventory/system-config/config-email); PO / RFP templates seeded per BU) |
 | Edit PO header / lines / vendor / qty | ❌ | ❌ |
 | Approve / Transmit / Send-back / Reject | ❌ | ❌ |
 | Close a PO | ❌ | ❌ (escalate to Procurement Manager or Inventory Manager under `PO_AUTH_008`) |

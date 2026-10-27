@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Procurement Manager
 description: Procurement Manager's flow within the purchase-order module — workflow-stage approval and override authority.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-28T00:00:00.000Z
 tags: purchase-order, user-flow, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -20,7 +20,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 ## 1. Role in This Module
 
-The **Procurement Manager** engages with the PO module as a **workflow-stage approver** — the same generic mechanism any `stage_role = approve` user uses. When a PO is submitted (`draft → in_progress`), the workflow definition referenced by `tb_purchase_order.workflow_id` determines how many stages exist and who is assigned to each (`user_action.execute[]`); the Procurement Manager is simply whichever user (or role) the tenant's workflow configuration puts on one or more of those stages. At the final stage, approving authorizes the commitment — `po_status: in_progress → approved`, `approval_date` set (`performApprove` in `purchase-order.logic.ts` L455-466, `PO_POST_004`) — **but does not transmit anything**; sending is the Purchaser's separate **Send Email** step (`PO_POST_004b`). At any non-final stage, approving only advances `workflow_current_stage` (`po_status` stays `in_progress`). The Manager can also **send back** an in-progress PO — this resets `workflow_current_stage` to an earlier stage (typically back to the creator) without changing `po_status` (`PO_POST_005`) — or **reject** it, which is a direct, terminal `in_progress → voided` transition (no intermediate state, no return to `draft`). From a mobile client the Manager can **swipe-approve** several POs at once (`POST .../purchase-orders/swipe-approve`, `PO_AUTH_012`). Like any user with the PO open, the Manager can **Close** an `in_progress` / `approved` / `sent_or_print` / `partial` PO early (`PO_POST_011`) or **Cancel** a `draft` / `in_progress` / `approved` / `sent_or_print` one (`PO_POST_010`) — both write the remaining open quantity to `cancelled_qty`. **Corrected 2026-09-22:** soft-delete-in-draft is **not** a Manager privilege — `remove()` allows only the document's creator or a Backstage super-admin (`PO_AUTH_005`). **Confirmed, corrected this pass:** the workflow assigned to the PO can carry `routing_rules` that skip or jump stages based on `total_amount` (Σ line `total_price`) — evaluated on every submit/approve, configured generically from the **Routing** tab of `/system-admin/workflow` (shared by PR/PO/SR, not PO- or Manager-specific). No pricelist-deviation-percentage routing field, vendor-ranking configuration, or bulk-action surface was found in current source; treat any such claim elsewhere as unconfirmed design intent rather than live behavior.
+The **Procurement Manager** engages with the PO module as a **workflow-stage approver** — the same generic mechanism any `stage_role = approve` user uses. When a PO is submitted (`draft → in_progress`), the workflow definition referenced by `tb_purchase_order.workflow_id` determines how many stages exist and who is assigned to each (`user_action.execute[]`); the Procurement Manager is simply whichever user (or role) the tenant's workflow configuration puts on one or more of those stages. At the final stage, approving authorizes the commitment — `po_status: in_progress → approved`, `approval_date` set (`performApprove` in `purchase-order.logic.ts` L455-466, `PO_POST_004`) — **but does not transmit anything**; sending is the Purchaser's separate **Send to vendor** step (`PO_POST_004b`). At any non-final stage, approving only advances `workflow_current_stage` (`po_status` stays `in_progress`). The Manager can also **send back** an in-progress PO — this resets `workflow_current_stage` to an earlier stage (typically back to the creator) without changing `po_status` (`PO_POST_005`) — or **reject** it, which is a direct, terminal `in_progress → voided` transition (no intermediate state, no return to `draft`). From a mobile client the Manager can **swipe-approve** several POs at once (`POST .../purchase-orders/swipe-approve`, `PO_AUTH_012`). Like any user with the PO open, the Manager can **Close** an `in_progress` / `approved` / `sent_or_print` / `partial` PO early (`PO_POST_011`) or **Cancel** a `draft` / `in_progress` / `approved` / `sent_or_print` one (`PO_POST_010`) — both write the remaining open quantity to `cancelled_qty`. **Corrected 2026-09-22:** soft-delete-in-draft is **not** a Manager privilege — `remove()` allows only the document's creator or a Backstage super-admin (`PO_AUTH_005`). **Confirmed, corrected this pass:** the workflow assigned to the PO can carry `routing_rules` that skip or jump stages based on `total_amount` (Σ line `total_price`) — evaluated on every submit/approve, configured generically from the **Routing** tab of `/system-admin/workflow` (shared by PR/PO/SR, not PO- or Manager-specific). No pricelist-deviation-percentage routing field, vendor-ranking configuration, or bulk-action surface was found in current source; treat any such claim elsewhere as unconfirmed design intent rather than live behavior.
 
 ### Workflow position (PM approver + override paths)
 
@@ -29,7 +29,7 @@ graph LR
     inprog(("in_progress")):::current -->|"Approve (final stage)<br/>nothing sent"| approved(("approved"))
     inprog -->|"Send-back<br/>(stage resets, status unchanged)"| inprog
     inprog -->|"Reject (direct, terminal)"| voided(("voided"))
-    approved -.->|"Send Email (Purchaser)"| sent(("sent_or_print"))
+    approved -.->|"Send to vendor (Purchaser)"| sent(("sent_or_print"))
     approved -.->|"Close / Cancel"| closed(("closed"))
     sent -.->|"Close / Cancel"| closed
     partial(("partial")) -.->|"Close (PO_POST_011)"| closed
@@ -47,7 +47,7 @@ graph LR
 | Send-back (stage resets, `po_status` unchanged) | ✅ when assigned to the current stage (`PO_POST_005`) |
 | Reject (`in_progress → voided`, direct, terminal) | ✅ when assigned to the current stage — not exclusive to this role |
 | Soft-delete draft (`PO_AUTH_005`) | ❌ unless the Manager created the draft (owner) or is a Backstage super-admin |
-| Send Email / mark-sent (`approved → sent_or_print`) | ✅ no role gate — but this is the Purchaser's step by convention |
+| Send to vendor / mark-sent (`approved → sent_or_print`) | ✅ no role gate — but this is the Purchaser's step by convention |
 | Close (`{in_progress, approved, sent_or_print, partial} → closed`, `PO_POST_011`) | ✅ no role gate in `closePO()` |
 | Cancel (`{draft, in_progress, approved, sent_or_print} → closed`) | ✅ no role gate in `cancel()` |
 | Edit header / lines (qty, price, tax, FOC) | ❌ (Purchaser scope, `PO_AUTH_002`) |
@@ -80,7 +80,7 @@ graph LR
 
 The Procurement Manager's involvement on a given PO ends at one of the following handoffs.
 
-- **Final approval → back to the Purchaser to send** — `po_status: in_progress → approved` via `PO_POST_004`. Handoff is to the **Purchaser** (Send Email, `PO_POST_004b`) and, in parallel, the **Receiver** may already receive against the `approved` PO; document state at handoff is `approved`. See [03-user-flow-vendor.md](./03-user-flow-vendor.md) for what the vendor sees.
+- **Final approval → back to the Purchaser to send** — `po_status: in_progress → approved` via `PO_POST_004`. Handoff is to the **Purchaser** (Send to vendor, `PO_POST_004b`) and, in parallel, the **Receiver** may already receive against the `approved` PO; document state at handoff is `approved`. See [03-user-flow-vendor.md](./03-user-flow-vendor.md) for what the vendor sees.
 - **Reject → terminal `voided`** — direct transition, no intermediate state. Handoff is to the **Auditor** for post-hoc review only; document state is `voided` (terminal).
 - **Send back → revision by the assigned stage owner** — `workflow_current_stage` resets; `po_status` stays `in_progress` (not `draft`). Handoff is to whoever the earlier stage assigns (commonly the Purchaser). The Manager's involvement resumes if the resubmitted PO reaches this stage again.
 - **Close** — `{in_progress, approved, sent_or_print, partial} → closed`, remainder written to `cancelled_qty`. Terminal.
