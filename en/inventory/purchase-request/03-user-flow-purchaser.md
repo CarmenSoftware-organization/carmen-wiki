@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Purchaser
 description: Purchaser's flow within the purchase-request module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, user-flow, purchaser, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -27,7 +27,7 @@ graph LR
     inprog(("in_progress<br/>(purchase stage)")):::current -->|"Edit vendor/price<br/>+ Auto Allocate"| decide["Bulk-decide<br/>(toolbar)"]:::current
     decide -->|"Approve (final stage)"| approved(("approved"))
     decide -->|"Reject"| voided(("voided"))
-    decide -->|"Send for Review"| prior["Prior stage / draft"]
+    decide -->|"Send for Review"| prior["Prior stage<br/>(stays in_progress)"]
     approved -.->|"Convert to PO<br/>(separate dialog,<br/>Purchase Order module)"| completed(("completed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
@@ -61,9 +61,9 @@ graph LR
 
 1. Open a PR sitting at the `purchase` stage (`pr_status = in_progress`, `workflow_current_stage` assigned to the Purchaser). The detail page opens in view mode with the full header, lines, and Activity Log from every prior stage.
 2. Click **Edit** to enter Edit Mode. Vendor, unit price, discount, and tax profile become editable per line; `approved_qty` stays read-only.
-3. Optionally click **Auto Allocate** to bulk-fill vendor, price, pricelist reference, tax profile and exchange rate from the price-compare endpoint for every line that has a product, requested unit, and currency set (`pr-auto-allocate.ts`; the backend picks preferred-first, then cheapest, at the MOQ tier the requested `qty` reaches — `price-list.service.ts:715`); or open the **Price Comparison** dialog on an individual line (`pr-pricelist-dialog.tsx`) — vendor, pricelist no., unit, price with a "best" marker, effective range, and an **Assign** button per row; the dialog header shows requested / approved qty and the product's **last purchase price**.
-4. Before approving, every line that is not rejected / sent back must carry a vendor, a unit price `> 0`, a currency and a tax profile (`pr-form-schema.ts` `superRefine` for the `purchase` stage; the footer Approve shows "purchaseIncomplete" otherwise). The server-side counterpart is `POST …/verify` with `verify_state = approve`, `stage_role = purchase`, which also recomputes every amount and rejects a discount or tax larger than the line value (`PR_VAL_012`). Then select the lines to act on (or **Select All**) and choose a bulk action from the toolbar: **Approve** (advance — or, if this is the chain's last stage, flip to `approved`), **Reject** (terminate → `voided`, reason required), **Send for Review** (send back to a prior stage, reason required), or **Split** (accept some lines, reject others).
-5. Confirm in the dialog. The PR either advances (`pr_status` stays `in_progress` with the stage cursor moved), flips to `approved` (final stage clears), returns to a prior stage / `draft` (send-back), or terminates (`voided`).
+3. Optionally click **Auto Allocate** to bulk-fill vendor, price, pricelist reference, tax profile and exchange rate from the price-compare endpoint for every line that has a product, requested unit, and currency set (`pr-auto-allocate.ts`; the backend picks preferred-first, then cheapest, at the MOQ tier the line's `qty` reaches — the approved quantity when set, otherwise the requested one (`resolveApprovedQty`, `pr-auto-allocate.ts`) — `price-list.service.ts:715`); or open the **Price Comparison** dialog on an individual line (`pr-pricelist-dialog.tsx`) — vendor, pricelist no., unit, price with a "best" marker, effective range, and an **Assign** button per row; the dialog header shows requested / approved qty and the product's **last purchase price**, and the vendor rows are priced at the tier the approved (else requested) quantity reaches. If the stage hides prices from you (`hidden_fields`), vendor / pricelist / tax / discount cells are read-only text and the app does not send price keys at all (`PR_AUTH_011`) — a stage that gives the Purchaser a hidden-price view is a workflow-configuration mistake, since the `purchase` stage's whole job is pricing.
+4. Before approving, every line that is not rejected / sent back must carry a vendor, a unit price `> 0`, a currency and a tax profile (`pr-form-schema.ts` `superRefine` for the `purchase` stage; the footer Approve shows "purchaseIncomplete" otherwise). The server-side counterpart is `POST …/verify` with `verify_state = approve`, `stage_role = purchase`, which also recomputes every amount and rejects a discount or tax larger than the line value (`PR_VAL_012`). Then select the lines to act on (or **Select All**) and choose a bulk action from the toolbar: **Approve** (advance — or, if this is the chain's last stage, flip to `approved`), **Reject** (terminate → `voided`, reason required), **Send for Review** (send back to a prior stage, reason required), or **Split** (accept some lines, reject others). A button the stage has switched off is absent (`PR_AUTH_010`).
+5. Confirm in the dialog. The PR either advances (`pr_status` stays `in_progress` with the stage cursor moved), flips to `approved` (final stage clears), returns to a prior stage (send-back — `pr_status` stays `in_progress`, even at the create stage), or terminates (`voided`).
 
 **Entry point — PO conversion:** Sidebar → **Purchase Order** module → **Create from PR** (`PoFromPrDialog`).
 
@@ -78,7 +78,7 @@ graph LR
 
 - **If a line has no vendor allocated at the `purchase` stage**: run **Auto Allocate** again (it fills from the current active pricelist) or open Price Comparison on the line to pick a vendor manually before bulk-approving.
 - **If the PR is missing required pricing when a bulk action is attempted**: validation blocks the action; the Purchaser fixes the flagged line(s) and retries.
-- **If the Purchaser disagrees with the request as a whole**: choose bulk **Reject** with a reason (`pr_status → voided`, terminal) or bulk **Send for Review** with a reason and target stage (returns to a prior stage, or to `draft` if the target is the Requestor's create stage).
+- **If the Purchaser disagrees with the request as a whole**: choose bulk **Reject** with a reason (`pr_status → voided`, terminal) or bulk **Send for Review** with a reason and target stage (returns to a prior stage; if the target is the Requestor's create stage the PR stays `in_progress` and the Requestor edits it there).
 - **If some lines are acceptable and others are not**: use **Split** to accept a subset and reject the rest; rejected lines are flagged `current_stage_status = rejected` and drop out of further processing while the accepted lines continue.
 - **If the selected PRs for PO conversion span more than one vendor, delivery date, or currency**: the group-PR step produces multiple draft-PO groups automatically — one PO per distinct `(vendor, delivery_date, currency)` combination; the Purchaser does not manually split them.
 - **If a PR selected for conversion has already been fully converted (`pr_status = completed`)**: it does not appear in the PR-for-PO list, so it cannot be selected again.
@@ -87,7 +87,7 @@ graph LR
 
 - **Bulk Approve at the chain's last stage.** `pr_status` flips from `in_progress` to `approved` (`PR_POST_005`); the PR becomes eligible for PO conversion. Handoff is to whoever next opens the Purchase Order module's Convert-to-PO dialog — not necessarily the same user.
 - **Bulk Approve at an intermediate stage.** `pr_status` stays `in_progress`; handoff is to the next stage's assigned user(s).
-- **Bulk Send for Review.** The PR returns to a prior stage (or to `draft`, handing off to the **Requestor** — see [03-user-flow-requestor.md](./03-user-flow-requestor.md)).
+- **Bulk Send for Review.** The PR returns to a prior stage (if that is the create stage, still `in_progress`, handing off to the **Requestor** — see [03-user-flow-requestor.md](./03-user-flow-requestor.md)).
 - **Bulk Reject.** `pr_status` flips to `voided` (terminal); the **Auditor** reviews post-hoc.
 - **Convert to PO confirmed.** Fully-bridged source PRs flip from `approved` to `completed` (`PR_POST_007`); handoff is to the [purchase-order](/en/inventory/purchase-order) module for vendor commitment and tracking to receipt. Partially-bridged PRs (if a future release adds partial conversion) would stay `approved`; the current UI converts whole PRs at a time.
 

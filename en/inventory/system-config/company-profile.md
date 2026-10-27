@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: Two system-admin screens editing disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, formats) and Default Setting (PR/SI/PO config + print forms). Permission system_admin.business_unit.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -15,9 +15,19 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 ![Company Profile & Default Setting screen](/screenshots/system-config/company-profile.png)
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
 
-- **`max_license_users` is gone.** The column was dropped from `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21, following the unapplied drop `1280c2ce9`) when seat licensing moved to `tb_business_unit_license` / cluster seat pools; the FE removed the read-only field on 2026-08-19 (`60d95cd9`) and `types/business-unit.ts` no longer declares it. Only `calculation_method` remains as a read-only `SettingField` in the General section (`company-profile-component.tsx:268-271`).
+- **Company Profile was re-laid-out** (FE `1f7b317c`, `5177ef3a`): an identity card on top (name, alias, logo/avatar) carrying the **locked facts** — cluster name, costing method, default currency — as read-only values with a lock hint; a side section nav (General, Hotel, Company, Date & Time, Number Formats — `company-profile-component.tsx:216-222`); and the hotel / company addresses shown as a document-header style block (`company-profile-address.tsx`) with a "printed on documents" label. Default Setting became a row-per-setting list on a wide page, each row with a short description and, for the document sections, the document code (`PR`, `PO`, …) as the row badge (`descKey` / `code` in `company-profile-config-registry.ts`).
+- **Default Currency is always read-only** (FE `ead2abe5`): it is not in the form and `buildPatch` never sends it (`company-profile-component.tsx:328-337`, comment "read-only เสมอ"). Earlier revisions of this page listed it as editable.
+- **`perpage_format` was removed** from the page and type (FE `ca482157`) — nothing read it. Number formats are `amount_format`, `quantity_format`, `recipe_format` only.
+- **`average_per_location` is now a known costing method** (`enum_calculation_method`: `average`, `fifo`, `average_per_location` — `schema.prisma:169-173`). The identity card translates it, and the Stock-In "Default price for added items" `average` option is offered for **both** `average` and `average_per_location` BUs (`visibleWhenCalcMethod: ["average", "average_per_location"]`, `company-profile-config-registry.ts:72`; FE `83bb0624`).
+- **Saves carry the BU's identity** (FE `9e63781f`, BE `user-business-units.service.ts:111`): `PATCH api/business-units` has no `bu_code`, so the payload now includes the loaded BU's `id` and `doc_version` (`toPatchPayload`). If the user switched BU in another tab or device since the page loaded, the backend answers **409 `BUSINESS_UNIT_NOT_CURRENT`** instead of writing the wrong BU (`packages/error-catalog/src/catalog.ts:3401`).
+- **Change detection ignores key order** (FE `0ecf4ca9`): `config[]` is compared with `stableStringify`, because Postgres JSONB returns keys in a different order than the Zod schema, which used to send `config` on every Save.
+- **Print-form template list is fetched page by page** (`fetchAllPages`) rather than `perpage=-1` (`use-report-form-templates.ts`).
+
+### Earlier status (re-verified 2026-09-22)
+
+- **`max_license_users` is gone.** The column was dropped from `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21, following the unapplied drop `1280c2ce9`) when seat licensing moved to `tb_business_unit_license` / cluster seat pools; the FE removed the read-only field on 2026-08-19 (`60d95cd9`) and `types/business-unit.ts` no longer declares it. Only `calculation_method` remains, now shown as a locked fact on the identity card (`company-profile-component.tsx:307-340`).
 - **Permission key corrected** as above; the sidebar entries for both screens gate on `PERMISSIONS.system_admin.business_unit.view` with `licenseFeature: "system_admin"` (`module-list.ts:592-607`).
 - **Default Setting lookup 403s no longer block the page** (`ee8c75bf`, 2026-09-21): a 403 from the print-form template lookup renders inline instead of a modal over the whole screen.
 - Everything else on this page (field groups, `config[]` registry, diff-and-`PATCH` with `doc_version`) re-checked against `company-profile-config-registry.ts` and `company-profile-component.tsx` at HEAD — unchanged. Print-form keys are `print-form.<type>` (`lib/print-form-config.ts:26-28`).
@@ -26,12 +36,12 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 These are two separate screens that both read and partially edit the **current business unit's own `tb_business_unit` row** — the same table [master-data/business-unit](/en/inventory/master-data/business-unit) documents from the platform-admin console's angle. Where that page covers the platform admin's `carmen-backstage` edit form (identity, currency, costing method, module enablement, tenant DB connection), these two screens are the **tenant-side, in-app** equivalents that a Sysadmin reaches from inside Carmen Blue itself, and they edit a **different, non-overlapping subset** of the same row:
 
-- **Company Profile** (`/system-admin/company-profile`) — identity (name, alias, description, info), read-only costing/licensing fields, default currency, hotel property address, company legal address, branding (logo/avatar, read-only), and date/time/number-format defaults.
+- **Company Profile** (`/system-admin/company-profile`) — identity (name, alias, description, info), read-only costing method and default currency (locked), hotel property address, company legal address, branding (logo/avatar, read-only), and date/time/number-format defaults.
 - **Default Setting** (`/system-admin/default-setting`) — the `config` JSONB array on the same row: PR, SI, and PO operational toggles, plus a per-document-type print-form template selector.
 
 Both screens share the exact same view/edit toggle pattern, the exact same `useBusinessUnit`/`useUpdateBusinessUnit` hooks, and the exact same `PATCH /api/business-units` endpoint — they differ only in *which* fields of `BusinessSettingFormValues` each screen renders and diffs. A single shared module (`company-profile-form-schema.ts`, `company-profile-config-registry.ts`, `company-profile-ui.tsx`) backs both screens' forms even though `default-setting-component.tsx` lives in its own route folder — confirmed by direct import (`../company-profile/company-profile-ui`, `../company-profile/company-profile-form-schema`).
 
-**`/system-admin/business-setting` is a dead route** — `router.tsx` registers it as `{ path: "business-setting", element: <Navigate to="/system-admin/company-profile" replace /> }`, a bare client-side redirect with no component of its own. This is presumably a rename artifact: earlier planning documents in this repo (`docs/superpowers/plans/2026-07-09-business-setting-*-config-section.md`, `docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`) describe a single "Business Setting" page later split into these two screens, with the redirect left behind for old links/bookmarks.
+**`/system-admin/business-setting` is a redirect-only route** — `router.tsx` registers it as `{ path: "business-setting", element: <Navigate to="/system-admin/company-profile" replace /> }`, a bare client-side redirect with no component of its own. This is presumably a rename artifact: earlier planning documents in this repo (`docs/superpowers/plans/2026-07-09-business-setting-*-config-section.md`, `docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`) describe a single "Business Setting" page later split into these two screens, with the redirect left behind for old links/bookmarks.
 
 **Maintained by** Sysadmin, in-app. **Read by** every module that consumes a `BusinessUnitDetail` field (costing engine reads `calculation_method`; PR/SI/PO screens read the `config` items Default Setting edits — see §6).
 
@@ -42,7 +52,7 @@ Both screens share the exact same view/edit toggle pattern, the exact same `useB
 | Edit business unit identity, address, or format defaults | Company Profile → **Edit** → change a field → **Save** | Sends only the changed fields as a `PATCH` (diff against the last-loaded snapshot) |
 | Edit PR/SI/PO operational toggles | Default Setting → **Edit** → change a value → **Save** | Same diff-and-`PATCH` mechanism, scoped to the `config` array only |
 | Pick a print form for a document type | Default Setting → Print Forms section → select a template per type | Dropdown is populated from [reporting-audit](/en/inventory/reporting-audit)'s report-template catalog, filtered to that document's `report_group`; see §6 |
-| View (not edit) costing method | Company Profile → General section | `calculation_method` renders as a read-only `SettingField` — no input, no matter what edit mode is active. The former `max_license_users` field was removed (column dropped 2026-08-21) |
+| View (not edit) costing method or default currency | Company Profile → identity card | `calculation_method` and `default_currency_id` render as locked, read-only facts — no input, no matter what edit mode is active. The former `max_license_users` field was removed (column dropped 2026-08-21) |
 | Discard unsaved changes | **Cancel** while editing | Prompts a confirm dialog (`useDiscardConfirm`) only if the form is dirty |
 
 ## 3. Validation & Errors
@@ -58,7 +68,7 @@ Both screens share the exact same view/edit toggle pattern, the exact same `useB
 
 - **`config` is schema-less and frontend-seeded.** `tb_business_unit.config` is a bare `Json?` column — there is no fixed schema for its contents. The Default Setting screen only shows the **4 sections it knows about** (`CONFIG_SECTIONS` in `company-profile-config-registry.ts`: PR, SI, PO, Print Forms — 15 items total, 12 of them the per-document-type print-form selectors). Any `config` entry the backend has that isn't in this registry is silently **not rendered** by either screen (there is no "other settings" catch-all UI, even though the registry code has an internal `other` bucket type for this case that the component never renders).
 - **Print-form config is frontend-seeded, not backend-required.** If a tenant's `config` array has no entry for a given print-form key (e.g. `print_form.pr`), the screen still shows the row (via `mergeSeededConfig`, defaulting to `""` = "Use the system default") — opening and saving the page for the first time is what actually writes the seeded defaults into the backend row.
-- **`si.cost-from` has a calculation-method-conditional option.** The `average` option in the Stock-In "Default price for added items" dropdown is only shown when `data.calculation_method === "average"` (`visibleWhenCalcMethod`) — **unless** the BU's stored value is already `average` on a `fifo`-method tenant, in which case it stays visible so the stored value isn't silently dropped (`resolveConfigOptions()`).
+- **`si.cost-from` has a calculation-method-conditional option.** The `average` option in the Stock-In "Default price for added items" dropdown is only shown when `data.calculation_method` is `average` or `average_per_location` (`visibleWhenCalcMethod` is an array since FE `83bb0624`) — **unless** the BU's stored value is already `average` on a `fifo`-method tenant, in which case it stays visible so the stored value isn't silently dropped (`resolveConfigOptions()`).
 - **Branding is read-only on both screens.** Logo/avatar render via a plain `<img>` with no upload control — the actual upload flow lives elsewhere (the user's own profile screen, per the component's own code comment), not here.
 - **Number-format fields are structured, not raw strings.** `amount_format`/`quantity_format`/`recipe_format` are each `{ locales, minimumIntegerDigits }` — the UI shows this as an `Intl`-style locale string plus a digit count, not a free-text pattern like the `date_format`/`time_format` fields (which are plain enumerated strings from `company-profile-options.ts`).
 - **`master-data/business-unit.md`'s address-field portrayal is stale relative to this page's own source read.** That page's §5.1 (last touched by an earlier resync pass) still lists single `hotel_address`/`company_address`/`*_zip_code` columns; the actual `BusinessUnitDetail` type and this screen's form both confirm 10 structured columns per address (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) plus `*_postal_code` (not `*_zip_code`) — matching the same structured-address finding the Platform book's `carmen-backstage` resync pass independently made for `BusinessUnitEdit.tsx`. Flagging for a future correction pass on `master-data/business-unit.md` itself; not fixed here (out of this page's scope).
@@ -73,8 +83,8 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`), cross-checked against `
 
 | Section | Fields | Editable here? |
 |---|---|---|
-| General | `name`, `alias_name`, `cluster_name`, `description`, `info`, `default_currency_id` | Yes (except `cluster_name`) |
-| General (read-only) | `calculation_method` | No — display only (`max_license_users` dropped 2026-08-21) |
+| General | `name`, `alias_name`, `description`, `info` | Yes |
+| Identity card (locked) | `cluster_name`, `calculation_method`, `default_currency_id` | No — display only (`max_license_users` dropped 2026-08-21; default currency locked read-only by FE `ead2abe5`) |
 | Hotel | `hotel_name`, `hotel_email`, `hotel_tel`, `hotel_address_line1/2`, `hotel_sub_district`, `hotel_district`, `hotel_city`, `hotel_province`, `hotel_postal_code`, `hotel_country` | Yes |
 | Company | `company_name`, `branch_no`, `tax_no`, `company_email`, `company_tel`, `company_address_line1/2`, `company_sub_district`, `company_district`, `company_city`, `company_province`, `company_postal_code`, `company_country` | Yes |
 | Branding | `logo`, `avatar` | No — read-only image preview |
@@ -94,7 +104,7 @@ Each print-form key is built as `printFormConfigKey(type)` → `print-form.<type
 | `po` | PO | `po.group-by-pr-comment` — "Group by PR comment" | boolean |
 | `printForm` | Print Forms | 12 keys, one per document type: PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP | enum (report-template id, sourced from the [reporting-audit](/en/inventory/reporting-audit) template catalog filtered by `report_group`) |
 
-\* `average` option only shown when `tb_business_unit.calculation_method = average` (or already selected).
+\* `average` option only shown when `tb_business_unit.calculation_method` is `average` or `average_per_location` (or already selected).
 
 ## 6. Business Rules
 
@@ -118,7 +128,7 @@ Each print-form key is built as `printFormConfigKey(type)` → `print-form.<type
 - **Frontend types:** `../carmen-frontend/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`.
 - **API endpoint:** `../carmen-frontend/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`.
 - **Design history:** `../carmen-frontend/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — the split from a single "Business Setting" page into these two screens (the `-design` suffix is a `specs/`-only convention; sibling `plans/` files carry the same basename without it).
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; see [master-data/business-unit](/en/inventory/master-data/business-unit) §8 for the full citation. Column drops since baseline: `max_license_users` (`59c841346`), credential columns replaced by database-pool reference (`e54248d88`).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_business_unit`; see [master-data/business-unit](/en/inventory/master-data/business-unit) §8 for the full citation. Column drops since baseline: `max_license_users` (`59c841346`), credential columns replaced by database-pool reference (`e54248d88`).
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`).
 - **Nav / permission:** `../carmen-frontend/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`).
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 cases), `1115-default-setting.md` (30 cases) — catalogs only, no Playwright spec.

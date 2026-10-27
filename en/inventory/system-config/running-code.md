@@ -2,7 +2,7 @@
 title: Running Code
 description: Document-number patterns — prefix, date token, running counter per document type (PR, PO, GRN, SR, GL-JV, …). Since 2026-08-27 the admin dialog is a part-by-part editor with live preview; raw JSON is a collapsed fallback.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, running-code, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,14 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ![Running Code screen](/screenshots/system-config/running-code.png)
 
-## Implementation status (verified 2026-07-16; re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+- **One numbering engine for every document** (BE `48c3fc817`): `reserveDocumentNumbers` (`common/helpers/document-number.helper.ts`) is now the single way PR, PO, GRN, SR, CN, SC, price list, vendor portal, Stock-In/Out, AP, AR, tax invoice and GL JV numbers are issued. It reads the whole config and splits it into head / running digits / tail with `GenerateCode` itself (`getRunningCodeShape`), so the running number may sit **anywhere** in the pattern and dates follow the BU calendar. Numbers are issued under a lock per (BU, table, head, tail) inside the transaction that writes the document, which removes duplicate numbers when documents arrive concurrently; the latest number is found only among numbers of the configured width, the next width is read when the digits overflow (including a block that crosses the width boundary, BE `2a343f502`), and soft-deleted documents still hold their numbers. `running-code.generateCode` matches the config by exact `type` (it used to use `contains`).
+- **A config that cannot number documents is refused when saved** (BE `8b42ca451`): `POST`/`PUT api/config/:bu_code/running-codes` run the generators' own checks and answer **400** with one of eight `RUNNING_CODE_*` catalog codes — `FORMAT_REQUIRED`, `FORMAT_PART_UNDEFINED`, `FORMAT_PART_REPEATED`, `PART_MALFORMED`, `RANDOM_NOT_ALLOWED`, `RUNNING_COUNT` (exactly one `running()` part), `RUNNING_PAD` (`running(n, '0')`, n ≥ 1, pad must be `0`), `RUNNING_NOT_PLACED` (`packages/error-catalog/src/catalog.ts:1203-1270`). A config already stored in that state (or edited in the database) answers **422 `RUNNING_CODE_CONFIG_UNUSABLE`** naming the type, with the reason in `params.reason`, instead of a 500 (BE `d17d08156`). The "Format must reference at least one segment" caveat in Edge Cases and §6 below is therefore **superseded**: unreferenced slots are still tolerated, but a format that omits the running part, repeats it, or uses `random()` cannot be saved.
+- **Duplicate `type`** now carries `RUNNING_CODE_ALREADY_EXISTS` (409) and the dialog shows it under the Type field (FE `useServerFieldErrors`, `running-code-dialog.tsx:66`; FE `b71f86ea`).
+- The list moved into `ListPageShell` (FE `c3fe01ea`); no behaviour change. Editor details below were verified 2026-09-22 and the FE files are otherwise unchanged apart from the above.
+
+### Earlier status (verified 2026-07-16; re-verified 2026-09-22)
 
 **The 2026-07-16 finding is superseded.** FE commit `704f1f9f` (2026-08-27, *"edit the document-number format part by part instead of typing JSON"*) replaced the raw textarea with a structured editor:
 
@@ -51,7 +58,8 @@ The system is keyed by `type` (one row per document type — the preset keys abo
 | Symptom | Cause | Action |
 |---|---|---|
 | "Duplicate type" | Existing non-deleted row | Edit existing row instead |
-| Advanced-config textarea rejects the value on save | `config` is not valid JSON | Fix syntax |
+| Advanced-config textarea rejects the value on save | `config` is not valid JSON, or the backend refused it with a `RUNNING_CODE_*` 400 (no/duplicate `running()`, non-`0` pad, `random()`, undefined slot) | Fix syntax / the named part |
+| `RUNNING_CODE_CONFIG_UNUSABLE` (422) when a document is created | The stored config for that type cannot number documents (saved before the save-time check, or edited in the database) | Correct the row here; the error names the type and reason |
 | Part editor disabled, `configUnreadable` shown | `config` has no `format`, or `format` references a slot that does not exist | Repair in Advanced config; the editor refuses to guess and overwrite |
 | Counter unexpectedly restarted | Dated segment changed | Counter scoped by `type + dated-segment` — adding `yyyyMM` restarts monthly |
 | 500 `Cannot read properties of undefined (reading 'config')` on first document of a type | BU has no row for the type **and** no preset (`RUNNING_CODE_PRESET`) | Add the row here, or a preset in code (`GL-JV` was fixed this way on 2026-09-15) |
@@ -61,11 +69,11 @@ The system is keyed by `type` (one row per document type — the preset keys abo
 ## 4. Edge Cases
 
 - **Structured editor with a JSON escape hatch.** The part editor guarantees a consistent `format` for anything it saves; only the Advanced-config path can still store a `format` that references an undefined slot, which then fails at document-create time.
-- **`GL-JV` has no literal prefix part on purpose** — the prefix lives on `tb_gl_jv_header.prefix_code` and `jv_no` holds only `date('yyyyMM') + running(5,'0')`; adding a literal would break the GL module's `startsWith` lookup and counter reset (`running-code.const.ts:119`).
+- **`GL-JV` has no literal prefix part on purpose** — the prefix lives on `tb_gl_jv_header.prefix_code` and `jv_no` holds only `date('yyyyMM') + running(5,'0')`; the series is scoped to `prefix_code` by `generateJvNo`, so each prefix counts on its own (`running-code.const.ts:109-117`; the older `startsWith` rationale was dropped from the source comment in BE `2a343f502`). The preset list also gained AP/AR/tax codes (`AP-IV`, `AP-DN`, `AP-CN`, `AP-DP`, `AP-PV`, `AR-IV`, `AR-DN`, `AR-CN`, `TX-IV`, `TX-DN`, `TX-CN`).
 - **Counter scope.** Implicit — scoped by `type + dated-segment`. Without a dated segment, counter is global per type.
 - **Counter persistence** is service state (advisory lock / sequence), not this table — this entity defines the *pattern* only.
 - **Pattern changes mid-period** take effect at next mint; existing references render as stored.
-- **Format must reference at least one segment** — unreferenced segments allowed; no UI warning was found for this (contrary to a prior version of this page).
+- **Format must place exactly one `running()` part** — enforced on save since 2026-10 (see Implementation status); unreferenced extra slots are still allowed.
 
 ---
 
@@ -107,7 +115,7 @@ Observed in seed data:
 - **Uniqueness.** `type` unique among non-deleted — one pattern per doc type.
 - **Counter scope.** Implicit per `type + dated-segment`; global per type without a dated segment.
 - **Counter persistence.** Service state, not this table.
-- **Format validation.** Must reference at least one segment to be usable at mint time; the part editor always emits a consistent `format`, the Advanced-config textarea only checks that `config` parses as JSON.
+- **Format validation.** The backend rejects, on save, a `format` that is missing, uses an undefined or repeated slot, has a malformed part, uses `random()`, lacks exactly one `running(n, '0')` part, or does not place it exactly once (`RUNNING_CODE_*`, 400). The part editor always emits a consistent `format`; the Advanced-config textarea is checked by the backend instead of only for JSON syntax.
 - **Preset fallback.** A BU without a row for a type uses `RUNNING_CODE_PRESET[type]`; a type with neither fails hard.
 - **Pattern changes** take effect at next mint; historical references unchanged.
 - **Deletion guards.** Active types cannot be deleted; soft-delete only on retired types.
@@ -125,8 +133,8 @@ Observed in seed data:
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_config_running_code` (lines ~4864-4883).
-- **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; presets `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` is `doc_version`-guarded, `:301`).
-- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:121`).
+- **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; presets `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` is `doc_version`-guarded, `:309`).
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:125`).
 - **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (includes `GL-JV`).
 - **Frontend:** `../carmen-frontend/routes/system-admin/running-code/` — `running-code-component.tsx` (list), `running-code-dialog.tsx` (create/edit), `running-code-config-fields.tsx` (part editor + preview), `running-code-config.ts` (`parseConfig`, `serializeConfig`, `previewCode`, `slotName`), `running-code-form-schema.ts`.
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1110-running-code.md` — catalog only.

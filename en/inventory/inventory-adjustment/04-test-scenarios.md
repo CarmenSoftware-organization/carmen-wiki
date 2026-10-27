@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Test Scenarios
 description: Test cases for the draft → commit → void inventory-adjustment lifecycle, plus E2E coverage pointers.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -13,7 +13,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 > **At a Glance**
 > **Module:** [inventory-adjustment](/en/inventory/inventory-adjustment) &nbsp;·&nbsp; **Personas covered:** Store Keeper, Inventory Controller (same undifferentiated screen); Finance and Audit/Config have no matching surface — see their pages
 > **Headline fact that shapes every scenario below:** creation writes a `draft`; **Commit** posts; **Void** reverses (UI: drafts only; posted documents via API)
-> **Executable coverage (2026-09-22):** no Playwright spec exercises this screen. Manual catalog `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases, re-verified against the redesigned form 2026-09-20 — covers Commit, Void-requires-Edit, Delete-in-view, status filter) and generated stories `docs/user-stories/730-inventory-adjustment.md` (32). `tests/031-adjustment-type.spec.ts` covers the reason-code master only.
+> **Executable coverage (2026-10-27):** one opt-in movement-suite spec, `tests/730-inventory-adjustment-doc-flow.spec.ts` (`bun run test:movement`; TC-IADJ-70xxxx Stock In / 71xxxx Stock Out on CARMEN-AVG), walks open form → draft → view → edit → delete → new + Commit; `tests/92x-period-close-*` also create and commit adjustments as scenario fixtures. Manual catalog `../carmen-frontend-e2e/docs/test-cases/730-inventory-adjustment.md` (60 cases, re-verified against the redesigned form 2026-09-20 — covers Commit, Void-requires-Edit, Delete-in-view, status filter) and generated stories `docs/user-stories/730-inventory-adjustment.md` (32). `tests/031-adjustment-type.spec.ts` covers the reason-code master only.
 
 ## 1. Overview
 
@@ -54,7 +54,7 @@ The 2026-07-15 revision of this page was scoped to an always-completed document 
 | `../carmen-frontend-e2e/tests/031-adjustment-type.spec.ts` | Reason-code (`tb_adjustment_type`) master-data CRUD only. |
 | `../carmen-frontend-e2e/tests/900-period-end.spec.ts` + `docs/test-cases/gaps/900-period-end-gap.md` | SI/SO cards and links on the period-end review (`TC-PE-320102`), draft SI/SO as start-counting blockers. |
 
-Gaps: no automated test for Save/Commit/Void, the date guards, the on-hand pre-check, or the stock-movements panel.
+Gaps: no automated test for Void, the date guards (incl. FIFO receipt order and held average stock-ins), the dated availability check, EOP-labelled rows in the list, or the stock-movements panel; two bugs are pinned with `test.fail()` in the 730 spec (TC-IADJ-710003, TC-IADJ-710004).
 
 ## 6. References
 

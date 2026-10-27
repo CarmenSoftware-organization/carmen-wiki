@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Inventory Controller
 description: Reviewing drafts before commit, voiding mistakes, and reading completed documents, their stock movements and print output — same screen and permission as the Store Keeper.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -46,10 +46,10 @@ A 2026-05 draft of this page described an above-threshold approval authority rev
 1. **Filter the list to `Draft`** (and the direction of interest).
 2. **Open the draft.** Check reason, location, date (must be inside the period), lines and — for stock-in — the entered `cost_per_unit`.
 3. **Fix or discard if needed.** **Edit** → change header/lines → **Save** (`PATCH /{id}/save`, `doc_version` checked); or **Delete** (view mode, `DELETE /{id}`); or **Edit** → **Void** with a reason (`DELETE /{id}/void` — on a draft this only marks it `voided` + soft-deleted, nothing to reverse).
-4. **Commit.** **Commit** → confirm dialog → `PATCH /{id}/commit` with the current `doc_version`. Stock-out: the service first checks on-hand per product (`STOCK_OUT_INSUFFICIENT_STOCK`); both directions re-check the document date against the period. On success the ledger rows exist, `inventory_transaction_id` is stamped on each line and the document is `completed`.
+4. **Commit.** **Commit** → confirm dialog → `PATCH /{id}/commit` with the current `doc_version`. Stock-out: the service first checks the quantity drawable as of the document date per product (`STOCK_OUT_INSUFFICIENT_STOCK`, which names the date and the day the balance is lowest); both directions re-check the document date against the period, and a FIFO stock-in is refused if dated before the latest receipt of that product/location (`STOCK_IN_DATE_BEFORE_LATEST_RECEIPT`). On success the ledger rows exist, `inventory_transaction_id` is stamped on each line and the document is `completed`.
 5. **Verify.** Re-open the document → **Stock movements** shows the lot(s) and `adjustment_in` / `adjustment_out` layers; the Transaction Log ([inventory/transaction](/en/inventory/inventory/transaction)) shows the same rows under the SI / SO number.
 
-**Reversal of a posted document (API):** `DELETE /{bu}/stock-ins/{id}/void` (`{ void_reason }`) — `voidStockIn` first checks that on-hand at the location can absorb the reversal of every posted line (`Cannot void: product … has insufficient on-hand qty (…) to reverse …`), then posts an `adjustment_out` per line at the cost the ledger resolves now, and marks the header `voided` + `deleted_at`. `voidStockOut` mirrors it with `adjustment_in` legs. The document then disappears from list/detail queries.
+**Reversal of a posted document (API):** `DELETE /{bu}/stock-ins/{id}/void` (`{ void_reason }`) — `voidStockIn` first checks that the stock drawable from the document's date on can absorb the reversal of every posted line (422 `STOCK_IN_VOID_INSUFFICIENT_STOCK`: `Cannot void: {product} at {location} has only {on_hand} from {date} on … to take back the {requested} received`), then posts an `adjustment_out` per line at the cost the ledger resolves now, and marks the header `voided` + `deleted_at`. `voidStockOut` mirrors it with `adjustment_in` legs. The document then disappears from list/detail queries.
 
 ## 3. Decision Branches
 

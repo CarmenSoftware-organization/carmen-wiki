@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Outlet Manager
 description: Outlet Manager's test cases (read-only consumption, demand explosion, variance, feedback) for the recipe module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, test-scenarios, outlet-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,9 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Outlet Manager (read-only on recipe library) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~23
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for recipe internals; automated specs exist only for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). (`701-sr.spec.ts` covers ordinary SRs only — no recipe-driven auto-create path exists in code.) Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
+> **E2E coverage:** none for recipe internals; automated specs exist only for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). (`701-sr.spec.ts` covers ordinary SRs only — no recipe-driven auto-create path exists in code.) Re-verified 2026-10-27 (no new specs since 2026-09-22) — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
 
-> **Implementation status (verified 2026-07-15).** The Outlet Manager surface these scenarios test does not exist: no read-only recipe permission (the group is admin-only via the `operation_plan.view` placeholder), no outlet-scoped recipe view, no recipe explosion, no recipe→SR auto-create (no `recipe_id` anywhere in SR code), and no variance dashboard. Store requisitions themselves are real but manual. Treat the scenarios below as the design acceptance plan.
+> **Implementation status (re-verified 2026-10-27).** The Outlet Manager surface these scenarios test does not exist: no persona-specific read-only recipe permission (only generic `operation_plan.recipe.view`), no outlet-scoped recipe view, no recipe→SR auto-create (no `recipe_id` anywhere in SR code), and no variance dashboard. A recipe explosion **does** exist for POS-sales deduction ([Sales Consumption](/en/inventory/recipe/sales-consumption)); store requisitions themselves are real but manual. Treat the scenarios below as the design acceptance plan.
 
 This page captures the test scenarios that the Outlet Manager persona directly drives in the `recipe` module. The Outlet Manager is **read-only on the recipe library** (`recipe:read` per `REC_AUTH_009`); the persona's interaction with the recipe is downstream — using recipe explosions to plan ingredient pulls, monitoring outlet variance driven in part by recipe accuracy, and feeding back portion-control / accuracy issues for the Chef to revise. Scenarios are grouped into **happy paths** (read recipe detail in outlet view; planned-production explosion; auto-create SR from recipe demand; outlet variance review; recipe-feedback submission), **RBAC** (Outlet Manager attempting any write; cross-outlet read scope), **validation** (negative tests around forecast accuracy, demand-zero recipes), and **edge cases** around banquet-event demand, par-level top-up patterns, multi-outlet recipe usage. Cross-persona handoffs that pivot off the Outlet Manager (Scenarios 5, 6 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

@@ -2,7 +2,7 @@
 title: User Location (tb_location_user)
 description: Per-user location scoping inside a tenant — restricts a user to a subset of inventory locations. Table renamed tb_user_location → tb_location_user on 2026-09-04; edited via PATCH /api/config/:bu_code/users/:user_id.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: access-control, user-location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,13 +11,19 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # User Location (`tb_location_user`)
 
 > **At a Glance**
-> **Owner:** Sysadmin / BU Admin &nbsp;·&nbsp; **Table:** `tb_location_user` (tenant; **renamed from `tb_user_location` on 2026-09-04**) &nbsp;·&nbsp; **Edited via:** `PATCH /api/config/:bu_code/users/:user_id { location_id: { add[], remove[] } }` (2026-09-04) or `PUT /api/config/:bu_code/locations-users/:userId` / `PUT …/user-locations/:locationId` &nbsp;·&nbsp; **Read by:** [inventory](/en/inventory/inventory), [store-requisition](/en/inventory/store-requisition), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), and the workflow product-location picker &nbsp;·&nbsp; Row-level location filter — restricts inventory rows visible to the user.
+> **Owner:** Sysadmin / BU Admin &nbsp;·&nbsp; **Table:** `tb_location_user` (tenant; **renamed from `tb_user_location` on 2026-09-04**) &nbsp;·&nbsp; **Edited via:** `PATCH /api/config/:bu_code/users/:user_id { location_id: { add[], remove[] } }` (2026-09-04) or `PUT /api/config/:bu_code/locations-users/:userId` (replace list) &nbsp;·&nbsp; **Read by:** [inventory](/en/inventory/inventory), [store-requisition](/en/inventory/store-requisition), [physical-count](/en/inventory/physical-count), [spot-check](/en/inventory/spot-check), and the workflow product-location picker &nbsp;·&nbsp; Row-level location filter — restricts inventory rows visible to the user.
 
 ![User Location (tb_location_user) screen](/screenshots/access-control/user-location.png)
 
 ## Rename notice (2026-09-04)
 
-Tenant migration `20260904131500_rename_shelf_and_user_location` (BE `d49a81b34`) renamed `tb_user_location` → `tb_location_user` (and `tb_shelf` → `tb_location_shelf`) so the table name reads "location's users" like its sibling `tb_location_shelf`, `tb_location_product`. The migration is metadata-only (`ALTER TABLE … RENAME`, constraint `tb_user_location_pkey` → `tb_location_user_pkey`, FK `…_location_id_fkey` renamed, indexes `user_location_*` → `location_user_*`). The Prisma model is `tb_location_user` (`schema.prisma`, `@@unique([user_id, location_id, deleted_at]) map "location_user_user_id_location_id_u"`). Gateway paths did **not** change: `api/config/:bu_code/locations-users` (`locationUser.*` api names) and `api/config/:bu_code/user-locations` (`userLocation.*`) both still exist, and the caller's own scope is `GET api/:bu_code/user-locations`. This wiki slug (`user-location`) is kept.
+Tenant migration `20260904131500_rename_shelf_and_user_location` (BE `d49a81b34`) renamed `tb_user_location` → `tb_location_user` (and `tb_shelf` → `tb_location_shelf`) so the table name reads "location's users" like its sibling `tb_location_shelf`, `tb_location_product`. The migration is metadata-only (`ALTER TABLE … RENAME`, constraint `tb_user_location_pkey` → `tb_location_user_pkey`, FK `…_location_id_fkey` renamed, indexes `user_location_*` → `location_user_*`). The Prisma model is `tb_location_user` (`schema.prisma`, `@@unique([user_id, location_id, deleted_at]) map "location_user_user_id_location_id_u"`). Gateway paths did **not** change: `api/config/:bu_code/locations-users` (`locationUser.*` api names) still exists. **Correction 2026-10-27:** the sibling `api/config/:bu_code/user-locations` (`userLocation.getUsersByLocationId` / `managerUserLocation`) that this page listed as "still existing" was a gateway module that was **never registered** in the app and has been deleted as dead code (BE `d5829efd3`, 2026-10-05; Bruno `config/user-location/` archived under `_archived/2026-10-07`) — those two calls never reached a handler. The caller's own scope is `GET api/:bu_code/user-locations` (`application/user-locations/`), which is unaffected. This wiki slug (`user-location`) is kept.
+
+## Implementation status (re-verified 2026-10-27)
+
+- **No behaviour change** in the table, endpoints or error codes since 2026-09-22. `tb_location_user` is unchanged in `schema.prisma` (`:5594`); `config_users.controller.ts`, the location-user service and the `USER_ACCESS_LOCATION_*` catalog entries differ from the last pass only by the project-wide `platform` → `backstage` rename (BE `cb78788a6`, `c820b5064`).
+- **Edit-mode registry is loaded through `useLocationAll`** (FE `0bac08d4`): the Locations section still fetches the BU's whole location register only when **Edit** is pressed (`enabled: !isDisabled`), now via the shared "list all" helper instead of `perpage=-1`. View mode shows the locations that arrive with the user (`GET …/users/:user_id`). The location-type filter, checkbox grid and diff-only `PATCH` are unchanged.
+- **Layout:** the user form now sits in `FormPageShell` + `FormToolbar` (FE `7c9bc0ae`); the Save button is outside the `<form>` and references it by `form="user-assigned-form"`. No change to what is saved.
 
 ## 1. What & Who
 
@@ -33,10 +39,10 @@ One consumer is now explicit in code: `GET api/config/:bu_code/workflows/:workfl
 
 | Task | Where | Notes |
 |---|---|---|
-| Assign user to locations | User Assign screen (`/system-admin/user/:id`) → **Edit** → **Locations** section (`user-assigned-locations.tsx`) → tick locations → Save | Since 2026-08-27 (`96e569ad`) the section is a `DataGrid` with a checkbox per row, search, sort and a type filter (Inventory / Direct / Consignment), not the two-panel Transfer control this page used to describe; the form diffs the ticked set and sends only `{ location_id: { add, remove } }` (`buildUserPatch`, `user-assigned-form-schema.ts:74-76`) |
+| Assign user to locations | User Assign screen (`/system-admin/user/:id`) → **Edit** → **Locations** section (`user-assigned-locations.tsx`) → tick locations → Save | Since 2026-08-27 (`96e569ad`) the section is a `DataGrid` with a checkbox per row, search, sort and a type filter (Inventory / Direct / Consignment), not the two-panel Transfer control this page used to describe; the form diffs the ticked set and sends only `{ location_id: { add, remove } }` (`buildUserPatch`, `user-assigned-form-schema.ts:63-77`) |
 | Reassign storekeeper | Untick A, tick B → Save | One `PATCH`; open documents continue to work (FKs target `tb_location`) |
 | View user's effective scope | Same screen, view mode | `GET /api/config/:bu_code/users/:user_id` → `locations[{ id, location_id, location_code, location_name, location_type, is_active }]` |
-| Manage from the location side | `PUT /api/config/:bu_code/user-locations/:locationId` (`userLocation.managerUserLocation`) | Bruno `config/user-location/`; no dedicated screen |
+| Replace one user's whole location list | `PUT /api/config/:bu_code/locations-users/:userId` (`locationUser.managerLocationUser`) | Bruno `config/locations-user/`; no dedicated screen. There is **no** location-keyed variant (the `…/user-locations/:locationId` route listed here before was never registered and is deleted) |
 | Remove all scope (full access) | Untick every location, Save | Empty set = "no restriction" by convention (confirm with the consuming service before relying on this for a sensitive path) |
 | Audit scope changes | [reporting-audit/activity](/en/inventory/reporting-audit/activity) log | Filter by entity type |
 
@@ -48,16 +54,16 @@ One consumer is now explicit in code: `GET api/config/:bu_code/workflows/:workfl
 |---|---|---|
 | User cannot see expected location | Missing `tb_location_user` row OR empty-set convention not applied | Add row or confirm service code behaviour |
 | `USER_ACCESS_LOCATION_ADD_REMOVE_CONFLICT` | The same location id in both `add` and `remove` | Fix the payload |
-| `USER_ACCESS_LOCATIONS_TO_ADD_NOT_FOUND` / `…_TO_REMOVE_NOT_FOUND` | Unknown location id, or removing an assignment that does not exist | Reload and retry (`packages/error-catalog/src/catalog.ts:328-335`) |
-| `USER_ACCESS_LOCATION_WRITE_FAILED` | Tenant write failed after the platform side succeeded | Retry; report if persistent |
+| `USER_ACCESS_LOCATIONS_TO_ADD_NOT_FOUND` / `…_TO_REMOVE_NOT_FOUND` | Unknown location id, or removing an assignment that does not exist | Reload and retry (`packages/error-catalog/src/catalog.ts:366-386`; `…_ADD_REMOVE_CONFLICT` is HTTP 400) |
+| `USER_ACCESS_LOCATION_WRITE_FAILED` | Tenant write failed after the backstage side succeeded | Retry; report if persistent |
 | `USER_ACCESS_NO_CHANGES` | `PATCH` body contained no effective change | Nothing to do |
-| Orphan `user_id` after platform-user deletion | Cross-schema, no FK enforcement | Run maintenance job to clean stale rows |
+| Orphan `user_id` after backstage-user deletion | Cross-schema, no FK enforcement | Run maintenance job to clean stale rows |
 
 ## 4. Edge Cases
 
 - **Empty-set semantics.** Conventionally "no row-level restriction" — confirm with service code if relying on this default for a sensitive path.
-- **Cross-schema integrity.** `user_id` references platform `tb_user.id` but is **not** a Prisma FK — application validates on insert.
-- **Two write paths, one table.** The user-side `PATCH` (add/remove diff) and the location-side `PUT` (replace list) both write `tb_location_user`; the `PATCH` is transactional across platform (roles) and tenant (locations) writes and reports the tenant failure as `USER_ACCESS_LOCATION_WRITE_FAILED`.
+- **Cross-schema integrity.** `user_id` references backstage `tb_user.id` (`prisma-shared-schema-backstage`, renamed from the platform schema in BE `c820b5064`) but is **not** a Prisma FK — application validates on insert.
+- **Two write paths, one table.** The user-side `PATCH` (add/remove diff) and the `locations-users/:userId` `PUT` (replace list) both write `tb_location_user`; the `PATCH` is transactional across backstage (roles) and tenant (locations) writes and reports the tenant failure as `USER_ACCESS_LOCATION_WRITE_FAILED`.
 - **Per-document overrides.** This table is the **default scope** for pickers; specific workflows may broaden (e.g. an approver in [store-requisition](/en/inventory/store-requisition) needs both source and destination).
 - **Reassignment is two ops.** Soft-delete A row, insert B row — open documents keep working.
 
@@ -72,7 +78,7 @@ Source: tenant schema.
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `user_id` | `String @db.Uuid` | No | References platform `tb_user.id`; not a Prisma FK (cross-schema). |
+| `user_id` | `String @db.Uuid` | No | References backstage `tb_user.id`; not a Prisma FK (cross-schema). |
 | `location_id` | `String @db.Uuid` | No | FK to tenant `tb_location`. |
 | `note` | `String? @db.VarChar` | Yes | Assignment context. |
 | `info` | `Json? @db.JsonB` | Yes | Default `{}`. Reserved metadata. |
@@ -88,13 +94,12 @@ GET   /api/config/:bu_code/users/:user_id                  configUser.getAccess 
 PATCH /api/config/:bu_code/users/:user_id                  configUser.patchAccess { location_id: { add[], remove[] } }
 GET   /api/config/:bu_code/locations-users/:userId         locationUser.getLocationByUserId
 PUT   /api/config/:bu_code/locations-users/:userId         locationUser.managerLocationUser
-GET   /api/config/:bu_code/user-locations/:locationId      userLocation.getUsersByLocationId
-PUT   /api/config/:bu_code/user-locations/:locationId      userLocation.managerUserLocation
 GET   /api/:bu_code/user-locations                         userLocation.findAll (caller's own scope)
 GET   /api/:bu_code/user-locations/product/:product_id     locations.findAllByProductId
+GET   /api/:bu_code/user-locations/:user_location_id       (application/user-locations, `:206`)
 ```
 
-Licence routes `config:locations-users`, `config:user-locations`, `app:user-locations` all map to `configuration.location` (`permission.route-map.ts:106,176,186,199`).
+Licence route keys `config:locations-users`, `config:user-locations` (now orphaned — its controller is gone), `app:user-locations` all map to `configuration.location` (`packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts:180,190,203` — the file moved with the platform → backstage package rename).
 
 ## 6. Business Rules
 
@@ -117,6 +122,6 @@ Licence routes `config:locations-users`, `config:user-locations`, `app:user-loca
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_user`; migration `20260904131500_rename_shelf_and_user_location`.
-- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_users/config_users.controller.ts` (`:64-150`, swagger `request.ts` `ConfigUserAccessPatchRequest`, `response.ts` `ConfigUserAccessLocationDto`); `config/config_locations-users/`, `config/config_user-locations/`; `application/user-locations/`.
-- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/users/{GET-get-access,PATCH-patch-access}-config-users.bru`, `config/locations-user/`, `config/user-location/`.
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_users/config_users.controller.ts` (`PATCH :user_id` `:64`, `GET :user_id` `:149`; swagger `request.ts` `ConfigUserAccessPatchRequest`, `response.ts` `ConfigUserAccessLocationDto`); `config/config_locations-users/` (`GET`/`PUT :userId` `:60`/`:119`); `application/user-locations/` (`GET` `:69`, `GET product/:product_id` `:130`). `config/config_user-locations/` no longer exists.
+- **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/users/{GET-get-access,PATCH-patch-access}-config-users.bru`, `config/locations-user/` (the `config/user-location/` folder is archived).
 - **Frontend:** `../carmen-frontend/routes/system-admin/user/user-assigned-locations.tsx` (DataGrid + checkbox), `user-assigned-form.tsx`, `user-assigned-form-schema.ts` (`buildUserPatch`), `types/user.ts` (`UserLocation`, `UpdateUserPayload`).

@@ -2,7 +2,7 @@
 title: Vendor Pricelist — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for vendor-pricelist.
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, test-scenarios, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Personas covered:** Purchaser, Vendor (external portal — save/submit work since 2026-08/09)
 > **Each persona's drill-down is `04-test-scenarios-<role>.md`**
 > **Executable coverage (2026-09-22):** `../carmen-frontend-e2e/tests/150-vendor.spec.ts` (31 cases, 2 fixme) + `docs/test-cases/gaps/150-vendor-gap.md` (54), `tests/159-pl.spec.ts` (28, 4 fixme) + `gaps/159-pl-gap.md` (65), `tests/160-pl-template.spec.ts` (33) + `gaps/160-pl-template-gap.md` (58), `tests/043-certification.spec.ts` (6) + `gaps/043-certification-gap.md` (29); vendor portal: documentation-only catalog `docs/test-cases/1002-external-price-list.md` (42, no spec); Request for Pricing: no spec. This page does not mirror those cases.
+> **E2E gaps noted 2026-10-27** (specs/catalog unchanged apart from a "Carmen Inventory" → "Carmen Blue" wording edit in `160-pl-template.spec.ts`): none of the specs cover price-list **void / restore / admin hard delete**, the **Current / Expired / All** tabs, the **Responses / window badge** on the RFQ list, the vendor **Rating / Tax ID / Branch No. / AP account** fields, vendor **comments** and **Print**, the Certification **holder counts**, pre-tax price entry, or the portal's language toggle and Row-ID Excel import. `159-pl.spec.ts` TC-PL-900007 (Delete) still looks for a *Delete* row action with best-effort `.catch` handling, but the list row action is now **Void** (Delete is admin-only on the document page), so that case cannot exercise a real delete any more.
 
 ## 1. Overview
 
@@ -51,7 +52,7 @@ Scenarios describing a Manager-only high-value approval, a Finance Manager co-si
 
 Real Playwright specs exist for four of the five screens (see the coverage note at the top for counts):
 
-- `../carmen-frontend-e2e/tests/150-vendor.spec.ts` — full CRUD, tab navigation (address/contact/info), validation (required fields, max-length, duplicate code), and admin-BU coverage for the **Vendor** screen; nothing yet for the certificates section or the backend-only `tax_no` / `branch_no` / `rating`.
+- `../carmen-frontend-e2e/tests/150-vendor.spec.ts` — full CRUD, tab navigation (address/contact/info), validation (required fields, max-length, duplicate code), and admin-BU coverage for the **Vendor** screen; nothing yet for the certificates section or the `tax_no` / `branch_no` / `rating`.
 - `../carmen-frontend-e2e/tests/043-certification.spec.ts` — the **Certification** master (dialog CRUD) under `/vendor-management/certification`.
 - `../carmen-frontend-e2e/tests/159-pl.spec.ts` — list/search/filter, create, view detail, edit, and Export for **Price List**. Its Duplicate and "Mark as Expired" sections use loose, best-effort assertions (`.catch(() => {})`, `expect(true).toBe(true)`) and reference actions not found in the real list component (`use-pl-table.tsx`'s row actions are Edit + Delete only, plus a client-side Export button) — treat those two sections as aspirational test-plan scaffolding, not confirmed features.
 - `../carmen-frontend-e2e/tests/160-pl-template.spec.ts` — **Price List Template** coverage.

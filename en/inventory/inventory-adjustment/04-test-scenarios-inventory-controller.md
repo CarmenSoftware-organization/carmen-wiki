@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Test Scenarios — Inventory Controller
 description: Test cases for reviewing drafts, committing, removing/voiding, and reading completed documents — no approval queue exists.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -34,7 +34,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | IC-EDGE-01 | Void button on a completed document | Open a completed document | No **Edit** (`isView && !isReadOnly` false) and therefore no **Void** (`canVoid = isEdit && …`); reversal is API-only. |
 | IC-EDGE-02 | Remove a completed document | Removal call via API (the detail view hides the button once `isReadOnly`) | 400 `Cannot delete a completed Stock In — inventory has already been adjusted`. |
 | IC-EDGE-03 | `In Progress` status filter | Select `In Progress` in the list filter | Returns nothing — no code path ever sets `in_progress` on `tb_stock_in`/`tb_stock_out`. |
-| IC-EDGE-04 | Physical-count rows in the list | A physical count was submitted with variances | Its `tb_stock_in`/`tb_stock_out` rows appear as `completed` with no reason and **no stock movements** (never posted). |
+| IC-EDGE-04 | Physical-count rows in the list | A physical count was submitted with variances | Its `tb_stock_in`/`tb_stock_out` rows appear as `completed`, typed `eop_in` / `eop_out`, **with** stock movements (posted by `submit()`); the `type` filter value `eop_in` / `eop_out` returns only those rows. |
 | IC-EDGE-05 | Wastage write-off rows in the list | `POST /wastage-reporting` was called | One `completed` Stock-Out per location with the caller's reason; stock movements show `adjustment_out` from the named lots. |
 | IC-EDGE-06 | Stale `doc_version` | Two sessions edit the same draft | Second save/commit fails on the `doc_version` mismatch; reload and retry. |
 

@@ -2,7 +2,7 @@
 title: Equipment Category
 description: Functional grouping for kitchen equipment — preparation, cooking, holding, refrigeration, dispense, cleaning, etc.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, equipment, taxonomy, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -16,6 +16,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 ![Equipment Category screen](/screenshots/recipe/equipment-category.png)
 
 > **Re-verified 2026-09-22.** Schema and service rules below are unchanged. `GET /api/config/{bu}/recipe-equipment-categories` defaults to `sort=name:asc` (`928f3b950`). E2E: both screens over this table are automated — `tests/131-equipment-category.spec.ts` (12 tests; 4 manual cases left in `docs/test-cases/gaps/131-equipment-category-gap.md`) and `tests/121-recipe-equipment-category.spec.ts` (12 tests; 3 manual cases in `gaps/121-recipe-equipment-category-gap.md`).
+
+> **Re-verified 2026-10-27.** Backend (`recipe-equipment-category.service.ts`, serializer): `GET .../recipe-equipment-categories` (list only) now returns **`equipment_count`** — non-deleted equipment in the category. Frontend (`5ac1f4b5`): the list gains a **Description** column and a count cell that links to `/operation-plan/equipment?category=category_id|string:<id>` (a pre-filtered equipment list); the cell shows `—` when the backend omits the field (older deployments) and `0` unlinked. Both this screen and the duplicate `/operation-plan/recipe-equipment-category` screen were moved onto the shared list shell and dropped their disabled Export / Print buttons; behaviour and rules are otherwise unchanged. E2E specs `121` and `131` unchanged.
 
 ## 1. What & Who
 

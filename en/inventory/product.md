@@ -2,7 +2,7 @@
 title: Product
 description: Product master data — categories, units of measure, locations and shelves, eco labels, and export — the catalog every inventory document references.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: product, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T07:48:00.000Z
@@ -33,7 +33,7 @@ This module is therefore the system of record for the *definition* of an item, n
 
 ## 3. Key Concepts
 
-- **Product Category**: A hierarchical classification node (category → sub-category → item group, three fixed levels) used for organisation, reporting roll-ups, and default inheritance (tax profile, deviation limits, recipe / sold-directly flags). See [category](/en/inventory/product/category) for what the tree actually enforces.
+- **Product Category**: A hierarchical classification node (category → sub-category → item group, three fixed levels) used for organisation, reporting roll-ups, and default inheritance (tax profile, deviation limits, recipe / sold-directly flags, and the **Inventory / Direct GL account** that [account mapping](/en/inventory/master-data/chart-of-account-mapping) resolves). Editing a node can overwrite the same values on every descendant and product after a confirmation dialog; sub-category, item-group and product codes are unique BU-wide. See [category](/en/inventory/product/category) for what the tree actually enforces.
 - **Base Unit**: The canonical inventory unit of measure for a product (e.g., `KG`, `LITRE`, `EACH`). All stock balances, costs, and valuations are stored in the base unit; every other unit attached to the product is defined relative to it via a conversion factor.
 - **Conversion Factor**: The multiplier that translates a quantity expressed in an order unit or recipe unit into the base unit (e.g., 1 `CASE` = 12 `EACH`). Conversions are validated for bidirectional consistency, must avoid cycles, and propagate to PR/PO/GRN/recipe lines so the system can always resolve the same physical quantity regardless of how it is entered.
 - **Location Mapping**: The assignment of a product to one or more storage locations (warehouses, stores, kitchens), each with optional `min_qty` / `max_qty` / `par_qty` thresholds and, optionally, a **shelf** (`tb_product_location.shelf_id` + snapshot `shelf_code` / `shelf_name`, validated against the shelf master — `SHELF_NOT_FOUND` otherwise). The product **Location Assignment** tab is the only UI that sets the shelf. `re_order_qty` is no longer a setting: the API derives it (and `on_hand_qty`) from the cost layers at read time (`products.replenishment.ts`).
@@ -65,7 +65,7 @@ This module is therefore the system of record for the *definition* of an item, n
 **Master configuration:**
 - [master-data/unit](/en/inventory/master-data/unit) — base, order, and recipe units of measure plus conversion factors
 - [master-data/location](/en/inventory/master-data/location) and [master-data/shelf](/en/inventory/master-data/shelf) — the location rows a product is assigned to and the shelf master those rows may reference
-- Eco labels — the `tb_eco_label` master (renamed from `tb_product_master_eco_label` on 2026-09-04) is maintained at `/product-management/eco` (`routes/product-management/eco/`, moved out of `/config` on 2026-09-03); per-product certificates are edited on the product form's **Eco Labels** tab. See [01-data-model](/en/inventory/product/01-data-model) § 2.10
+- Eco labels — the `tb_eco_label` master (renamed from `tb_product_master_eco_label` on 2026-09-04) is maintained at `/product-management/eco` (list columns **Code** - formerly labelled "ISO" - and **Description**) (`routes/product-management/eco/`, moved out of `/config` on 2026-09-03); per-product certificates are edited on the product form's **Eco Labels** tab. See [01-data-model](/en/inventory/product/01-data-model) § 2.10
 - [system-config/application-config](/en/inventory/system-config/application-config) — tenant-level defaults (deviation tolerances, barcode policy, attribute schema)
 - [reporting-audit/activity](/en/inventory/reporting-audit/activity) — product lifecycle and bulk-import activity log for audit
 - [reporting-audit/attachment](/en/inventory/reporting-audit/attachment) — product images, spec sheets, and certificates attached to each product

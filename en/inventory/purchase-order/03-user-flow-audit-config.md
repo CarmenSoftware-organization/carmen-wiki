@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Audit & Config
 description: Auditor (read-only activity log) and System Administrator (workflow / RBAC / numbering configuration) flows for purchase-order.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, user-flow, audit-config, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -77,7 +77,7 @@ graph LR
 ## 3. Decision Branches
 
 - **If the Auditor finds a workflow-history gap or an out-of-order timestamp**: escalate outside the PO module — no PO-module "case file" or flagging feature was confirmed. A generic activity-log or audit trail feature, if one exists, is documented in [reporting-audit](/en/inventory/reporting-audit), not here.
-- **If a Sysadmin needs to end a stuck PO** (e.g., no eligible approver remains at a stage after an RBAC change): the confirmed remediation is **Cancel** / **Close** (no role gate) or a current-stage approver's **Reject**, as documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); a platform super-admin can additionally **Delete** a draft that is not theirs (`remove()` `isSuperAdmin` branch). There is no other Sysadmin-level override that directly mutates PO state. Note that editing a workflow definition while a document that uses it is still `in_progress` is blocked (`a1c435208`, 2026-08-14).
+- **If a Sysadmin needs to end a stuck PO** (e.g., no eligible approver remains at a stage after an RBAC change): the confirmed remediation is **Cancel** / **Close** (no role gate) or a current-stage approver's **Reject**, as documented in [03-user-flow-procurement-manager.md](./03-user-flow-procurement-manager.md); a Backstage super-admin can additionally **Delete** a draft that is not theirs (`remove()` `isSuperAdmin` branch). There is no other Sysadmin-level override that directly mutates PO state. Note that editing a workflow definition while a document that uses it is still `in_progress` is blocked (`a1c435208`, 2026-08-14).
 
 ## 4. Exit Point / Handoffs
 

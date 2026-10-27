@@ -2,7 +2,7 @@
 title: Recipe — Test Scenarios — Chef
 description: Chef's test cases (happy path, permission, validation, edge cases) for the recipe module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, test-scenarios, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -13,9 +13,9 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **At a Glance**
 > **Persona:** Chef (Chef / Kitchen Manager + Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Scenarios:** ~38
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
-> **E2E coverage:** none for the recipe screen — the catalog `docs/test-cases/120-recipe.md` (59 cases) is documentation only; automated specs exist for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). Re-verified 2026-09-22 — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
+> **E2E coverage:** none for the recipe screen — the catalog `docs/test-cases/120-recipe.md` (59 cases) is documentation only; automated specs exist for the master-data screens (`110-op-category`, `111-cuisine`, `121-recipe-equipment-category`, `131-equipment-category`). Re-verified 2026-10-27 (no new specs since 2026-09-22) — see [04-test-scenarios](/en/inventory/recipe/04-test-scenarios)
 
-> **Implementation status (verified 2026-07-15).** Most scenarios below test unimplemented features — publish gates (`REC_VAL_015`–`018` never fire), `recipe:*` permissions (none exist; the group is admin-gated by the `operation_plan.view` placeholder), clone, ingredient persistence (the grid is preview-only), prep-step UI, yield-variant editing, versioning, and pricing history. Executable today: header CRUD + required-field validation (client-side zod), status-dropdown transitions with timestamp stamping, code-uniqueness (`RECIPE_ALREADY_EXISTS`), `doc_version` conflict, sub-recipe delete guard, and image-gallery sync. Treat the rest as the design acceptance plan.
+> **Implementation status (re-verified 2026-10-27).** Most scenarios below test unimplemented features — publish gates (`REC_VAL_015`–`018` never fire), persona permissions such as `recipe:publish` (none exist — only the generic `operation_plan.recipe.{view,create,update,delete}` set), clone, yield-variant editing, versioning, and pricing history. (Ingredient persistence and the prep-step UI **now exist** — 2026-10-27; scenarios about them are executable.) Executable today: header CRUD + required-field validation (client-side zod), status-dropdown transitions with timestamp stamping, code-uniqueness (`RECIPE_ALREADY_EXISTS`), `doc_version` conflict, sub-recipe delete guard, and image-gallery sync. Treat the rest as the design acceptance plan.
 
 This page captures the test scenarios that the Chef persona (Chef / Kitchen Manager + Kitchen Staff read-only subset) directly drives in the `recipe` module. The Chef's involvement begins at recipe creation (`DRAFT` from create-time) and continues through every revision and through archive; Kitchen Staff are read-only at service time. Scenarios are grouped into **happy paths** (create / save / publish; in-place edit on `PUBLISHED`; un-publish round-trip; archive; clone; sub-recipe usage; yield variants), **RBAC** (chef without `recipe:publish`; pastry chef scoped to Desserts category; Kitchen Staff attempting edits), **validation** (negative tests against `REC_VAL_001`–`REC_VAL_018` that the Chef can trigger at save or publish), and **edge cases** around sub-recipe cycle detection, decimal precision, concurrent edits, large recipes, and variant-scoped ingredient lines. Cross-persona handoffs that pivot off the Chef (Scenarios 1, 2, 4, 5, 7, 8, 9, 12, 14 in the parent overview) live in [04-test-scenarios.md](./04-test-scenarios.md), not here.
 

@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Purchase Request module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-06-17T08:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: purchase-request, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -81,7 +81,15 @@ Line-level counterpart of `tb_purchase_request_comment`. Captures comments and s
 **Constraints:** `@id` on `id`. FK `purchase_request_detail_id → tb_purchase_request_detail.id`.
 **Indexes:** None declared beyond the primary key.
 
-## 4. Cross-References
+## 4. Attachment Handling (2026-10)
+
+The `attachments` JSON is written through the gateway's comment endpoints (`apps/backend-gateway/src/application/purchase-request-comments/`; the header, line and template comment controllers share the shape): `GET :bu_code/purchase-request-comments/:purchase_request_id`, `POST` the same path to create (multipart field `files`), `PATCH …/:comment_id` to edit, `DELETE …/:comment_id`, and `POST` / `DELETE …/:comment_id/attachment[/:fileToken]` to add or remove files.
+
+- **Per-BU policy replaces the fixed 10 MB / image+PDF rule.** Uploads are checked against the business unit's attachment policy (`AttachmentPolicyService.assertFiles`, `common/attachment-policy/`), read from the Backstage `tb_business_unit.config` entries `attachment.allowed_types` and `attachment.max_size_mb` and cached 60 s per BU. Allowed groups: `image`, `pdf`, `excel`, `word`, `csv`, `text`; default `image` + `pdf`, default size 10 MB, hard ceiling 25 MB. A malformed config falls back to the defaults. The type check trusts the MIME type; only an empty or `application/octet-stream` MIME falls back to the file extension. Failures are `400` with `ATTACHMENT_TOO_LARGE` (`max_mb`) or `ATTACHMENT_TYPE_NOT_ALLOWED` (`allowed`). The policy keys are set from Backstage only — the BU endpoints cannot write keys starting `attachment.`.
+- **Edit sends a delta.** `PATCH` now forwards `attachments` as `{ add: [...], remove: [fileToken, ...] }` (the service still accepts a full array). The gateway first re-reads the comment and only deletes S3 objects whose token the comment actually owns, so a forged `remove` token cannot delete another comment's file; S3 deletion is best-effort and logged on partial failure.
+- **Paging in the UI.** The comment panel loads 20 comments at a time, newest first (`sort=created_at:desc`), and fetches the next page when the list end scrolls into view; the document header's comment dot uses the backend `total`, not the number loaded (commit `61011d0e`).
+
+## 5. Cross-References
 
 - Sibling: [01 — Data Model](/en/inventory/purchase-request/01-data-model) — `tb_purchase_request` and `tb_purchase_request_detail` (header / line tables), enum definitions, and the workflow / history JSON columns.
 - Sibling: [02 — Business Rules](/en/inventory/purchase-request/02-business-rules) — validation rules and workflow-stage comment behaviors that persist to `tb_purchase_request_comment` / `tb_purchase_request_detail_comment`.

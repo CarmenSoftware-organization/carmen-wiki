@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and Playwright mapping for good-receive-note.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, inventory, carmen-software
 editor: markdown
@@ -22,25 +22,25 @@ editor: markdown
 
 This page is the **overview entry point** for the test-scenarios set of the `good-receive-note` module. It groups GRN coverage by persona (Receiver, Purchaser, Finance, Audit / Config), inventories the per-persona test files, captures the cross-persona handoff scenarios that stitch individual paths together, and maps scenarios back to the canonical Playwright spec [`501-grn.spec.ts`](../../../carmen-frontend-e2e/tests/501-grn.spec.ts). "Three-way-match outcomes" and a per-line `accepted_qty` quality-inspection trace remain out of scope — neither feature exists (re-checked 2026-09-22; see [01-data-model.md](./01-data-model.md) and [03-user-flow-finance.md](./03-user-flow-finance.md)).
 
-`501-grn.spec.ts` is the **only** Playwright E2E file for the GRN module; three quarters of its cases walk the UI without asserting anything (see the coverage note above), so treat a mapped `TC-GRN-*` id as "a describe block with this name exists", not as proof the described behavior is asserted end-to-end. The E2E fixtures now log in as `…@carmensoftware.dev` users against BU `GR2VYNKQ` (`d2b35a1`), not `@blueledgers.com`.
+`501-grn.spec.ts` is the main Playwright E2E file for the GRN module (a second, opt-in file, `502-grn-doc-flow.spec.ts` in the movement suite — `bun run test:movement`, five cases `TC-GRN-700001..700005` on BU `CARMEN-AVG` — covers manual-GRN draft/edit/delete and asserts that an average-costed GRN posts stock when it is **saved**; its header comment flags that `TC-GRN-140003` in 501 says the opposite for an average BU and that one of the two is stale); three quarters of its cases walk the UI without asserting anything (see the coverage note above), so treat a mapped `TC-GRN-*` id as "a describe block with this name exists", not as proof the described behavior is asserted end-to-end. The E2E fixtures now log in as `…@carmensoftware.dev` users against BU `GR2VYNKQ` (`d2b35a1`), not `@blueledgers.com`.
 
 ## 2. Personas in Scope
 
 - **Receiver**: Receiving / warehouse staff who physically take delivery, raise the GRN in `draft`, save it (`draft → saved` — validate, number, and on average-costed units post stock), and commit it (`saved → committed` — post stock if not yet, advance the PO).
 - **Purchaser**: Procurement staff who own the upstream PO and review receiving variance; vendor-side coordination happens off-document.
-- **Finance**: **Correction page** — no three-way-match, AP-posting, or Finance-role feature was confirmed for this module.
+- **Finance**: **Status page** — no Finance role or screen in the GRN; the backend AP Invoice module matches committed GRN lines (API-level scenarios `FIN-AP-01..06` listed there).
 - **Audit / Config**: **Correction page** — no dedicated GRN configuration console or lot-recall tool was confirmed for this module.
 
 ## 3. Persona Test Files
 
 - [Receiver scenarios](./04-test-scenarios-receiver.md)
 - [Purchaser scenarios](./04-test-scenarios-purchaser.md)
-- [Finance scenarios](./04-test-scenarios-finance.md) — correction page.
+- [Finance scenarios](./04-test-scenarios-finance.md) — status page plus the GRN-side AP-link scenarios.
 - [Audit / Config scenarios](./04-test-scenarios-audit-config.md) — correction page.
 
 ## 4. Cross-Persona / Handoff Scenarios
 
-The table below spans a handoff recorded in [03-user-flow.md](./03-user-flow.md) Section 4. Rows for "extra-cost allocation review by Finance", "batch commit", "post-commit void with elevated co-auth", and "scheduled auto-commit sweep" stay removed — none exist (re-checked 2026-09-22; post-commit void is now refused by the server outright).
+The table below spans a handoff recorded in [03-user-flow.md](./03-user-flow.md) Section 4. Rows for "extra-cost allocation review by Finance", "batch commit", "post-commit void with elevated co-auth", and "scheduled auto-commit sweep" stay removed — none exist (re-checked 2026-10-27; post-commit void is refused by the server outright).
 
 | # | Scenario | Personas in order | Pre-condition | Expected end state |
 | - | -------- | ----------------- | ------------- | ------------------ |
@@ -50,13 +50,17 @@ The table below spans a handoff recorded in [03-user-flow.md](./03-user-flow.md)
 | 3 | Partial receipt across two GRNs | Receiver → Inventory Manager → Receiver → Inventory Manager | Source PO line has pending qty larger than the first delivery. | First GRN committed → PO line `received_qty < order_qty − cancelled_qty`, `po_status = partial`; second GRN committed → `po_status = completed`. Nothing on the PO changes at either save. |
 | 4 | Short receipt flagged for vendor follow-up | Receiver → Purchaser | Delivery contains a short-shipped line; receiver records `received_qty < order_qty` with a variance comment on the line. | Save passes (shortfall never breaches the deviation ceiling); commit posts the actual `received_qty` only; Purchaser reviews and coordinates vendor follow-up off-document — no in-app resolution workflow. |
 | 5 | Extra cost and FOC in landed cost | Receiver → Inventory Manager | Extra-cost header with `allocate_extra_cost_type = by_value` and details summing to ฿200; two lines with stock quantities 10 and 4 (one line also `foc_qty = 1`). | At posting: shares `฿200 × 11/15` and `฿200 × 4/15` (`by_value` weights by `received_base + foc_base`); each line's cost layer `total_cost = base_net_amount + share`, `extra_cost_amount = share`, `in_qty` includes the FOC unit; `cost_per_unit` rounded 2 dp. With `by_qty` each line gets ฿100; with `manual` nothing is allocated. PO junction FOC-received counter advanced by 1. |
-| 6 | Multi-PO consolidation into one GRN | Receiver | Same vendor and currency across two receivable POs; wizard step 2 multi-select; a mixed-currency selection is refused with the `mixedCurrencyError` toast (`from-po-content.tsx:93-95`). | One GRN with lines spanning both POs; commit advances `received_qty` on both POs in one transaction. |
+| 6 | Multi-PO consolidation into one GRN | Receiver | Same vendor and currency across two receivable POs; wizard step 2 multi-select; a mixed-currency selection is refused with the `mixedCurrencyError` toast (`from-po-content.tsx:94-97`). | One GRN with lines spanning both POs; commit advances `received_qty` on both POs in one transaction. |
 | 7 | Void a saved GRN on an average unit after stock was issued | Receiver → Store Keeper (SR issue) → Receiver | Average unit; GRN `saved` (stock posted); an SR / stock-out has consumed part of the received lot. | `DELETE …/void` and `POST …/reject` both return **409 `GRN_RECEIPT_ALREADY_CONSUMED`**; document stays `saved`. Without the consumption, void succeeds, the movement is soft-deleted, `inventory_transaction_id` cleared, and the product average re-stamped. |
 | 8 | Receipt date outside the open period | Receiver | Draft with `grn_date` in a `closed` period (or no period). | `POST …/verify` (`verify_state = create`) and commit / approve (and save on average units) return **422 `GRN_DATE_OUTSIDE_OPEN_PERIOD`**; the UI commit dialog offers "move to open period" which rewrites `grn_date` to the period's `start_at` before the `PATCH → /save → /commit` chain. |
+| 9 | Edit a `saved` GRN (new 2026-10-24) | Receiver | `saved` GRN; on an average BU the movement is already posted. | Allowed: line quantities/prices, extra cost, header fields except vendor and `grn_date`. Refused: vendor/date (`GRN_SAVED_IDENTITY_LOCKED`), a `doc_status` change (`GRN_STATUS_CHANGE_NOT_ALLOWED`), lines whose lot was issued or credit-noted (`GRN_LINE_STOCK_LOCKED` / `GRN_COST_STOCK_LOCKED`, 409). Average BU: only changed lines re-post (`GRN_POST_013`). **No E2E case covers this yet.** |
+| 10 | Back-dated receipt on a FIFO BU | Receiver | FIFO BU; a GRN or stock-in for the same product/location already dated 2026-10-20 in the open period. | Create/save/commit with `grn_date` 2026-10-15 → **422 `GRN_DATE_BEFORE_LATEST_RECEIPT`**; an average BU accepts it. **No E2E case covers this yet.** |
+| 11 | Committed GRN header edit and AP freeze | Receiver / Finance | `committed` GRN. | `invoice_no` / `invoice_date` / `post_type` edits accepted; any line or `grn_date` edit → `GRN_COMMITTED_HEADER_ONLY`; after an AP invoice takes the GRN → `GRN_AP_LINKED_NOT_EDITABLE`. See `FIN-AP-01..03`. **No E2E case covers this yet.** |
+| 12 | FOC-only document | Receiver → Inventory Manager | Single line `received_qty = 0`, `foc_qty = 5`. | Commit (and average-unit save) writes a movement with `qty = 5`, cost 0; PO FOC counter +5. Previously (before 2026-10-24) no movement was written — see `RCV-EDGE-05`. |
 
 ## 5. E2E Test Mapping
 
-`501-grn.spec.ts` is the **only** Playwright E2E file for the GRN module. It is structured as a single file with multiple `describe` blocks per functional area; auth is multi-role through `createAuthTest`, with the Purchase-role user for the happy / functional path and the Requestor-role user for permission-denial cases (users migrated to the `carmensoftware.dev` domain, BU `GR2VYNKQ`). The wizard route `/from-po` is **not** visited by any case — see `gaps/501-grn-from-po-gap.md`.
+`501-grn.spec.ts` is the main Playwright E2E file for the GRN module (plus the opt-in `502-grn-doc-flow.spec.ts`, see §1). It is structured as a single file with multiple `describe` blocks per functional area; auth is multi-role through `createAuthTest`, with the Purchase-role user for the happy / functional path and the Requestor-role user for permission-denial cases (users migrated to the `carmensoftware.dev` domain, BU `GR2VYNKQ`). The wizard route `/from-po` is **not** visited by any case — see `gaps/501-grn-from-po-gap.md`.
 
 | `501-grn.spec.ts` describe block (TC group) | Cross-persona scenarios covered (Section 4) |
 | ------------------------------------------- | ------------------------------------------- |

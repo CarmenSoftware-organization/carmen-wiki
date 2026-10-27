@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow
 description: Document lifecycle and persona-specific flow files for vendor-pricelist.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -14,6 +14,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 > **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist) &nbsp;·&nbsp; **Personas:** Purchaser &nbsp;·&nbsp; Vendor (external portal — save and submit work since 2026-08/09)
 > **Real screens:** Vendor, Certification, Price List, Price List Template, Request for Pricing (RFQ) — five independent CRUD pages, no unified workspace, no workflow engine
 > **Re-synced 2026-09-22:** portal Save/Submit routes exist and produce a `submitted` pricelist; the link expires at the RFQ `end_date`; the RFQ has a per-vendor Send-email action; Certification moved under Vendor Management.
+> **Re-synced 2026-10-27:** a price list can now be **voided** (reason required, reversible by Restore, read-only meanwhile) and only a BU admin can permanently delete one — and only when no PR line, credit note or RFQ line references it; the Price List screen splits lists into Current / Expired / All; line prices are entered **before tax**; the RFQ list shows a response count and an Upcoming / Open / Closed window badge; the portal can be switched between Thai and English.
 > **Verified 2026-07-16:** Finance and Audit/Config are not distinct personas in this module — see [03-user-flow-finance](/en/inventory/vendor-pricelist/03-user-flow-finance) and [03-user-flow-audit-config](/en/inventory/vendor-pricelist/03-user-flow-audit-config)
 
 ## 1. Overview
@@ -28,7 +29,7 @@ Section 2 below lists the real status fields and what actually changes them. Sec
 | ----- | ----- | ------ | ---------------- |
 | `tb_pricelist_template` | `status` | `draft`, `active`, `inactive` (`enum_pricelist_template_status`) | The template edit form's status control, or a direct call to `PATCH :id/status` — either way, a bare field write with no validation gate (no "must have ≥1 product" check, no re-activation guard). |
 | `tb_request_for_pricing` | *(none)* | — | No status column and no derived state anywhere in code. The closest per-vendor signal is `has_submitted: !!pricelist_id` on each invitation row. |
-| `tb_pricelist` | `status` | `draft`, `submitted`, `active`, `inactive`, `expired` (`enum_pricelist_status`) | The Price List edit form's status control (via the ordinary update call — no transition guard, no approve/reject action, `expired` never assigned) **or** the vendor's portal Submit (`draft → submitted`). The `draft → submitted` edge stamps `submitted_at` and deletes unpriced rows. |
+| `tb_pricelist` | `status` | `draft`, `submitted`, `active`, `inactive`, `expired`, `voided` (`enum_pricelist_status`) | The Price List edit form's status control (via the ordinary update call — no transition guard, no approve/reject action, `expired` never assigned, the form's status list has no `voided`) **or** the vendor's portal Submit (`draft → submitted`) **or** the **Void** / **Restore** actions (`voided` ↔ `draft`). The `draft → submitted` edge stamps `submitted_at` and deletes unpriced rows. |
 | External portal | `tb_pricelist.status`, `submitted_at`; `tb_activity` events | `draft` → `submitted` | `POST /api/check-pricelist/:url_token` auto-creates or returns the draft; `PATCH /api/pricelist-external/:url_token` saves edits (stays `draft`); `POST …/submit` sets `submitted`. All three sit behind `UrlTokenGuard` (401 after the RFQ `end_date`). Events `create` / `save` / `submit` are logged to `tb_activity`. |
 
 ## 3. Persona Index
@@ -38,7 +39,26 @@ Section 2 below lists the real status fields and what actually changes them. Sec
 
 Note: **Finance** and **Audit / Config** were documented as distinct personas in the previous draft. Neither has any matching code in this module — see [03-user-flow-finance.md](./03-user-flow-finance.md) and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md), both rewritten as correction pages this pass.
 
-### 3.1 Purchaser: Delete a Request for Pricing
+### 3.1 Purchaser: Void or restore a Price List
+
+```mermaid
+flowchart TD
+    Open(["Purchaser opens a Price List (view mode)"]) --> St{"status = voided?"}
+    St -->|"No"| VoidBtn["Click Void (needs delete permission)"]
+    VoidBtn --> Reason["Dialog: enter reason (1-500 chars)"]
+    Reason --> Post["POST pricelists/:id/void"]
+    Post --> Voided(["status = voided<br/>banner: time + reason<br/>Edit hidden, never quotes a price"])
+    St -->|"Yes"| Restore["Click Restore"]
+    Restore --> Post2["POST pricelists/:id/restore"]
+    Post2 --> Draft(["status = draft<br/>reason / time kept as history"])
+    Voided --> Admin{"BU admin and no PR, credit note<br/>or RFQ references the list?"}
+    Admin -->|"Yes"| Del(["Delete = permanent hard delete"])
+    Admin -->|"No"| Keep(["Delete hidden / refused<br/>PRICE_LIST_IN_USE or ADMIN_ONLY"])
+```
+
+> Verified 2026-10-27 against `pl-form.tsx` (`canVoidOrRestore`, `isAdmin`), `config_pricelists.controller.ts` (`void`, `restore`, `remove`) and `price-list.service.ts` (`voidPriceList`, `restorePriceList`, `remove`). Hard delete can also be attempted from any status; the diagram shows the usual path.
+
+### 3.2 Purchaser: Delete a Request for Pricing
 
 ```mermaid
 flowchart TD

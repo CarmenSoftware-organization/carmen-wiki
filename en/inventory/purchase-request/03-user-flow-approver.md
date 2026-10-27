@@ -2,7 +2,7 @@
 title: Purchase Request — User Flow — Approver
 description: Approver's flow within the purchase-request module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, user-flow, approver, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 # Purchase Request — User Flow — Approver
 
 > **At a Glance**
-> **Persona:** Approver (any `approve`-role stage — illustrated as Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **Key permissions:** approve / send-back / reject / split, adjust approved_qty &nbsp;·&nbsp; **Re-verified 2026-09-22:** send-back keeps `pr_status = in_progress`; `approved_qty` is only checked for ≥ 0; "Budget Impact" panel and budget commitments have no code path
+> **Persona:** Approver (any `approve`-role stage — illustrated as Dept. Head / Budget Controller / Finance) &nbsp;·&nbsp; **Module:** [purchase-request](/en/inventory/purchase-request) &nbsp;·&nbsp; **Workflow stages:** in_progress (Stage 1 → Stage 2 → Stage 3 → approved) &nbsp;·&nbsp; **Key permissions:** approve / send-back / reject / split, adjust approved_qty &nbsp;·&nbsp; **Re-verified 2026-10-27** (new: stage-hidden prices, stage-disabled actions, My Approval at `/procurement/my-approval`); 2026-09-22: send-back keeps `pr_status = in_progress`; `approved_qty` is only checked for ≥ 0; "Budget Impact" panel and budget commitments have no code path
 > **What this persona does:** Reviews submitted PRs at each approval stage and advances, returns, or terminates the document via the workflow.
 
 ## 1. Role in This Module
@@ -26,9 +26,9 @@ graph LR
     s1 -->|"Approve"| s2["Stage 2<br/>Budget Ctrl."]:::current
     s2 -->|"Approve"| s3["Stage 3<br/>Finance"]:::current
     s3 -->|"Approve (final)"| approved(("approved"))
-    s1 -->|"Send-back"| draft
-    s2 -->|"Send-back"| draft
-    s3 -->|"Send-back"| draft
+    s1 -->|"Send-back"| create["Create stage<br/>(Requestor, still in_progress)"]
+    s2 -->|"Send-back"| create
+    s3 -->|"Send-back"| create
     s1 -->|"Reject"| voided(("voided"))
     s2 -->|"Reject"| voided
     s3 -->|"Reject"| voided
@@ -61,30 +61,31 @@ All three sub-roles share the same review-and-decide UI and the same action set.
 
 ## 2. Entry Point and Primary Flow
 
-**Entry point:** In-app notification → deep link to the PR detail page. Alternatively: Sidebar → **My Approval** (`/procurement/approval`, the cross-document queue read from `sys_v_my_pending` — see [my-approval](/en/inventory/purchase-request/my-approval)) or Sidebar → **Purchase Request** → **My Pending** tab (`GET /api/my-pending/purchase-requests`); both list PRs where the current user appears in `tb_purchase_request.user_action.execute[]` for the current stage.
+**Entry point:** In-app notification → deep link to the PR detail page. Alternatively: Sidebar → **My Approval** (`/procurement/my-approval`; the old `/procurement/my-approval` path redirects — the cross-document queue read from `sys_v_my_pending` — see [my-approval](/en/inventory/purchase-request/my-approval)) or Sidebar → **Purchase Request** → **My Pending** tab (`GET /api/my-pending/purchase-requests`); both list PRs where the current user appears in `tb_purchase_request.user_action.execute[]` for the current stage.
 
 **Primary flow (happy path) — single stage perspective:**
 
-1. From the **My Approval** queue (or notification link), pick the PR awaiting decision. The queue shows `doc_no`, type, date and status, oldest document first; the PR list's My Pending tab additionally shows requestor, department, stage and total. Click into the PR to open the detail page in read-mostly mode (header and lines are non-editable for the Approver except for `approved_qty` and line-level decision flags).
+1. From the **My Approval** queue (or notification link), pick the PR awaiting decision. The queue shows, per row, a Document cell (type badge, linked `doc_no`, BU badge when the user belongs to several units, and a send-back marker), Details (department for a PR, vendor for a PO), Requestor, Stage, Amount and Waiting (days since `doc_date`, red above 7, amber above 3), oldest document first; the PR list's My Pending tab additionally shows requestor, department, stage and total. Click into the PR to open the detail page in read-mostly mode (header and lines are non-editable for the Approver except for `approved_qty` and line-level decision flags).
 2. Review the **header**: requestor and department, `pr_date`, `workflow_name`, description, `doc_version`. Use the **Workflow History** sheet and the **comment** sheet to read prior comments (Requestor notes, previous-stage approver comments, system events). *(There is no PR type or header delivery date — see [01-data-model](./01-data-model.md) §5.)*
 3. Open the **Items** tab and walk each line. For each line confirm product, store location, delivery point and date, `requested_qty` + unit, FOC quantity, and any line notes; unit price / vendor / discount / tax are visible but read-only. The Approver also sees the inventory context (on-hand, on-order, last receiving info and the line's `last_price`) pulled live from [inventory](/en/inventory/inventory).
-4. *(A **Budget Impact** panel with `availableBudget` was asserted in earlier revisions — unconfirmed, no code path; see `PR_VAL_015`.)* Review the footer totals: subtotal, discount, net, tax, grand total (`workflow/pr-footer-action.tsx`).
+4. *(A **Budget Impact** panel with `availableBudget` was asserted in earlier revisions — unconfirmed, no code path; see `PR_VAL_015`.)* Review the footer totals: subtotal, discount, net, tax, grand total (`workflow/pr-footer-action.tsx`). If the current stage hides prices for you (`hidden_fields`), the unit price / pricelist / last-price cells, the line amounts or the footer totals show a hidden badge instead of a number — the server returns `null` for them and ignores any price you post (`PR_AUTH_011`).
 5. If a quantity needs to come down (requested qty exceeds policy, partial fulfilment is preferred), click **Edit** and change **`approved_qty`** on the affected line. The client schema accepts `≥ 0`; the server (`verify`, `stage_role = approve`) rejects only a negative value or an approved unit that is not an order unit of the product — there is **no** `≤ requested_qty` check (`PR_VAL_013`). `approved_unit_id` and `approved_unit_conversion_factor` are persisted alongside and the header roll-ups recompute on save.
 6. Decide the **per-line disposition** if a split is needed: select the lines to keep and use the bulk **Split** action; the selected lines are moved to a new PR (`POST …/:id/split`), the rest stay. Rejected lines stay on the document with `current_stage_status = rejected` and never reach PO conversion (`PR_AUTH_003`).
-7. Choose the action from the footer / bulk toolbar: **Approve**, **Send Back**, **Reject**, or **Split**. For Send Back and Reject the dialog (`workflow/pr-action-dialog.tsx`) prompts for a mandatory reason (Send Back also asks for the target stage from `GET …/:pr_id/previous-stages`); for Approve a comment is optional.
+7. Choose the action from the footer / bulk toolbar: **Approve**, **Send Back**, **Reject**, or **Split**. Only the options the stage leaves on are offered (`stage_actions`, `PR_AUTH_010`): a switched-off option has no button, and when that would leave no way to decide (for example approve is off but every line is already approved) the footer shows "not allowed" text pointing to reject / send back instead of going silent. The footer's workflow button is the form's single primary button; Edit / Save in the header are outline buttons. For Send Back and Reject the dialog (`workflow/pr-action-dialog.tsx`) prompts for a mandatory reason (Send Back also asks for the target stage from `GET …/:pr_id/previous-stages`); for Approve a comment is optional.
 8. Confirm the action in the dialog. The system runs authorization checks (`PR_AUTH_002` — current user must be in `user_action.execute[]` for the current stage) and the `doc_version` lock (`PR_VAL_016`). The frontend may call `POST …/verify` with `verify_state = approve` first to list every problem at once (`PR_VAL_017`).
 9. On **Approve** at an intermediate stage: the system applies `PR_POST_004` — appends to `workflow_history`, updates `workflow_previous_stage` / `workflow_current_stage` / `workflow_next_stage`, sets `last_action = approved` and `last_action_by_*` to the current user, recomputes `user_action.execute[]` for the next stage from the routing rules in `tb_workflow`, and notifies the next-stage approver. `pr_status` stays `in_progress`.
-10. On **Approve** at the **final** stage: `PR_POST_005` flips `pr_status` from `in_progress` to `approved` (`purchase-request.service.ts:1913`), the workflow history marks the chain complete, notifications go to the Requestor, and the PR becomes eligible for PO conversion (see [purchase-order](/en/inventory/purchase-order)).
+10. On **Approve** at the **final** stage: `PR_POST_005` flips `pr_status` from `in_progress` to `approved` (`purchase-request.service.ts:1932-1936`), the workflow history marks the chain complete, notifications go to the Requestor, and the PR becomes eligible for PO conversion (see [purchase-order](/en/inventory/purchase-order)).
 11. The Approver returns to the **My Approval** queue, where the just-decided PR has dropped out (the view excludes `approved`, and a stage transition rewrites `execute[]`). The action and any comment appear in the PR's `tb_purchase_request_comment` log immutably (`PR_POST_008`).
 
 ## 3. Decision Branches
 
-- **If the Approver chooses Send Back** instead of Approve: the dialog requires a reason and a target stage (any earlier stage, `GET …/:pr_id/previous-stages`). On confirm the system applies `PR_POST_003`: `workflow_current_stage` moves to the target, `last_action = reviewed`, and `pr_status` is written as `in_progress` — even when the target is the requestor's create stage the PR does **not** return to `draft` (`purchase-request.service.ts:2052`). A notification is fired to the users at the target stage. The Approver's involvement ends here.
+- **If the Approver chooses Send Back** instead of Approve: the dialog requires a reason and a target stage (any earlier stage, `GET …/:pr_id/previous-stages`). On confirm the system applies `PR_POST_003`: `workflow_current_stage` moves to the target, `last_action = reviewed`, and `pr_status` is left untouched (`review` only accepts an `in_progress` PR and never writes the column — `purchase-request.service.ts:2053`, `:2073`) — even when the target is the requestor's create stage the PR does **not** return to `draft`. A notification is fired to the users at the target stage. The Approver's involvement ends here.
 - **If the Approver chooses Reject at header level** (entire PR is unjustified, duplicate, or otherwise unacceptable): the dialog requires a reason. On confirm `PR_AUTH_004` + `PR_POST_006` apply: `pr_status` moves to `voided` (terminal), `workflow_history` is appended, and a `type = system` comment captures the rejection. The Requestor is notified and the chain ends — no further stages run.
 - **If the Approver wants to accept some lines and reject others (Split)**: select the lines and use bulk **Split** (`POST …/:id/split`) so the selected lines continue on a new PR while the rest stay behind, or reject individual lines so they carry `current_stage_status = rejected` (`PR_AUTH_003`). Rejected lines stay visible on the document for audit and never convert to PO.
 - **If the Approver adjusts `approved_qty`**: header roll-ups recompute and the new `total_amount` is what subsequent stages see. If the new total crosses a threshold boundary defined in `tb_workflow`, the routing for the *next* stage may change (e.g. small-amount PRs may skip Stage 4 per `PR_AUTH_005`).
 - **If the PR's `base_total_amount` exceeds a configured escalation threshold**: per `PR_AUTH_005`, additional stages or an escalation path to the **Procurement Manager** may be inserted. The Approver still completes their stage normally; the threshold logic fires automatically on the stage transition and reroutes the next notification. The Approver does not see threshold breaches as an error — the workflow engine handles them.
 - **If the Approver is temporarily unavailable**: **(unconfirmed — no delegation code found).** An earlier revision of this page asserted that the Approver could delegate their stage per `PR_AUTH_006`, with the delegate inheriting approve / send-back / reject / split-reject rights for a delegation window, `last_action_by_id` reflecting the delegate, and the audit comment capturing the delegation source. A repo-wide search of the frontend workflow admin and the backend workflow orchestrator found no delegation, reassignment, proxy, or substitute-approver mechanism anywhere. The only confirmed way to keep the chain moving with the primary Approver absent is for another user already named in `user_action.execute[]` for that stage (e.g. a second `assigned_users` entry configured on the stage) to act instead, or for a System Administrator to edit the stage's assigned users via `/system-admin/workflow`.
+- **If the stage has switched the action off** (Approve / Reject / Send Back): the button is not shown, and a direct API call — or a bulk **swipe** on the list — is refused with `WORKFLOW_STAGE_ACTION_DISABLED`; in a bulk run the other PRs still proceed and the response lists the refused ids (`success: false`, `app_code`), which the list turns into an error toast instead of a success toast. With Reject off, a line-level bulk reject that would reject every remaining line is disabled (it would be a header reject); a partial reject still works.
 - **If the Approver tries to act on a PR they are not authorised for** (not in `user_action.execute[]` for the current stage, or PR is already at a later stage): the action buttons are disabled and an inline message explains. `PR_AUTH_002` enforces this server-side as well.
 
 ## 4. Exit Point / Handoffs
@@ -102,7 +103,7 @@ Document state on every transition is recorded by `enum_purchase_request_doc_sta
 ## 5. References
 
 - Parent overview: [03-user-flow.md](./03-user-flow.md)
-- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_008`, stage chain, threshold routing (confirmed); delegation (`PR_AUTH_006`, unconfirmed)
+- Authorization rules: [02-business-rules.md](./02-business-rules.md) Section 4 — `PR_AUTH_001`–`PR_AUTH_011`, stage chain, threshold routing (confirmed); delegation (`PR_AUTH_006`, unconfirmed)
 - Posting rules: [02-business-rules.md](./02-business-rules.md) Section 5 — `PR_POST_003` (send-back), `PR_POST_004` (intermediate approve), `PR_POST_005` (final approve), `PR_POST_006` (reject / void / cancel)
 - `../carmen/docs/purchase-request-management/PR-User-Experience.md` — primary source for the approval-process sequence, Approver UI flow, and per-stage permission matrix
 - `../carmen/docs/purchase-request-management/PR-Overview.md` — module overview, approver role definitions (Department Head, Budget Controller, Finance), and integration points

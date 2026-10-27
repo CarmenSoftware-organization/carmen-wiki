@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — Entry & Review Screens
 description: The line-entry and variance-review screens where a spot check is actually counted and submitted.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: spot-check, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -59,7 +59,7 @@ graph LR
 | Enter/edit `actual_qty` on a line | Any status | Local state only, until Save or Submit for Review | No client-side minimum was found (unlike physical-count's `≥ 0` clamp on the entry row). |
 | Attach a note/photo to a line | Any time | `POST /spot-check-detail-comment/:detailId` (multipart: `message`, `type`, `files`) | Backed by `tb_spot_check_detail_comment`; the same shared notes-dialog component physical-count uses. |
 | Save For Resume | At least one line has a value; document `pending` or `in_progress` | `PATCH .../save` — stamps `counted_at`/`counted_by_id` and recomputes `diff_qty` on the submitted lines against whatever `on_hand_qty` is currently stored; first call also flips `pending → in_progress`; requires `doc_version` | Rejected outside `{pending, in_progress}` (`SPC_VAL_007`). |
-| Submit For Review | Every line has a locally-entered value (`uncountedCount === 0`, client gate only) | `PATCH .../review` — recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; stamps `counted_at`/`counted_by_id`; navigates to `/review` | Does **not** change `doc_status`; has **no** status guard at all — will run against a `completed`/`void` document too if triggered (e.g. via the History tab). |
+| Submit For Review | Every line has a locally-entered value (`uncountedCount === 0`, client gate only) | `PATCH .../review` — recomputes `on_hand_qty`/`diff_qty` for every line from the active period's cost-layer balance; stamps `counted_at`/`counted_by_id`; navigates to `/review` | Does **not** change `doc_status`; has **no** status guard at all — will run against a `completed`/`void` document too if triggered (e.g. via the History tab). |
 | Submit (final, from `/review`) | Document not already `completed`/`void` | `PATCH .../submit` — `doc_status → completed`; stamps `end_date` | No completeness check (`SPC_VAL_008`). Terminal; no rollup, no ledger effect. |
 
 ## 4. Decision Points

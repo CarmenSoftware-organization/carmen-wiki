@@ -2,7 +2,7 @@
 title: Purchase Order — Data Model
 description: Entities, fields, relationships, and enums for the purchase-order module.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 # Purchase Order — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_purchase_order` (schema.prisma L2063) &nbsp;·&nbsp; `tb_purchase_order_detail` (L2179) &nbsp;·&nbsp; `tb_purchase_order_comment` (L2144) &nbsp;·&nbsp; `tb_purchase_order_detail_comment` (L2293) &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (L2328, PR↔PO bridge)
+> **Tables:** `tb_purchase_order` (schema.prisma L2196) &nbsp;·&nbsp; `tb_purchase_order_detail` (L2312) &nbsp;·&nbsp; `tb_purchase_order_comment` (L2277) &nbsp;·&nbsp; `tb_purchase_order_detail_comment` (L2426) &nbsp;·&nbsp; `tb_purchase_order_detail_tb_purchase_request_detail` (L2461, PR↔PO bridge)
 > **Audience:** Developer / Auditor (dev reference)
 > **Key FKs:** detail `→ tb_product` / `tb_tax_profile` / `tb_unit` ×2 (order + base); header `→ tb_vendor` / `tb_currency` / `tb_credit_term` / `tb_delivery_point` (new 2026-09-15); bridge `→ tb_purchase_request_detail` / `tb_location` / `tb_delivery_point` (many-to-many supports PR consolidation & partial conversion); back-relation from `tb_good_received_note_detail` (downstream GRN)
 > **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; per-line `received_qty` / `cancelled_qty` running counters; bridge-level `received_qty` / `foc_received_qty` per PR-line allocation; workflow snapshot on header JSON
@@ -19,7 +19,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -27,11 +27,11 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 The purchase-order module owns five tenant-schema entities: the PO document header (`tb_purchase_order`), its line items (`tb_purchase_order_detail`), workflow / activity-log comments at both header and line level (`tb_purchase_order_comment`, `tb_purchase_order_detail_comment`), and the bridge table (`tb_purchase_order_detail_tb_purchase_request_detail`) that links PO lines back to one or more originating PR lines. As with PR, workflow stage tracking is not a dedicated table — it is stored inline on the header as JSON columns (`workflow_history`, `workflow_current_stage`, `stages_status`) plus a foreign key into the shared `tb_workflow` configuration, while the persisted timeline of stage-transition events is captured through the comment tables.
 
-The PO sits **downstream of [purchase-request](/en/inventory/purchase-request)** and **upstream of [good-receive-note](/en/inventory/good-receive-note)** in the procure-to-pay chain. PR-to-PO linkage runs through the bridge table noted above; the same bridge captures per-PR-line received and FOC quantities, supporting both PR consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). PO lines carry running `received_qty` and `cancelled_qty` columns so that the "pending qty" available for GRN is `order_qty − received_qty − cancelled_qty`; the relation from PO detail to GRN detail (`tb_good_received_note_detail`) is what closes the loop. PO detail rows also reference [product](/en/inventory/product), `tb_tax_profile`, and `tb_unit` (twice — for order UoM and base UoM), and the header references `tb_vendor`, `tb_currency`, and `tb_credit_term`. All PO entities live in the tenant Prisma schema; the platform schema contains no purchase-order models.
+The PO sits **downstream of [purchase-request](/en/inventory/purchase-request)** and **upstream of [good-receive-note](/en/inventory/good-receive-note)** in the procure-to-pay chain. PR-to-PO linkage runs through the bridge table noted above; the same bridge captures per-PR-line received and FOC quantities, supporting both PR consolidation (many PR lines → one PO line) and partial conversion (one PR line → many PO lines). PO lines carry running `received_qty` and `cancelled_qty` columns so that the "pending qty" available for GRN is `order_qty − received_qty − cancelled_qty`; the relation from PO detail to GRN detail (`tb_good_received_note_detail`) is what closes the loop. PO detail rows also reference [product](/en/inventory/product), `tb_tax_profile`, and `tb_unit` (twice — for order UoM and base UoM), and the header references `tb_vendor`, `tb_currency`, and `tb_credit_term`. All PO entities live in the tenant Prisma schema; the Backstage schema contains no purchase-order models.
 
 The header carries vendor, currency, exchange-rate, credit-term and — since 2026-09-15 — delivery-point context once for the whole PO — by design, every line on a PO shares the same vendor and currency, which is why the PR-to-PO conversion flow must group selected PRs by `(vendor_id, delivery_date, currency_id)` before fan-out (confirmed in `purchase-order.service.ts` `buildPoGroupKey`: `` `${vendor_id}|${yyyy-MM-dd}|${currency_id}` ``; an optional caller-supplied `delivery_date` override replaces the PR line's date in that key, so `groupPrForPo` / `confirmPrToPo` merge lines that would otherwise have split by date). The default value of `tb_purchase_order.po_type` is `purchase_request`, which makes PR-sourced the standard creation path; `manual` is for procurement-only POs with no upstream PR; `pricelist` is a third path — a PO created directly from a vendor price list through a 4-step wizard (`routes/procurement/purchase-order/from-price-list/`), bypassing the PR stage entirely.
 
-**One line = one location.** Since `feat(po)!: location ย้ายมาแบนบน detail` (2026-09-09) a `tb_purchase_order_detail` row is a product going to a single delivery location. The Prisma table itself has no `location_id` column — the location still lives on the bridge row(s) under the line — but the create DTO requires `location_id` per line (`dto/create-purchase-order.dto.ts` L60-69) and the detail serializer lifts `location_id/code/name` and `delivery_point_*` off the junction onto the row (`dto/purchase-order.serializer.ts` L74-80). The former nested `locations[]` breakdown, whose per-location quantities summed to the row's `order_qty`, no longer exists on create payloads or detail responses; it survives only on the GRN-facing `GET .../purchase-orders/grn*` views (`PoForGrnLocationResponseSchema`).
+**One line = one location.** Since `feat(po)!: location ย้ายมาแบนบน detail` (2026-09-09) a `tb_purchase_order_detail` row is a product going to a single delivery location. The Prisma table itself has no `location_id` column — the location still lives on the bridge row(s) under the line — but the create DTO requires `location_id` per line (`dto/create-purchase-order.dto.ts` L60-69) and the detail serializer lifts `location_id/code/name` and `delivery_point_*` off the junction onto the row (`dto/purchase-order.serializer.ts` L78-82). The former nested `locations[]` breakdown, whose per-location quantities summed to the row's `order_qty`, no longer exists on create payloads or detail responses; it survives only on the GRN-facing `GET .../purchase-orders/grn*` views (`PoForGrnLocationResponseSchema`).
 
 **Concurrency:** updates to this document use [system-config/doc-version](/en/inventory/system-config/doc-version) optimistic locking — the client must echo the current `doc_version` on save or receive a `409 Conflict`.
 
@@ -84,7 +84,7 @@ PO document header. Carries reference number, vendor / currency / credit-term co
 | `delivery_point_name` | `String @db.VarChar` | Yes | Snapshot of the delivery point name, resolved server-side (`resolvePrToPoOverrides`) so a renamed or deleted delivery point cannot change what a historical order says. |
 | `workflow_id` | `String @db.Uuid` | Yes | FK reference to a `tb_workflow` row (no Prisma `@relation` declared on this model — selection is application-resolved). |
 | `workflow_name` | `String @db.VarChar` | Yes | Snapshot of the workflow name. |
-| `workflow_history` | `Json @db.JsonB` | Yes | Append-only stage-transition timeline; default `[]`. Each entry holds `action`, `at`, `user { id, name }`, `current_stage`, `next_stage` (schema comment L2083). `action` is `submitted \| approved \| reviewed \| rejected \| completed` — `completed` is pushed by `WorkflowOrchestratorService` on final approval and is **not** a member of `enum_last_action`. |
+| `workflow_history` | `Json @db.JsonB` | Yes | Append-only stage-transition timeline; default `[]`. Each entry holds `action`, `at`, `user { id, name }`, `current_stage`, `next_stage` (schema comment L2215-2216). `action` is `submitted \| approved \| reviewed \| rejected \| completed` — `completed` is pushed by `WorkflowOrchestratorService` on final approval and is **not** a member of `enum_last_action`. |
 | `workflow_current_stage` | `String @db.VarChar` | Yes | Slug of the stage currently holding the PO. |
 | `workflow_previous_stage` | `String @db.VarChar` | Yes | Slug of the stage that just released the PO. |
 | `workflow_next_stage` | `String @db.VarChar` | Yes | Slug of the next stage in the chain. |
@@ -108,9 +108,9 @@ PO document header. Carries reference number, vendor / currency / credit-term co
 | `remarks` | `String @db.VarChar` | Yes | Free-text remarks for the vendor or audit trail. |
 | `history` | `Json @db.JsonB` | Yes | Header-level audit history; default `[]`. Each entry holds `po_status`, `action`, `by`, `at`. |
 | `total_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line `order_qty` (base-UoM equivalent); default `0`. |
-| `total_price` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line `net_amount`; default `0`. |
+| `total_price` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line **`sub_total_price`** (gross, before discount and tax — `updatePurchaseOrderTotals`, `purchase-order.service.ts` L5829); default `0`. **Corrected 2026-10-27** (was "net_amount"). |
 | `total_tax` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line `tax_amount`; default `0`. |
-| `total_amount` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line `total_price` (net + tax); default `0`. |
+| `total_amount` | `Decimal @db.Decimal(20, 5)` | Yes | Roll-up of line `total_price` (net + tax, i.e. after discount and including tax); default `0`. |
 | `is_active` | `Boolean` | Yes | Whether the PO is active; default `true`. |
 | `note` | `String @db.VarChar` | Yes | Free-text note attached to the header. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag for tenant-specific header attributes; default `{}`. |
@@ -130,7 +130,7 @@ Comment / attachment tables for this module are documented separately — see [0
 
 ### 2.2 tb_purchase_order_detail
 
-PO line item — one product for one delivery location. Carries product reference, order-qty and base-qty pair (single qty/UoM unlike PR which carries requested/approved/FOC triples — FOC on PO is a per-line `is_foc` boolean at table level; the FOC *quantities* `foc_qty` / `foc_received_qty` that the detail response exposes on the row are aggregated from the bridge rows, `purchase-order.service.ts` L767), tax and discount, line totals in transaction and base currency, running received / cancelled qty, and per-line workflow stage history. Note there is **no** `location_id` column on this table even though the API treats the row as single-location — see § 2.4.
+PO line item — one product for one delivery location. Carries product reference, order-qty and base-qty pair (single qty/UoM unlike PR which carries requested/approved/FOC triples — FOC on PO is a per-line `is_foc` boolean at table level; the FOC *quantities* `foc_qty` / `foc_received_qty` that the detail response exposes on the row are aggregated from the bridge rows, `purchase-order.service.ts` L789), tax and discount, line totals in transaction and base currency, running received / cancelled qty, and per-line workflow stage history. Note there is **no** `location_id` column on this table even though the API treats the row as single-location — see § 2.4.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -175,7 +175,7 @@ PO line item — one product for one delivery location. Carries product referenc
 | `cancelled_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty cancelled / written off from this line; default `0`. |
 | `history` | `Json @db.JsonB` | Yes | Per-line stage timeline (`seq`, `name`, `status`, `to_stage`, `message`, `by_id`, `by_name`, `at_date`); default `[]`. |
 | `stages_status` | `Json @db.JsonB` | Yes | Per-line stage cursor — array of `{ seq, name, status }`; default `{}`. |
-| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. The Prisma schema declares `enum_stage_action { submit, approve, reject, review, … }` (schema.prisma L2511-2524, "present-tense action verbs for `current_stage_status`") intended to type this column; the column itself remains `String?` (still marked `// temp field`) until a planned migration validates historical values and retypes it. The React footer reads it per line to decide whether the document-level button is Approve / Send Back / Reject (`po-footer-action.tsx` `computePoAction`). |
+| `current_stage_status` | `String @db.VarChar` | Yes | Working copy of the current stage status. The Prisma schema declares `enum_stage_action { submit, approve, reject, review, … }` (schema.prisma L2653-2659, "present-tense action verbs for `current_stage_status`") intended to type this column; the column itself remains `String?` (still marked `// temp field`) until a planned migration validates historical values and retypes it. The React footer reads it per line to decide whether the document-level button is Approve / Send Back / Reject (`po-footer-action.tsx` `computePoAction`). |
 | `note` | `String @db.VarChar` | Yes | Free-text note attached to the line. |
 | `info` | `Json @db.JsonB` | Yes | Extension bag; default `{}`. |
 | `dimension` | `Json @db.JsonB` | Yes | Per-line cost dimensions; default `[]`. |
@@ -202,9 +202,9 @@ Bridge table linking a PO detail row to one or more originating PR detail rows. 
 | `pr_detail_order_unit_id` | `String @db.Uuid` | Yes | UoM snapshot from the originating PR line. |
 | `pr_detail_order_unit_name` | `String @db.VarChar` | Yes | Snapshot of the PR-line UoM name. |
 | `pr_detail_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Paid qty ordered from the PR line (in PR-line UoM); default `0`. |
-| `received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Paid qty already received against this PR-line allocation; default `0`. Incremented by GRN posting (`good-received-note.service.ts` L3720 region). |
+| `received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Paid qty already received against this PR-line allocation; default `0`. Incremented by GRN posting (`good-received-note.service.ts` L3516 region). |
 | `pr_detail_foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **New 2026-09-16** (`20260916030000_po_junction_foc_ordered_vs_received`). Free-of-charge qty *ordered* from this PR line; default `0`. Backfilled from `foc_qty` where still at default. Paired with `pr_detail_qty` (ordered side). |
-| `foc_received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **New 2026-09-16.** Free-of-charge qty that actually *arrived*; default `0`. Incremented by GRN posting (`foc_received_qty: { increment }`, `good-received-note.service.ts` L3720) — FOC goods now go to stock (`f8cd9f0d9`, 2026-09-10). Paired with `received_qty`. Summed onto the PO line as `foc_received_qty` in the detail response and shown under the FOC / GRN column. |
+| `foc_received_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **New 2026-09-16.** Free-of-charge qty that actually *arrived*; default `0`. Incremented by GRN posting (`foc_received_qty: { increment }`, `good-received-note.service.ts` L3516) — FOC goods now go to stock (`f8cd9f0d9`, 2026-09-10). Paired with `received_qty`. Summed onto the PO line as `foc_received_qty` in the detail response and shown under the FOC / GRN column. |
 | `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | **Superseded** by `pr_detail_foc_qty`. Kept only so the expand migration could run while old services were still deployed; nothing writes it any more and a later migration drops it (schema comment). Do not read it in new code. |
 | `location_id` | `String @db.Uuid` | Yes | Store / location for this allocation. Since 2026-09-09 this is the line's single delivery location (lifted onto the detail response as `location`). |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot. |
@@ -301,12 +301,12 @@ Notes:
 ## 4. Enums
 
 - **`enum_purchase_order_type`**: `manual` (PO created directly by procurement without an upstream PR), `purchase_request` (PO sourced from one or more PRs via the conversion flow), `pricelist` (PO created directly from a vendor price list via the 4-step from-price-list wizard, no upstream PR). `purchase_request` is **also the default value on `tb_purchase_order.po_type`** — meaning PR-sourced is the standard procure-to-pay path; `manual` and `pricelist` are the two explicit opt-outs for procurement-only / catalog-driven POs. The same enum is shared between PR and PO documentation because it lives in the tenant schema namespace once.
-- **`enum_purchase_order_doc_status`** (schema.prisma L246-255): document-status enum for `tb_purchase_order.po_status`. **Changed 2026-09-14** — `sent` was renamed `sent_or_print` and a new `approved` member was inserted before it; every row that was `sent` was reclassified to `approved` because the old code set `sent` at final approval, before anything had actually been sent (`20260914080100_po_status_backfill_and_rename_sent`).
+- **`enum_purchase_order_doc_status`** (schema.prisma L241-250): document-status enum for `tb_purchase_order.po_status`. **Changed 2026-09-14** — `sent` was renamed `sent_or_print` and a new `approved` member was inserted before it; every row that was `sent` was reclassified to `approved` because the old code set `sent` at final approval, before anything had actually been sent (`20260914080100_po_status_backfill_and_rename_sent`).
   - `draft` (`ร่าง`) — initial editable state; PO can be modified freely, no commitment to the vendor.
   - `in_progress` (`กำลังดำเนินการ`) — submitted and traversing the approval chain.
   - `voided` (`โมฆะ`) — terminal outcome of `/reject` from `in_progress`; PO is terminated without fulfilment.
-  - `approved` (`อนุมัติ`) — **new.** Passed the final approval stage (`performApprove`, `purchase-order.logic.ts` L433-435). Receivable by GRN from here. Says nothing about whether the vendor has seen the order.
-  - `sent_or_print` ("sent to vendor") — **renamed from `sent`.** The vendor actually has the document: reached by `send-email` success or `mark-sent`, both `updateMany where po_status = approved` (`markPoAsSent`, service L7218). Awaiting first GRN (or already partially received before the send).
+  - `approved` (`อนุมัติ`) — **new.** Passed the final approval stage (`performApprove`, `purchase-order.logic.ts` L464-466). Receivable by GRN from here. Says nothing about whether the vendor has seen the order.
+  - `sent_or_print` ("sent to vendor") — **renamed from `sent`.** The vendor actually has the document: reached by `send-email` success or `mark-sent`, both `updateMany where po_status = approved` (`markPoAsSent`, service L7066). Awaiting first GRN (or already partially received before the send).
   - `partial` — at least one GRN has posted but `received_qty < order_qty − cancelled_qty` on one or more lines; partial fulfilment.
   - `closed` (annotated in Prisma as "closed หยุดหาไม่เจอ") — PO cancelled or closed before full fulfilment, typically because the vendor cannot supply the outstanding qty; remaining qty is written to `cancelled_qty`.
   - `completed` (annotated as "รับครบผ่าน receiving") — every line fully received via GRN; PO is closed normally.
@@ -332,7 +332,7 @@ The legacy `purchase-order-module.md` describes a high-level data dictionary (a 
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PO models and both enums) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PO models). Migrations since baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (all under `prisma/migrations/`).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PO models and both enums) and `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (verified to contain no PO models). Migrations since baseline: `20260914080000_po_status_add_approved`, `20260914080100_po_status_backfill_and_rename_sent`, `20260915120000_po_header_delivery_point`, `20260916030000_po_junction_foc_ordered_vs_received` (all under `prisma/migrations/`).
 - **Wire contract:** `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-order/dto/purchase-order.serializer.ts` (response) and `dto/create-purchase-order.dto.ts` (payload); `../carmen-frontend/types/purchase-order.ts` (client-side mirror, with the change notes quoted in § 2.4).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-order-management/purchase-order-module.md` — high-level business-analysis document; divergences captured in Section 5.
 - **Sibling reference:** `en/purchase-request/01-data-model.md` — describes the PR side of the PR↔PO bridge; do not duplicate that material here.

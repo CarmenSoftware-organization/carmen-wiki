@@ -2,7 +2,7 @@
 title: Report Schedule
 description: Recurring report schedule — create/list/delete backed by the micro-cronjobs Cronjob table (not the dead tb_report_schedule); run time vs notify_at with a stored next-day offset ("+1") since 2026-09-03.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![Report Schedule screen](/screenshots/reporting-audit/schedule.png)
 
-## Implementation status (verified 2026-07-22)
+## Implementation status (verified 2026-07-22, re-verified 2026-10-27)
+
+**2026-10-27 changes** (FE `0713cbc9..391062b5`, backend `ef4d6f08f..c9d788829`, micro-cronjobs `5137b0a..c5464da`): **(a)** a schedule whose report template the BU may no longer use is flagged — the list API adds `template_available` (false only when micro-report answers 403 `REPORT_TEMPLATE_UNAVAILABLE`; inactive or deleted templates are *not* flagged, `90ed14b42`) and the grid shows a "template unavailable" badge with a tooltip (`use-schedule-table.tsx`); **(b)** micro-cronjobs **skips** a run that micro-report refuses with that 403 — recorded as skipped, `last_run` updated with the reason, **no retry** and not counted as a failure (§ 1.2); **(c)** the recipients field is a server-searched, paged checklist (`PagedChecklist`, 2026-09-29) instead of loading the whole user register; **(d)** the schedule form's parameter list honours `Label=` on dialog controls and flattens `<Group>` (layout is ignored, no field is lost); **(e)** the list page uses `ListPageShell` and gateway list endpoints share a 1-100 `perpage` rule (`fe80fc14b`). Everything below about create/list/delete only, viewer-link delivery and `notify_at` was re-checked and is unchanged.
+
+**2026-07-22 baseline (kept).**
 
 The previous version of this page described `tb_report_schedule` (tenant schema) as the live backing table, plus a detail screen with a cron-expression builder, an Active toggle, a Test Run action, and a typed (`email`/`user`/`sftp`) recipients picker. A repo-wide code search found **zero references to `tb_report_schedule` anywhere in `carmen-turborepo-backend/apps`** outside its own Prisma model declaration — it is a dead table, the same pattern already confirmed for `tb_attachment` and the old `tb_widget_*` family.
 
@@ -33,14 +37,18 @@ A schedule now separates **when the report runs** (`schedule_config.time`) from 
 
 **Audience:** any authenticated user with BU context can create and delete their own schedules through this screen — no distinct schedule-admin permission gate was found on the `reports.controller.ts` schedule endpoints (they carry the same `KeycloakGuard` + `X-App-Id` header as every other report endpoint, not a narrower role check).
 
+### 1.2 Refused templates are skipped, not failed
+
+Scheduled report runs call micro-report with the internal token and **without** the web caller header, so the template's `allow_run` switch does not apply to them (`X-Report-Caller: web` is sent by the gateway only for the interactive Run button, `report_controller.go:295-298`); BU allow/deny lists and costing-method limits still do. When micro-report answers `403 { code: "REPORT_TEMPLATE_UNAVAILABLE", reason }`, `model.SkippedFromResponse` (`micro-cronjobs/internal/model/skipped.go`) turns it into a `SkippedError`: the scheduler logs `job skipped`, does **not** call `retryJob` and does **not** log an error; the cronjob row's `last_run` is updated with the next run time and the reason. The same applies to both the viewer-URL path and the legacy file path in `internal/executor/report.go`. Reasons are those in [report](/en/inventory/reporting-audit/report) § 1.5. Test: deny the BU on the template in Backstage, wait for the next fire, expect no notification, no error and the schedule row flagged "template unavailable".
+
 ## 2. Common Tasks
 
 | Task | Where | Notes |
 |---|---|---|
-| Create a schedule | `/report/schedules` → **Create Schedule** | Pick a report template, frequency (daily / weekly / monthly) + time, optional per-template filters, notification channels (web / email checkboxes), and recipients (multi-select of users) |
+| Create a schedule | `/report/schedules` → **Create Schedule** | Pick a report template, frequency (daily / weekly / monthly) + time, optional per-template filters, notification channels (web / email checkboxes), and recipients (searchable paged checklist of users) |
 | Set the notify time | Create dialog → **Notifications** → Notify at | Optional `HH:mm`; earlier than the run time = next day (+1 badge); only for viewer-link delivery |
 | Set frequency | Create dialog → **Frequency** select + time picker | Weekly adds a Sun–Sat multi-toggle; monthly adds a 1–31 multi-toggle. There is **no raw cron-expression field** in the UI — the backend derives `cron_expression` from `schedule_config` when one isn't supplied |
-| Pick recipients | Create dialog → **Recipients** | A checkbox multi-select over `useAllUsers()` — plain user IDs, not typed `email`/`user`/`sftp` entries |
+| Pick recipients | Create dialog → **Recipients** | A `PagedChecklist` that searches users on the server and loads them page by page (no longer `useAllUsers()`); values are plain user IDs, not typed `email`/`user`/`sftp` entries |
 | See last/next fire | List → **Last Run** / **Next Run** columns | Populated from the `Cronjob` row's `lastRunAt`/`nextRunAt` |
 | Delete a schedule | List → row trash icon | Confirmation dialog, then `DELETE .../schedules/:id` |
 | **Not available anywhere in the UI** | — | Editing an existing schedule, pausing/reactivating (`is_active` is display-only), a cron-expression builder, and a manual "run now" test |
@@ -95,7 +103,7 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 | `TimeoutSeconds` / `timeoutSeconds` | `int` | Default `300`. |
 | Audit columns | mixed | `createdAt`/`createdByID`, `updatedAt`/`updatedByID`, `deletedAt` (soft delete). |
 
-**Table:** `"CRONJOBS"."Cronjob"` (schema-qualified, double-quoted to preserve case — this is a distinct Postgres schema, not the tenant or platform database).
+**Table:** `"CRONJOBS"."Cronjob"` (schema-qualified, double-quoted to preserve case — this is a distinct Postgres schema, not the tenant or Backstage database).
 
 ### 5.2 `ReportJobConfig` (the `jobData`/`JobConfig` JSONB shape for `job_type = "report"`)
 
@@ -117,7 +125,7 @@ Source: **`micro-cronjobs` service's own Postgres schema** (`"CRONJOBS"."Cronjob
 
 ## 7. Cross-References
 
-- [reporting-audit/report](/en/inventory/reporting-audit/report) — parent module; `report_template_id` resolves a `tb_report_template` row (platform schema, still real).
+- [reporting-audit/report](/en/inventory/reporting-audit/report) — parent module; `report_template_id` resolves a `tb_report_template` row (Backstage schema, still real).
 - [reporting-audit/history](/en/inventory/reporting-audit/history) — because every schedule created through this screen delivers via `viewer_url`, fired schedules do **not** write a `tb_report_job` row — see that page's Implementation status callout for the resulting gap.
 - [reporting-audit/notification](/en/inventory/reporting-audit/notification) — the actual delivery mechanism: a `POST /api/internal/notifications` call per recipient when a schedule fires.
 - [access-control/user](/en/inventory/access-control/user) — recipients are plain user IDs.

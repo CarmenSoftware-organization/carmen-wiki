@@ -2,7 +2,7 @@
 title: Inventory — Test Scenarios
 description: Test cases by persona, cross-persona scenarios, and E2E mapping for inventory.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory, test-scenarios, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -64,7 +64,7 @@ This page is the overview entry point for the test-scenarios set of the `invento
 | `601-cn.spec.ts` | 5, 6 (credit-note surfaces) |
 | Backend unit specs (`inventory-transaction.service.spec.ts`, `period-end.close-transaction.helper.spec.ts`, `period-end.close-average.helper.spec.ts`, `period-end.validate.spec.ts`) | 2–7, 9–12 (the authoritative assertions for costing/close math) |
 
-Gaps: no E2E exercises the Transaction Log screen itself (manual catalog `740-stock-transaction.md`, 38 cases); the close workflow E2E is explicitly "Feature pending".
+Gaps: no E2E exercises the Transaction Log screen itself (manual catalog `740-stock-transaction.md`, 38 cases); the close workflow E2E is explicitly "Feature pending". The opt-in `period-close` project (`bun run test:period-close`, specs `910`–`924`, TC-PE-4xxxxx–54xxxxx; irreversible phases gated by `E2E_ALLOW_IRREVERSIBLE=<BU>:<period>`) now exercises pre-step, blockers, start gate, held receipts, active-period rule, counting + compensation and the real close — see [period-end](/en/inventory/inventory/period-end) § 8.
 
 ## 6. References
 

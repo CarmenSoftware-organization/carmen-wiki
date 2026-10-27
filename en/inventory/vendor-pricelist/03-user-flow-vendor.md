@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow — Vendor
 description: Vendor's flow within the vendor-pricelist module — external, token-authenticated portal; open, price, save, import, submit; link expires at the RFQ end date.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -12,6 +12,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 > **At a Glance**
 > **Persona:** Vendor (external — token-authenticated portal, no Carmen Blue login) &nbsp;·&nbsp; **Module:** [vendor-pricelist](/en/inventory/vendor-pricelist)
+> **Re-synced 2026-10-27:** the portal has a Thai / English toggle (header and expired page), prices are entered **before tax** with read-only Tax Rate and a computed Total, and the Excel import matches rows by a hidden Row ID.
 > **Re-synced 2026-09-22:** the Save/Submit gap reported on 2026-07-16 is **closed** — `PATCH /api/pricelist-external/:url_token` and `POST …/:url_token/submit` exist (`pricelist-external.controller.ts`), the link expires at the RFQ `end_date` (`UrlTokenGuard`), and every portal action is logged to `tb_activity`.
 
 ## 1. Role in This Module
@@ -26,7 +27,7 @@ The **Vendor** is an external party with no Carmen Blue login. They receive an e
 
 1. **Open the link.** The frontend calls `POST /api/external/api/check-pricelist/:url_token` (`usePriceListExternal`). Behind `UrlTokenGuard`, `CheckPriceListService.checkPriceList()` looks the invitation row up; if it has no pricelist yet it **creates one** — `tb_pricelist` at `status = draft`, `pricelist_no` from the running code, `effective_from/to` = the RFQ `start_date`/`end_date` (fallback today + template `validity_period`), `url_token`, `submission_method = online`, plus one zero-priced `tb_pricelist_detail` row per template product × order unit / MOQ tier (deduplicated on `unit::moq`), each pre-filled with the product's tax profile — and links it to the invitation row (`pricelist_id`, `pricelist_no`). A `create` activity is logged. Later visits return the existing pricelist. An expired or unknown token yields 401 and the page renders `price-list-external-expired.tsx` (*This link has expired … Contact the hotel that sent it*).
 2. **Pick per-line options.** The page loads the BU's tax profiles (`GET …/check-pricelist/:url_token/tax-profiles`) and each product's allowed order units (`GET …/units`, default flagged) so the vendor can choose a tax profile and unit per line in edit mode.
-3. **Price the products.** The table (`price-list-external-product-table.tsx`, with a MOQ-tier sub-table per product) lets the vendor type `price_without_tax` / `price`, lead time and notes per tier, or add another `(unit, MOQ)` line. An **Import** dialog (`price-list-external-import-dialog.tsx`) accepts an Excel sheet parsed client-side (`price-list-external-excel.ts`) into the same form values.
+3. **Price the products.** The table (`price-list-external-product-table.tsx`, with a MOQ-tier sub-table per product) lets the vendor type the pre-tax `price`, lead time and notes per tier (columns: Price · Tax Profile · Tax Rate — read-only, from the chosen profile · Tax Amount · Total; VAT is added on top, `price_without_tax` is sent equal to `price`), or add another `(unit, MOQ)` line. An **Import** dialog (`price-list-external-import-dialog.tsx`) accepts an Excel sheet parsed client-side (`price-list-external-excel.ts`) into the same form values. The exported sheet carries a hidden last column **Row ID**; import matches Row ID + product code first, then No. + product code, then product code alone only when that code appears on a single row — a duplicate code with no usable key is skipped rather than guessed (so the same product at two MOQ tiers no longer overwrites itself). Column headers in the sheet stay English because import matches on them, even when the page is in Thai. The language toggle in the page header (`LocaleToggle`) switches the whole portal (`priceListPortal` messages).
 4. **Save.** `PATCH /api/external/api/pricelist-external/:url_token` with `{ note, pricelist_detail: { update: [...], add: [...] } }` (`useUpdatePriceListExternal`). The backend requires the pricelist to still be `draft`, writes the lines, and logs `vendor.pricelist.draft_saved` with before/after snapshots. The pricelist stays `draft`, so the vendor can return and continue until the link expires.
 5. **Submit.** `POST /api/external/api/pricelist-external/:url_token/submit` (`useSubmitPriceListExternal`). Requires `status = draft`; deletes every line with `price IS NULL OR price <= 0` (a zero is "no offer", not a free item — `price-list.zero-price.ts`), sets `status = submitted` and `submitted_at = now()`, logs a `submit` activity. The page switches to read-only (`data.status !== "submitted"` gates the edit controls); the Purchaser's RFQ row now shows `has_submitted = true` with the pricelist number and status.
 

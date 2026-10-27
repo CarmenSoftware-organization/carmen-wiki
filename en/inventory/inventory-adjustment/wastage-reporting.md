@@ -2,7 +2,7 @@
 title: Wastage Reporting
 description: Near-expiry lot list and write-off API under Store Operations — real backend since 2026-08-10; the write-off creates a completed Stock Out per location and posts it to the ledger.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, wastage, loss, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,9 +11,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Wastage Reporting
 
 > **At a Glance**
-> **Location:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`, nav permission `inventory_management.stock_out.view`) — cross-referenced from Inventory Adjustment because its write-off *is* a `tb_stock_out` &nbsp;·&nbsp; **Status:** **real API since 2026-08-10** (`c9348f667`; frontend switched off the mock on 2026-08-20 `061a0f3f`) &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/wastage-reporting` (near-expiry lots) and `POST /api/{bu}/wastage-reporting` (write-off) &nbsp;·&nbsp; **Backend:** `apps/micro-business/src/inventory/wastage-reporting/` — no table of its own; it reads GRN lots and writes `tb_stock_out` &nbsp;·&nbsp; **UI today:** list only — the write-off endpoint has no button in the shipped frontend
+> **Location:** Store Operations → Wastage Reporting (`/store-operation/wastage-reporting`, nav permission `inventory_management.stock_out.view`, licence feature `store_operations.wastage_reporting`) — cross-referenced from Inventory Adjustment because its write-off *is* a `tb_stock_out` &nbsp;·&nbsp; **Status:** **real API since 2026-08-10** (`c9348f667`; frontend switched off the mock on 2026-08-20 `061a0f3f`) &nbsp;·&nbsp; **Endpoints:** `GET /api/{bu}/wastage-reporting` (near-expiry lots) and `POST /api/{bu}/wastage-reporting` (write-off) &nbsp;·&nbsp; **Backend:** `apps/micro-business/src/inventory/wastage-reporting/` — no table of its own; it reads GRN lots and writes `tb_stock_out` &nbsp;·&nbsp; **UI today:** list only — the write-off endpoint has no button in the shipped frontend
 
 ![Wastage Reporting screen](/screenshots/inventory-adjustment/wastage-reporting.png)
+
+> **Re-synced 2026-10-27 (backend `c9d788829`, frontend `391062b5`):** the list screen was rebuilt (segmented Expired / Expiring filter with counts, urgency column, no saved views) and the write-off now follows the **active inventory period** — `so_date` defaults to a day inside the active period and must lie in it, the stock check is made *as of* `so_date`, the Stock Out number is reserved inside the inserting transaction, and each Stock Out line gets the cost the ledger actually posted. There is still no write-off button in the UI.
 
 ## 1. What & Who
 
@@ -27,9 +29,10 @@ The 2026-07-15 revision of this page described a **mock-data-only** screen (`wr-
 
 | Task | Where | Notes |
 |---|---|---|
-| See lots expiring soon | Store Operation → Wastage Reporting | `GET /wastage-reporting?days=30` (default window `DEFAULT_EXPIRY_WINDOW_DAYS = 30`); optional `include_expired`, `status=expiring|expired`, `location_id`, `product_id`, search + pagination. Summary bar: items, expired count, expiring count, qty at risk, value at risk |
+| See lots expiring soon | Store Operation → Wastage Reporting | `GET /wastage-reporting?days=30` (default window `DEFAULT_EXPIRY_WINDOW_DAYS = 30`); optional `include_expired`, `status=expiring|expired`, `location_id`, `product_id`, search + pagination. The screen always sends `days=30` (`WASTAGE_WINDOW_DAYS`) and keeps the status in the URL as `?status=` — the endpoint ignores the generic `filter` parameter, which the old Filter menu used to send. Top bar: a segmented control **All / Expired / Expiring (≤ 30 days)** with a count on each segment (counts come from the unfiltered summary, fetched again with one row when a status is active) and **value at risk** of the rows being viewed; the API summary still carries `total_qty_at_risk`, but the screen no longer shows it because lots are in different units. Search is the only other control (the Filter menu and saved views were removed) |
 | Jump to the receipt | Click the GRN number | Opens `/procurement/goods-receive-note/{grn_id}` |
-| Write off a lot (API) | `POST /wastage-reporting` with `{ so_date?, adjustment_type_id, description?, note?, items: [{ grn_detail_item_id, qty, note? }] }` | Lines are grouped by location; for each location one `tb_stock_out` is created at `draft`, every line posted through `executeAdjustmentOut`, then the header is set to `completed` — all in one transaction (`wastage-reporting.logic.ts`). `so_date` defaults to today and must satisfy the stock-out period rule |
+| Read the expiry | Expiry column (replaces the old Expiry Date / Days Left / Status triple) | Words first — "N days overdue" (red), "expires today" / "N days left" (amber when ≤ `WASTAGE_URGENT_DAYS` = 7, neutral otherwise) — with the date underneath (`expiry-urgency.tsx`). On mobile each row is one three-line cell |
+| Write off a lot (API) | `POST /wastage-reporting` with `{ so_date?, adjustment_type_id, description?, note?, items: [{ grn_detail_item_id, qty, note? }] }` | Lines are grouped by location; for each location one `tb_stock_out` is created at `draft`, every line posted through `executeAdjustmentOut`, then the header is set to `completed` — all in one transaction (`wastage-reporting.logic.ts`); `available_as_of = so_date` is passed to `executeAdjustmentOut` so the posting's own guard uses the same date, and each `tb_stock_out_detail` line is stamped with `inventory_transaction_id` **and** the posted `cost_per_unit` / `total_cost` (`getPostedCost`) — the line is created without a price, so before 2026-10 the document and the stock-out report showed 0 while the ledger booked the lots' cost. `so_date`, when omitted, defaults to **today if today is inside the active period, otherwise the active period's nearest boundary day** (`defaultDateInPeriod`; never a pre-generated later month), and a supplied `so_date` must lie in the active period (same guard as `StockOutService.create`). The Stock Out numbers (`STOCK-OUT` running code, month of `so_date`) are reserved inside the transaction that inserts the documents |
 
 ## 3. Validation & Errors
 
@@ -37,8 +40,8 @@ The 2026-07-15 revision of this page described a **mock-data-only** screen (`wr-
 |---|---|---|
 | Empty list | No committed GRN line has `expired_at` inside the window (`tb_good_received_note_detail_item.expired_at`, migration `20260731120000_add_inflow_price_expiry`), or every candidate lot's remaining qty ≤ 0 | Widen `days`, or check that receipts carry an expiry date |
 | `WASTAGE_ITEMS_REQUIRED` | `items` empty | Send at least one line |
-| Write-off rejected for quantity | `qty` exceeds the lot's remaining balance (`remaining_qty` = layer `in_qty` − consumption via `parent_lot_no`) or the location's on-hand | Reduce `qty` |
-| `STOCK_OUT_DATE_NOT_CURRENT_PERIOD` (422) | `so_date` outside the current inventory period — the write-off inherits the stock-out date guard | Re-date |
+| Write-off rejected for quantity | `qty` exceeds the lot's remaining balance (`remaining_qty` = layer `in_qty` − consumption via `parent_lot_no`), or the product's total across the request exceeds what the location can supply **as of `so_date`** (`getDrawableQtyAsOf`: the period's brought-forward plus movements up to that day, without letting later days go short) | Reduce `qty` or re-date. The error is `STOCK_OUT_INSUFFICIENT_STOCK` with product, location, available, requested, date and the day of the lowest balance |
+| `STOCK_OUT_DATE_NOT_CURRENT_PERIOD` (422) / `STOCK_OUT_NO_OPEN_PERIOD` (422) | `so_date` is outside the **active** inventory period (the oldest `open`/`locked` one — the message names it), or no period is open at all | Re-date inside the active period, or open a period |
 
 ## 4. Edge Cases
 
@@ -46,7 +49,7 @@ The 2026-07-15 revision of this page described a **mock-data-only** screen (`wr-
 - **Only committed receipts count** (`doc_status = committed` on both the GRN and its detail path); a draft or voided GRN never appears.
 - **`days_to_expiry` is a signed integer** — negative for already-expired lots (`status = expired`); the list is sorted by `expired_at` ascending.
 - **One Stock Out per location, not per call.** A write-off spanning three locations creates three `tb_stock_out` documents, each with its own `so_no`, all tagged with the caller's `adjustment_type_id` and `description`.
-- **No UI for the write-off.** `routes/store-operation/wastage-reporting/` contains only `use-wastage-report.ts` (GET), `use-wr-table.tsx` and `wr-component.tsx`; the form / mock files were deleted on 2026-08-20. Voiding a wastage Stock Out is done from the Inventory Adjustment screen like any other stock-out.
+- **No UI for the write-off.** `routes/store-operation/wastage-reporting/` contains only `use-wastage-report.ts` (GET), `use-wr-table.tsx`, `wr-component.tsx`, `wr-summary-bar.tsx` and `expiry-urgency.tsx`; the form / mock files were deleted on 2026-08-20. Voiding a wastage Stock Out is done from the Inventory Adjustment screen like any other stock-out.
 - **Permission is real but coarse.** The nav entry is gated by `inventory_management.stock_out.view` (`constant/module-list.ts`); the gateway guards are `wastageReporting.findAll` / `wastageReporting.writeOff`.
 
 ## 5. Data Shape (API response)
@@ -73,7 +76,7 @@ Write-off response: the created `tb_stock_out` header(s) — `{ id, so_no, doc_s
 
 ## 7. References
 
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff`, `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/wastage-reporting/` (`wastage-reporting.service.ts` — `findNearExpiry`, `resolveLotsByDetailItemIds`; `wastage-reporting.logic.ts` — `WastageReportingLogic.writeOff` (period guard, `getDrawableQtyAsOf`, `reserveStockDocumentNumbers`, `getPostedCost`), `groupWriteOffByLocation`; `dto/wastage-reporting.dto.ts`, `dto/wastage-reporting.serializer.ts`); gateway `apps/backend-gateway/src/application/wastage-reporting/wastage-reporting.controller.ts` (`@Controller('api/:bu_code/wastage-reporting')`).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/_uncategorized/wastage-reporting/` (`GET-find-near-expiry-wastage-reporting.bru`, `POST-write-off-wastage-reporting.bru`).
-- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`); nav gate in `constant/module-list.ts`.
+- **Frontend:** `../carmen-frontend/routes/store-operation/wastage-reporting/` (`wr-component.tsx`, `wr-summary-bar.tsx`, `expiry-urgency.tsx`, `use-wr-table.tsx`, `use-wastage-report.ts`; constants in `constant/wastage-reporting.ts`); nav gate in `constant/module-list.ts`.
 - **E2E:** `../carmen-frontend-e2e/tests/710-wastage-reporting.spec.ts` (20 tests, generated stories `docs/user-stories/710-wastage-reporting.md`) — list, summary and GRN-link behaviour; no write-off coverage because the UI has none.

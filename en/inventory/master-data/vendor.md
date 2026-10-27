@@ -2,7 +2,7 @@
 title: Vendor
 description: Suppliers and their addresses, contacts, and business-type taxonomy — the counterparty on every procurement document.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: master-data, vendor, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -31,6 +31,11 @@ The vendor record snapshots the **tax profile** at the vendor level so documents
 | Add address | Vendor detail → Addresses tab | At most one of each `address_type` per vendor |
 | Add contact | Vendor detail → Contacts tab | One contact per vendor may be `is_primary = true` |
 | Maintain business types | Master Data → Vendor Business Type | Separate list screen; references stored as JSON `[{id, name}]` on the vendor |
+| Set rating, tax ID, branch no. | Vendor form (`vendor-rating.tsx`, General) | `rating` 1-5 (null = not rated), `tax_no` (max 20 chars in the form), `branch_no` (max 10); list sorting by rating puts NULLs last |
+| Set the AP posting account | Vendor form -> AP account picker | `ap_chart_of_accounts_id`; sent only when changed. Must be an active, postable [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) row, else `422 GL_ACCOUNT_NOT_POSTABLE` (shown under the field). Not read by account mapping (AP rows take their own override only) |
+| Set default currency / credit term | **API only** - `default_currency_id`, `credit_term_id` on create/update | Server looks up the currency / credit term (`CURRENCY_NOT_FOUND`, `CREDIT_TERM_NOT_FOUND`) and overwrites the snapshot columns `default_currency_code`, `credit_term_name`, `credit_term_days` (client-supplied snapshots are ignored when an id is given; `null` clears them). The form has no field for them |
+| Comment / attach files | Vendor detail -> comment sheet (`EntityCommentSheet`, `use-vendor-comments.ts`) | Shown only on an existing vendor |
+| Print | **Print** button on the vendor form (`PrintDocumentButton`, template `VENDOR_DETAIL_TEMPLATE_ID`) | Vendor Detail Report for that vendor |
 | Deactivate | Toggle `is_active` | Hidden from new pickers; historical docs unchanged |
 | Change tax profile | Edit dialog | Snapshots new `tax_rate`; does NOT retro-edit historical documents |
 
@@ -53,7 +58,7 @@ flowchart TD
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code/name already in use" | Duplicate `(code, name)` on a non-deleted row | Pick different identifiers |
+| `409 VENDOR_CODE_ALREADY_EXISTS` - "Vendor code already exists" | Duplicate vendor code on create or update (error-catalog code since 2026-10) | Pick a different code |
 | "Address type already exists for this vendor" | Second address of same `address_type` attempted (DB-unique on `(vendor_id, address_type, deleted_at)`) | Edit the existing one instead |
 | **Unconfirmed** — no delete guard found | `vendors.service.ts`'s `delete()` is an unconditional soft-delete (wrapped in a transaction whose vendor-contact/address cascade-delete lines are commented out) with no check for PR/PO/GRN/pricelist references | A prior version of this page asserted "cannot delete — referenced by documents" as an enforced error; treat it as **not enforced** until re-verified |
 | "Vendor has no active contact" warning | All contacts inactive or deleted | Add or reactivate at least one contact |
@@ -91,6 +96,9 @@ Source: tenant schema.
 | `tax_no` | `String? @db.VarChar` | Yes | Tax identification number (Thai 13-digit, format not enforced because foreign vendors differ). Indexed (`vendor_tax_no_idx`). Added 2026-09-09 (`20260909203000_add_vendor_tax_branch_rating`). |
 | `branch_no` | `String? @db.VarChar` | Yes | Branch number; `"00000"` = head office. Kept as a string because leading zeros are significant. Added 2026-09-09. |
 | `rating` | `Int?` | Yes | Manual 1–5 rating, `null` = not rated. DB `CHECK "vendor_rating_chk" (rating BETWEEN 1 AND 5)` plus DTO `z.number().int().min(1).max(5)` (`vendors.dto.ts:55`). Added 2026-09-09. **API-only so far** — `types/vendor.ts` and `routes/vendor-management/vendor/` have no field for any of the three (grep `tax_no|branch_no|rating` → 0 hits). |
+| `default_currency_id`, `default_currency_code` | `UUID?`, `VarChar(3)?` | Yes | Default currency and its code snapshot (API only). |
+| `credit_term_id`, `credit_term_name`, `credit_term_days` | `UUID?`, `VarChar?`, `Int?` | Yes | Default credit term and its name / days snapshot (API only). |
+| `ap_chart_of_accounts_id` | `UUID?` | Yes | AP posting account; no FK, validated postable on write. |
 | `info`, `dimension` | `Json?` | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |

@@ -2,7 +2,7 @@
 title: Department User
 description: The user↔department membership pivot — which users belong to which departments, and the Head of Department (HOD) driving PR/SR approval routing. Since 2026-09-04 a user's department is also editable from the user screen.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -15,12 +15,13 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 ![Department User screen](/screenshots/access-control/department-user.png)
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
 
-- **User-side edit is real again.** The User Assign screen's Departments section was read-only at baseline; since BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` accepts a single `department_id` and the screen exposes it as a `LookupDepartment` (`user-assigned-departments.tsx:38-40`, FE `39ae1bba`, 2026-09-07). The user endpoint returns `department: { id, name } | null` — a single value, consistent with the effectively-single-membership rule below. Errors: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (the user is HOD of a department; moving them is refused so the HOD stage is not silently emptied — `catalog.ts:351-358`). The HOD flag itself is still set only from the Department screen (the user screen's HOD block was removed, `5684f93e`).
+- **User-side edit is real again.** The User Assign screen's Departments section was read-only at baseline; since BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` accepts a single `department_id` and the screen exposes it as a `LookupDepartment` (`user-assigned-departments.tsx:36-44`, FE `39ae1bba`, 2026-09-07). The user endpoint returns `department: { id, name } | null` — a single value, consistent with the effectively-single-membership rule below. Errors: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (the user is HOD of a department; moving them is refused so the HOD stage is not silently emptied — `catalog.ts:396-409`: `…_NOT_FOUND` is HTTP 404, `…_ALREADY_HOD` is 409; the sibling `USER_ACCESS_DEPARTMENT_WRITE_FAILED` is 500). The HOD flag itself is still set only from the Department screen (the user screen's HOD block was removed, `5684f93e`).
+- **Department screen loads the user register lazily (FE `29570cf8`, `0bac08d4`).** In **view** mode only the members' and HODs' emails are fetched, by id (`useEntitiesByIds` over `useUser`, `idFilterKey: "user_id"`); the whole-BU user list for the two Transfer widgets is requested only in **edit/create** mode (`useUserAll`, `enabled: !isView`). The Transfer sources are unchanged: Members offers users with no department (or already in this one), HOD offers all users. A duplicate department code now surfaces as a field error on **Code** (`serverFieldErrors: { DEPARTMENT_ALREADY_EXISTS: "code" }`).
 - **Nested user refs (BE `5d64f5dfd`, 2026-09-17).** The department detail's `department_users[]` and `hod_users[]` now carry `user: { id }` instead of a flat `user_id` (no name sibling); the department form was fixed to read the object (`b55294b3`). `DepartmentUserResponseDto` on `api/config/:bu_code/department-users` is unchanged (`id`, `department_id`, `user_id`, `is_active`, `doc_version`, `audit`).
 - **Workflow impact.** `GET api/config/:bu_code/workflows/assignees/:target_user_id` (2026-09-03) lists the stages a user holds — call it before removing a user from a department; stages that draw actors from a department HOD or from a whole department are excluded because losing one member does not empty them. See [system-config/workflow](/en/inventory/system-config/workflow).
-- `findByUserId` still uses `findFirst` (`department-user.service.ts:85`) — one "member" department per user; the HOD / single-HOD findings below re-checked and unchanged.
+- `findByUserId` still uses `findFirst` (`department-user.service.ts:85`; the HOD lookup `hasHodInDepartment`/`getHodInDepartment` also uses `findFirst` at `:40`) — one "member" department per user; the HOD / single-HOD findings below re-checked and unchanged.
 
 ## 1. What & Who
 
@@ -70,7 +71,7 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key. |
-| `user_id` | `String @db.Uuid` | No | References platform `tb_user.id`; **not** a Prisma FK on this model (cross-schema, same pattern as [access-control/user-location](/en/inventory/access-control/user-location)) — only `department_id` has a declared `@relation`. |
+| `user_id` | `String @db.Uuid` | No | References backstage `tb_user.id`; **not** a Prisma FK on this model (cross-schema, same pattern as [access-control/user-location](/en/inventory/access-control/user-location)) — only `department_id` has a declared `@relation`. |
 | `department_id` | `String @db.Uuid` | No | FK to `tb_department`. |
 | `is_hod` | `Boolean?` | Yes | Default `false`. `true` = Head of Department for this assignment. |
 | `note` | `String? @db.VarChar` | Yes | Free-text annotation. |
@@ -100,8 +101,8 @@ Source: tenant schema (`packages/prisma-shared-schema-tenant/prisma/schema.prism
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (line 4771).
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove on department update); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :id`, `GET`, `POST`, `PUT :id`, `DELETE :id`); `.../apps/backend-gateway/src/config/config_users/` (user-side `department_id` PATCH); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (line 5544).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove on department update); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :department_user_id` `:131`, `GET` `:189`, `POST` `:250`, `PUT :department_user_id` `:322`, `DELETE :department_user_id` `:401`); `.../apps/backend-gateway/src/config/config_users/` (user-side `department_id` PATCH); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/department-user/`, `config/users/PATCH-patch-access-config-users.bru`.
 - **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — `tb_department_user` entity detail and HOD index definitions (frozen 2026-04-27).
 - **Docs:** `../carmen/docs/app/system-administration/user-management/BR-user-management.md` — BR-002: HOD Designation business rule (design intent; not enforced in current code — see Edge Cases).

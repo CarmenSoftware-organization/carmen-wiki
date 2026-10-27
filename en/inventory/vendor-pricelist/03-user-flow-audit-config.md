@@ -2,7 +2,7 @@
 title: Vendor Pricelist — User Flow — Audit & Config (Correction)
 description: Correction page — no dedicated Audit workspace or Configuration console exists in the vendor-pricelist module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: vendor-pricelist, user-flow, audit-config, inventory, carmen-software, correction
 editor: markdown
 dateCreated: 2026-05-15T15:00:00.000Z
@@ -25,7 +25,7 @@ dateCreated: 2026-05-15T15:00:00.000Z
 
 ## What is real
 
-- The generic running-code pattern (`tb_config_running_code`, type `PRICE-LIST`) drives `pricelist_no` generation — this is the same generic numbering mechanism used across the product, not a pricelist-specific numbering console.
+- The generic running-code pattern (`tb_config_running_code`, type `PRICE-LIST`) drives `pricelist_no` generation (since 2026-10 the number is reserved by `reserveDocumentNumbers` inside the transaction that inserts the list) — this is the same generic numbering mechanism used across the product, not a pricelist-specific numbering console.
 - Portal events (`create` / `save` / `submit`) and RFQ `email_sent` actions are written to the shared `tb_activity` table (2026-09-11/16) and are readable through the ordinary Activity panel — the closest thing to an audit trail; still no query-builder workspace.
 - Comment tables exist and have their own manual CRUD endpoints per entity family, usable by any authorized user for free-text notes — but writing one is always a manual action, never an automatic audit-trail entry (see [01a-data-model-comments](/en/inventory/vendor-pricelist/01a-data-model-comments)).
 - If a dedicated audit query surface or a token-revocation action is wanted, it does not exist today and would be new-feature work, not a documentation gap.

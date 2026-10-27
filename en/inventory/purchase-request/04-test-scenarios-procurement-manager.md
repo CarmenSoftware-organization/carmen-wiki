@@ -2,7 +2,7 @@
 title: Purchase Request — Test Scenarios — Procurement Manager
 description: Procurement Manager's test cases (escalated / high-value approval) for purchase-request.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, test-scenarios, procurement-manager, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -25,10 +25,10 @@ This page captures the test scenarios that the Procurement Manager persona drive
 
 | # | Scenario | Pre-condition | Steps | Expected |
 | - | -------- | ------------- | ----- | -------- |
-| PM-HP-01 | Receive and review a routed PR | PR `pr_status = in_progress`, routed to the Procurement Manager because a `routing_rules` condition on `total_amount` matched (`PR_AUTH_005`), or by direct workflow configuration | Open **My Approval** (`/procurement/approval`) or the PR list's **My Pending** tab; open the PR; review header, lines, Workflow History and comments. *(A Budget Impact panel — unconfirmed, no code path.)* | PR detail loads with the same read-mostly / Edit Mode UI as the base Approver chain; footer shows Approve / Reject / Send Back, the bulk toolbar shows Approve / Reject / Send for Review / Split. |
+| PM-HP-01 | Receive and review a routed PR | PR `pr_status = in_progress`, routed to the Procurement Manager because a `routing_rules` condition on `total_amount` matched (`PR_AUTH_005`), or by direct workflow configuration | Open **My Approval** (`/procurement/my-approval`) or the PR list's **My Pending** tab; open the PR; review header, lines, Workflow History and comments. *(A Budget Impact panel — unconfirmed, no code path.)* | PR detail loads with the same read-mostly / Edit Mode UI as the base Approver chain; footer shows Approve / Reject / Send Back, the bulk toolbar shows Approve / Reject / Send for Review / Split. |
 | PM-HP-02 | Approve an escalated PR at the final stage | PR at the Procurement Manager's stage, which is the chain's last `approve`-role stage | Enter Edit Mode, select all, bulk **Approve**, confirm. | `PR_POST_005` fires: `pr_status` flips `in_progress → approved`; PR becomes eligible for the separate Convert-to-PO dialog. |
 | PM-HP-03 | Reject a very-high-value PR | PR assigned to the Procurement Manager / General Manager for approval (`TC-PR-060005`) | Open the PR; click **Reject**; enter a reason; confirm. | `pr_status` flips to `voided`; requestor notified; Auditor can review the reason post-hoc. |
-| PM-HP-04 | Send an escalated PR back for revision | PR at the escalated stage; justification insufficient | Bulk **Send for Review** with a reason. | `workflow_current_stage` moves back one step (or all the way to the Requestor's create stage, returning `pr_status` to `draft`, depending on workflow configuration). |
+| PM-HP-04 | Send an escalated PR back for revision | PR at the escalated stage; justification insufficient | Bulk **Send for Review** with a reason. | `workflow_current_stage` moves back one step (or all the way to the Requestor's create stage — `pr_status` stays `in_progress`, never `draft`). |
 
 ## 2. Permission / Authorization
 

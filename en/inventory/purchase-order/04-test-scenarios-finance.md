@@ -2,7 +2,7 @@
 title: Purchase Order — Test Scenarios — Finance
 description: Why no three-way-match / AP test scenarios exist for purchase-order in current source, and what is confirmed instead.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, test-scenarios, finance, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -14,11 +14,13 @@ dateCreated: 2026-05-15T10:00:00.000Z
 > **Persona:** Finance — **unconfirmed as a distinct persona in current source** &nbsp;·&nbsp; **Module:** [purchase-order](/en/inventory/purchase-order)
 > **E2E coverage:** none confirmed. A prior version of this page cited `403-po-finance-ap-match.spec.ts`, which **does not exist** in `../carmen-frontend-e2e/tests/`.
 
+> **Re-checked 2026-10-27 (e2e @ d795a25):** still no finance / AP / invoice spec for the PO module, although an AP module now exists in the backend (GRN-based, see [03-user-flow-finance.md](./03-user-flow-finance.md)); no AP route appears in the e2e `tests/` directory.
+
 > **Executable coverage (2026-09-22):** re-checked `../carmen-frontend-e2e/tests/` at 809d8e3 — still no finance / AP / invoice spec; `docs/test-cases/COVERAGE.md` lists no such route. The nearest executable material is the Credit Note suite (`docs/user-stories/601-cn.md`, 124 cases, `tests/601-cn.spec.ts`; gap `docs/test-cases/gaps/601-cn-gap.md`, 65) — inventory-side only, no AP posting.
 
 > ⚠️ **Major correction this pass.** The previous version of this page listed ~25 scenarios (FIN-HP-01 through FIN-EDGE-05) covering a pre-transmission Finance Manager sign-off stage and a Finance Officer three-way-match / AP-posting flow, including specific GL account entries, purchase-price-variance handling, and FX-adjustment postings. None of this maps to current source:
 > - The cited spec file `403-po-finance-ap-match.spec.ts` was checked directly and **does not exist** in the e2e test directory. This means every "E2E coverage" claim on the removed scenarios was fabricated alongside the feature itself.
-> - A repo-wide search of `carmen-turborepo-backend` and `carmen-frontend` for `three-way`, `vendor_invoice`, `VendorInvoice`, and `tb_invoice` returned zero hits.
+> - A repo-wide search of `carmen-turborepo-backend` and `carmen-frontend` for `three-way`, `vendor_invoice`, `VendorInvoice`, and `tb_invoice` returned zero hits on 2026-09-22 (`tb_invoice` still has none; AP invoices live in `tb_ap_invoice*`).
 > - See [03-user-flow-finance.md](./03-user-flow-finance.md) for the full correction and what evidence was checked.
 >
 > This page is kept, rather than deleted, to record the correction and point to what actually exists. No scenario table is reconstructed here because there is no confirmed feature to write test scenarios against.
@@ -27,7 +29,7 @@ dateCreated: 2026-05-15T10:00:00.000Z
 
 | Removed scenario group | Reason |
 |---|---|
-| FIN-HP-01 through FIN-HP-06 (pre-transmission sign-off, three-way match, PPV, FX adjustment, GL postings) | No invoice-capture, AP-posting, or match-algorithm code found anywhere in current source. |
+| FIN-HP-01 through FIN-HP-06 (pre-transmission sign-off, three-way match, PPV, FX adjustment, GL postings) | No PO-level match algorithm exists (as of 2026-10-27 the AP module matches GRN items only; the 2026-09-22 "zero hits" no longer holds for AP code). |
 | FIN-PERM-01 through FIN-PERM-07 | Depend entirely on the non-existent AP/invoice feature and a `finance` stage role that does not exist in `enum_stage_role`. |
 | FIN-VAL-01 through FIN-VAL-07 | Same — validation rules for a feature that is not implemented. |
 | FIN-EDGE-01 through FIN-EDGE-05 | Same. |

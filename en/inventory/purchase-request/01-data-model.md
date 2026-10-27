@@ -2,7 +2,7 @@
 title: Purchase Request — Data Model
 description: Entities, fields, relationships, and enums for the purchase-request module.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-request, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T09:00:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T09:00:00.000Z
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -74,7 +74,7 @@ PR document header. Carries reference number, requestor and department context, 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key, generated via `gen_random_uuid()`. |
-| `pr_no` | `String @db.VarChar` | No | Human-readable PR reference number (e.g. `PR-2301-0001`). |
+| `pr_no` | `String @db.VarChar` | No | Human-readable PR reference number. A draft carries a placeholder `draft-{n}` (per-BU counter); the first submit replaces it with the running-code number — see [02-business-rules](/en/inventory/purchase-request/02-business-rules) `PR_VAL_001`. |
 | `pr_date` | `DateTime @db.Timestamptz(6)` | Yes | Document date the requestor selects on submission. |
 | `description` | `String @db.VarChar` | Yes | Free-text description / justification entered on the header. |
 | `workflow_id` | `String @db.Uuid` | Yes | FK into `tb_workflow` — selects the approval-chain definition this PR follows. |
@@ -117,7 +117,7 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `purchase_request_id` | `String @db.Uuid` | Yes | FK to `tb_purchase_request.id`. Nullable to support draft lines unattached to a header. |
-| `sequence_no` | `Int` | Yes | Line ordering within the PR; default `1`. Every read of a PR returns its lines `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:163`, 2026-09-18). |
+| `sequence_no` | `Int` | Yes | Line ordering within the PR; default `1`. Every read of a PR returns its lines `orderBy: { sequence_no: 'asc' }` (`purchase-request.service.ts:166`, 2026-09-18). |
 | `location_id` | `String @db.Uuid` | Yes | Store / location needing the item. |
 | `location_code` | `String @db.VarChar` | Yes | Snapshot of location code. |
 | `location_name` | `String @db.VarChar` | Yes | Snapshot of location name. |
@@ -147,17 +147,17 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 | `requested_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty in requested UoM; default `0`. |
 | `requested_unit_id` | `String @db.Uuid` | Yes | UoM the requestor entered. |
 | `requested_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
-| `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to inventory base UoM. |
+| `requested_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to inventory base UoM. Resolved server-side on create / save (`PR_VAL_019` in [02-business-rules](/en/inventory/purchase-request/02-business-rules)). |
 | `requested_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `requested_qty × requested_unit_conversion_factor`. |
 | `approved_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Qty in approved UoM; may differ from `requested_qty`. The server only rejects negative values (`verify-approve.ts:172-181`) — no upper bound. |
 | `approved_unit_id` | `String @db.Uuid` | Yes | UoM used for the approved qty. |
 | `approved_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
-| `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. |
+| `approved_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. Resolved server-side on create / save (`PR_VAL_019` in [02-business-rules](/en/inventory/purchase-request/02-business-rules)). |
 | `approved_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `approved_qty × approved_unit_conversion_factor`. |
 | `foc_qty` | `Decimal @db.Decimal(20, 5)` | Yes | Free-of-charge qty in FOC UoM; default `0`. A line may be FOC-only (`requested_qty = 0`, `foc_qty > 0`) — accepted at submit since 2026-09 (`purchase-request.validate.ts:105-131`). |
 | `foc_unit_id` | `String @db.Uuid` | Yes | UoM for FOC qty. |
 | `foc_unit_name` | `String @db.VarChar` | Yes | Snapshot. |
-| `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. |
+| `foc_unit_conversion_factor` | `Decimal @db.Decimal(20, 5)` | Yes | Conversion factor to base UoM. Resolved server-side on create / save (`PR_VAL_019` in [02-business-rules](/en/inventory/purchase-request/02-business-rules)). |
 | `foc_base_qty` | `Decimal @db.Decimal(20, 5)` | Yes | `foc_qty × foc_unit_conversion_factor`. |
 | `tax_profile_id` | `String @db.Uuid` | Yes | FK to `tb_tax_profile.id`. |
 | `tax_profile_name` | `String @db.VarChar` | Yes | Snapshot. |
@@ -194,7 +194,7 @@ PR line item. Carries product reference, qty / unit triples (requested, approved
 
 Comment / attachment tables for this module are documented separately — see [01a — Data Model — Comment Tables](/en/inventory/purchase-request/01a-data-model-comments).
 
-**Delete semantics:** a PR is never hard-deleted. `DELETE /:bu_code/purchase-requests/:id` (and `DELETE …/batch`) stamps `deleted_at` on the header and on each detail row — duplicate-key detail rows get staggered timestamps so the partial unique index `PR1_purchase_request_product_location_dimension_u` is not violated (`purchase-request.service.ts:1688-1716`). Only `draft` rows can be deleted, and only by the owner (`created_by_id` or `requestor_id`, `common/helpers/document-ownership.helper.ts`) or a platform super-admin.
+**Delete semantics:** a PR is never hard-deleted. `DELETE /:bu_code/purchase-requests/:id` (and `DELETE …/batch`) stamps `deleted_at` on the header and on each detail row — duplicate-key detail rows get staggered timestamps so the partial unique index `PR1_purchase_request_product_location_dimension_u` is not violated (`purchase-request.service.ts:1753-1850`, batch path). Only `draft` rows can be deleted, and only by the owner (`created_by_id` or `requestor_id`, `common/helpers/document-ownership.helper.ts`) or a Backstage super-admin.
 
 ### 2.3 tb_purchase_request_template
 
@@ -306,8 +306,11 @@ header {
   id, pr_no, pr_date, pr_status, description, doc_version,
   requestor: { id, name }, department: { id, name }, workflow: { id, name },
   workflow_history[], workflow_current_stage, workflow_next_stage, workflow_previous_stage,
-  last_action, info, audit..., purchase_request_detail[]
+  last_action, info, audit..., purchase_request_detail[],
+  hidden_fields: ('price_per_unit' | 'total_price')[],        // [] unless the caller's stage hides prices
+  stage_actions: { approve, reject, sendback } | null         // detail only; false = the stage switched that action off
 }
+// list rows carry hidden_fields too; hidden keys are null, not absent
 ```
 
 The frontend types mirror this (`../carmen-frontend/types/purchase-request.ts` — `product: EntityRef | null`, `vendor: EntityRef | null`, …; commit `f303dd96`, 2026-09-17). Create / save payloads still send the flat `*_id` fields; the gateway's `@ExpandRefs` resolves them. The same collapse applies to `tb_purchase_request_template` (Section 2.4): `workflow`, `product`, `location`, `requested_unit`, `foc_unit`, `currency`, `delivery_point`, `inventory_unit` are objects on the wire (commit `16069088`).
@@ -393,6 +396,6 @@ The legacy `data-models.md` document describes TypeScript front-end interfaces (
 
 ## 6. References
 
-- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PR models) and `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` (verified to contain no PR models).
+- **Primary (source of truth):** Prisma schemas listed in the header callout — concretely `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` (all PR models) and `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (renamed from `-platform` in 2026-10; verified to contain no PR models).
 - **Secondary (concept cross-check):** `../carmen/docs/purchase-request-management/data-models.md` — TypeScript front-end interfaces; divergences captured in Section 5.
 - Related modules: [purchase-order](/en/inventory/purchase-order) (conversion target), [product](/en/inventory/product) (line product reference), [vendor-pricelist](/en/inventory/vendor-pricelist) (price + tax snapshot source), [inventory](/en/inventory/inventory) (on-hand context for the requestor).

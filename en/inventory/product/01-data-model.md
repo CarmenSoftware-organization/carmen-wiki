@@ -2,7 +2,7 @@
 title: Product — Data Model
 description: Entities, fields, relationships, and enums for the product module.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 > **Source of truth:** Backend Prisma schema. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` files under each package are auto-generated copies and not authoritative.
 
@@ -60,7 +60,7 @@ The **product master row**. The single source of truth for product identity; eve
 | ----- | ----------- | -------- | ----------- |
 | `doc_version` | `Int` | No | Default `0`. Optimistic-concurrency counter (added 2026-06-12 across 103 tenant tables that previously lacked it). Every `PATCH` must echo the currently-persisted value; a mismatch returns `409 Conflict` per `PRD_AUTH_013`. Increments on each successful update. |
 | `id` | `String @db.Uuid` | No | Primary key; `gen_random_uuid()`. |
-| `code` | `String @db.VarChar` | No | Human-readable product code. Used as the lookup key on pickers, on barcode labels (when `barcode` is not separately set), and on every downstream document line. Unique within `(code, name, deleted_at)` per the index `product_code_name_u`. As of a 2026-07-14 frontend change the create/edit form no longer accepts manual entry — the field renders disabled with an "auto-generated" placeholder and is stripped from the create payload, so in practice every code reaching this column through the UI is server-assigned (running-number pattern); the API itself still accepts a client-supplied `code` (e.g. via bulk import). |
+| `code` | `String @db.VarChar` | No | Human-readable product code. Used as the lookup key on pickers, on barcode labels (when `barcode` is not separately set), and on every downstream document line. Unique within `(code, name, deleted_at)` per the index `product_code_name_u`; the service additionally rejects a code already used by **any** live product in the BU, case-insensitive (create-with-code and code change - `PRODUCT_ALREADY_EXISTS`, fix `57b34748d`, 2026-09). Auto-generated codes are `<item-group code><running number>` with the next number read from every live code sharing the prefix under a per-prefix advisory lock. As of a 2026-07-14 frontend change the create/edit form no longer accepts manual entry — the field renders disabled with an "auto-generated" placeholder and is stripped from the create payload, so in practice every code reaching this column through the UI is server-assigned (running-number pattern); the API itself still accepts a client-supplied `code` (e.g. via bulk import). |
 | `name` | `String @db.VarChar` | No | English / primary display name. Indexed. |
 | `local_name` | `String? @db.VarChar` | Yes | Localised name (e.g. Thai for Thai properties). Surfaced on receipts and on the local-language UI. |
 | `description` | `String? @db.VarChar` | Yes | Free-text long description. |
@@ -202,7 +202,7 @@ The **conversion-factor row**. Defines how a quantity expressed in one unit tran
 | `from_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the source side of the conversion (e.g. `1` for "1 CASE = 12 EACH"). |
 | `to_unit_id` | `String? @db.Uuid` | Yes | FK to `tb_unit.id` — the destination unit. |
 | `to_unit_name` | `String @db.VarChar` | No | Snapshot. |
-| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the destination side (e.g. `12` for "1 CASE = 12 EACH"). The conversion factor is `to_unit_qty / from_unit_qty`. |
+| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | Default `0`. Quantity on the destination side (e.g. `12` for "1 CASE = 12 EACH"). The conversion factor is `to_unit_qty / from_unit_qty`. `GET units/ingredient/product/:id` now uses this ratio (it used `to_unit_qty` alone before `bff5956e6`, 2026-10), ignores soft-deleted rows, keeps only rows whose `from_unit` is the product's current inventory unit with positive quantities, and when several rows target the same unit picks `is_default` first, then the oldest (`pickIngredientConversions`, shared with recipe costing's `resolveConversion`). |
 | `decimal_place` | `Int` | No | Default `2`. Display precision. |
 | `is_default` | `Boolean?` | Yes | Default `false`. Marks this conversion as the default order-unit (or default ingredient-unit) for the product — surfaced first on pickers. |
 | `description` | `Json? @db.JsonB` | Yes | Free-text / structured note; default `{}`. |
@@ -302,12 +302,12 @@ The **eco-label certificate feature** (added 2026-06-01). The master table was *
 
 ### 2.11 tb_product_account_code_mapping
 
-The **GL-account-code mapping** table (added 2026-06-22, confirmed via `git log -S` — after this page's prior sync). Maps a `product_id`, `product_item_group_id`, `product_sub_category_id`, or `product_category_id` to an `account_code` / `account_name` pair per `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`). The backend resolves one **effective** code per account type per the identical nearest-first cascade already used for tax-profile and deviation-tolerance inheritance (`PRD_CALC_002` / `PRD_CALC_003`): product-level row wins, then item-group, then sub-category, then category.
+The **GL-account-code mapping** table (added 2026-06-22, confirmed via `git log -S` — after this page's prior sync). Maps a `product_id`, `product_item_group_id`, `product_sub_category_id`, or `product_category_id` to an `account_code` / `account_name` pair per `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`, `direct`). The backend resolves one **effective** code per account type per the identical nearest-first cascade already used for tax-profile and deviation-tolerance inheritance (`PRD_CALC_002` / `PRD_CALC_003`): product-level row wins, then item-group, then sub-category, then category.
 
 | Field | Prisma Type | Description |
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key. |
-| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase`. |
+| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase` \| `direct` (`direct` added by `20261014100000_account_type_direct`). Only `inventory` and `direct` are written by the UI and read by account mapping. |
 | `account_code` | `String @db.VarChar` | The GL code. |
 | `account_name` | `String? @db.VarChar` | Optional display name. |
 | `product_id` / `product_item_group_id` / `product_sub_category_id` / `product_category_id` | `String? @db.Uuid` | Exactly one is populated per row — the "owner" of the mapping. |
@@ -315,7 +315,7 @@ The **GL-account-code mapping** table (added 2026-06-22, confirmed via `git log 
 
 **Constraints:** one `@@unique` per owner column, each scoped to `(owner_id, account_type, deleted_at)` — at most one active mapping per account type per owner level.
 
-**Confirmed API surface, no frontend UI found:** the `account_codes: { add[], update[], remove[] }` block is a real, documented field on the create/update Bruno requests for `config/products`, `config/product-category`, `config/product-sub-category`, and `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` in `apps/micro-business/src/common/account-code/account-code.helper.ts`), and the read side returns `account_codes` on the product detail response — but a repo-wide search of `carmen-frontend` found no component or hook referencing `account_codes` / `accountCodeMapping` anywhere. Treat this as a backend/API-only feature until a UI surface is found.
+**Frontend UI now exists on the category tree only** (corrects the 2026-09-22 "no frontend UI found"): the Category / Sub-category / Item-group dialog has **Inventory account** and **Direct account** pickers (`category-form.tsx`, `buildAccountCodesPayload` in `category-form-schema.ts`) and a cascade-to-descendants confirmation - see [category](/en/inventory/product/category) § 2. The **product form still has no account field**. These rows are read by [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) (item group → sub-category → category; the product-level row is not consulted). The API surface: the `account_codes: { add[], update[], remove[] }` block is a real, documented field on the create/update Bruno requests for `config/products`, `config/product-category`, `config/product-sub-category`, and `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` in `apps/micro-business/src/common/account-code/account-code.helper.ts`), and the read side returns `account_codes` on the product detail response — but only the three category-tree dialogs write it; the three list endpoints do not return `account_codes` (only single-record GETs do). `cascadeAccountCodes` (`common/account-code/account-code-cascade.helper.ts`) copies or clears a node's `inventory` / `direct` row onto all descendants and products when `cascade_account_codes` is sent.
 
 ### 2.12 Comment tables (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
@@ -385,7 +385,7 @@ Notes:
 - **Soft-delete is universal.** Every entity in this module carries `deleted_at` / `deleted_by_id`. The unique constraints include `deleted_at` (e.g. `product_code_name_u = (code, name, deleted_at)`) so a deleted product's code can be reused; the live row guards uniqueness only against other live rows.
 - **All explicit `@relation` FK declarations use `onDelete: NoAction, onUpdate: NoAction`** — referential integrity is preserved by application-level soft-delete. There are **no** in-use guards on product delete (see § 1); the classification tree does have them (each level refuses to delete while it has live direct children — `PRODUCT_CATEGORY_HAS_SUB_CATEGORY`, `PRODUCT_SUB_CATEGORY_HAS_ITEM_GROUP`, `PRODUCT_ITEM_GROUP_HAS_PRODUCTS`).
 - **API shape (2026-09-17).** `GET /config/:bu_code/products` and `/:id` now return foreign keys as nested objects — `inventory_unit`, `tax_profile`, `product_category` / `product_sub_category` / `product_item_group`, `locations[].location`, `locations[].shelf`, `order_units[].from_unit` / `to_unit` (`types/product.ts`, backend `bb0ae46e1` / `ce2e1d473`). The write payload is still flat (`inventory_unit_id`, `locations.add[].location_id` / `shelf_id`, …). The list default sort is `code:asc, id:asc` (`products.service.ts`, 2026-09-13).
-- **Derived per-location figures.** `on_hand_qty` (never a column) and `re_order_qty` are summed from `tb_inventory_transaction_cost_layer` by `products.replenishment.ts` (`computeReplenishmentByLocation`) and attached to `locations[]` on demand; the same source feeds `GET /:bu_code/products/:id/on-hand` and `/on-order`, which since 2026-09-22 also carry `last_price` (`09f2e8d36`).
+- **Derived per-location figures.** `on_hand_qty` (never a column) and `re_order_qty` are summed from `tb_inventory_transaction_cost_layer` by `products.replenishment.ts` (`computeReplenishmentByLocation`) and attached to `locations[]` on demand; the layer read is now scoped to the **active inventory period** plus what was carried into it (`buildOnHandPeriodWhere`, `at_period` equality; stock stranded in an earlier never-closed period is not counted, and with no active period the filter is empty). `on-hand` also accepts an `at_date` that restates each location's balance as of the end of that document date (`as_of_date` in the response). The same source feeds `GET /:bu_code/products/:id/on-hand` and `/on-order`, which since 2026-09-22 also carry `last_price` (`09f2e8d36`).
 
 ## 4. Enums
 
@@ -398,11 +398,11 @@ Notes:
   - `ingredient_unit` — conversion is used by recipe / consumption (e.g. `1 TBSP = 15 ML`). Drives recipe ingredient qty translation back to the base unit at theoretical-consumption explosion time.
 - **`enum_comment_type`**: comment classifier on every `*_comment.type`. Default `user`. Values: `user` (human free-text), `system` (automated event annotation).
 
-- **`enum_account_type`**: scope on `tb_product_account_code_mapping.account_type` (§2.11, added 2026-06-22). Four values: `inventory`, `cogs`, `revenue`, `purchase`. No default; required on every row.
+- **`enum_account_type`**: scope on `tb_product_account_code_mapping.account_type` (§2.11, added 2026-06-22). Five values: `inventory`, `cogs`, `revenue`, `purchase`, `direct`. No default; required on every row.
 
 The schema also relies on **upstream enums consumed by the product module but not owned by it**:
 
-- `enum_calculation_method` (on `tb_business_unit.calculation_method`, platform schema): `average`, `fifo`. The costing-method selector — **not on the product**. See [costing/01-data-model](/en/inventory/costing/01-data-model) § 2.4.
+- `enum_calculation_method` (on `tb_business_unit.calculation_method`, backstage schema): `average`, `fifo`, `average_per_location`. The costing-method selector — **not on the product**. See [costing/01-data-model](/en/inventory/costing/01-data-model) § 2.4.
 - `enum_physical_count_costing_method` (on count documents): `standard`, `last`, `average`, `last_receiving`. Selects which cost source feeds count-variance posts; `standard` reads `tb_product.standard_cost`. See [costing/01-data-model](/en/inventory/costing/01-data-model) § 2.6.
 
 ## 5. Divergences from carmen/docs

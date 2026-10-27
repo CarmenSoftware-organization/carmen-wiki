@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios — Entry & Review Screens
 description: Entry- and review-screen test cases for the spot-check module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: spot-check, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -29,7 +29,7 @@ The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-
 | E-F-04 | Use the calculator to compute a total | Product has a case/unit conversion. | Calculator returns a total written into the line's `actual_qty`. Corresponds to `TC-SPC-060003`. |
 | E-F-05 | "Set X Empty to Zero" | Some lines still uncounted. | Every uncounted line becomes `0` locally and counts as counted; footer switches to Submit For Review once `uncountedCount = 0`. Corresponds to `TC-SPC-060004`. |
 | E-F-06 | Save For Resume with a partial count | Some lines have values, some do not. | `PATCH .../save` stamps `counted_at`/`counted_by_id` on the submitted lines; first call also flips `pending → in_progress`; navigates back to the list. Corresponds to `TC-SPC-060001`. |
-| E-F-07 | Submit For Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; navigates to `/review`. Corresponds to `TC-SPC-070001`. |
+| E-F-07 | Submit For Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the active period's cost-layer balance; navigates to `/review`. Corresponds to `TC-SPC-070001`. |
 | E-F-08 | Review screen shows correct summary tiles | Some lines match, some are overages, some are shortages. | Matches/Variances/Overages/Shortages tiles agree with each line's `diff_qty`; negative variances render in a warning colour, positive in a success colour. Corresponds to `TC-SPC-070002`. |
 | E-F-09 | Submit Spot Check (final) | On the review screen. | `PATCH .../submit` sets `doc_status = completed`; navigates back to the list; no other document is created. Corresponds to `TC-SPC-070003`. |
 | E-F-10 | Export the current counts | Any time. | An `.xlsx` file downloads with id, product code/name/local name/SKU, unit, and current effective `actual_qty` per row. |

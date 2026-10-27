@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow — Vendor
 description: Vendor's flow within the purchase-order module — external party (no system login); receives PO, acknowledges, fulfils, invoices.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, user-flow, vendor, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -28,7 +28,7 @@ graph LR
     vendor -->|"Ships goods"| recv["Physical delivery"]:::current
     recv -->|"Receiver posts GRN"| partial(("partial"))
     recv -->|"Receiver posts GRN"| completed(("completed"))
-    vendor -.->|"Issues invoice (unconfirmed feature)"| inv["? no invoice/AP code found"]
+    vendor -.->|"Issues invoice (unconfirmed feature)"| inv["? no PO-level invoice match<br/>(AP module works from GRN items)"]
     sent -.->|"Cancel (not 'decline→void')"| closed(("closed"))
     classDef current fill:#1a56db,color:#fff,stroke:#1a56db;
 ```
@@ -46,7 +46,7 @@ The Vendor has **no direct write access** in Carmen Blue. The table below maps e
 | Declines / vendor can no longer fulfil | **Cancel** (`{draft, in_progress, approved, sent_or_print} → closed`) or **Close** (`{in_progress, approved, sent_or_print, partial} → closed`) | `→ closed`, remainder written to `cancelled_qty` — **not** `voided`; there is no path from `sent_or_print` to `voided` in current source |
 | Delivers wrong item / over qty | Receiver (refuses at dock) | none — escalates via comment |
 | Delivers quality-failed goods | Receiver records a lower `received_qty` than ordered and notes the rejection in a free-text GRN comment — there is no separate acceptance-quantity field anywhere in the GRN or PO schema (confirmed absent repo-wide) | per `PO_POST_006` / `PO_POST_007` |
-| Issues invoice | **Not implemented** — no invoice-capture screen or AP-posting code exists in current source | none |
+| Issues invoice | **Not implemented against the PO** — the AP module (2026-09-23) captures invoices from GRN items, not from the PO | none |
 
 ## 2. Entry Point and Primary Flow
 
@@ -57,7 +57,7 @@ The Vendor has **no direct write access** in Carmen Blue. The table below maps e
 1. **Acknowledge receipt of the PO** (unconfirmed whether Carmen Blue records this at all).
 2. **Prepare and ship the goods against the agreed delivery date.** **System effect:** none — the physical movement is invisible to Carmen Blue until the Receiver opens it at the dock.
 3. **Deliver the goods to the receiving location.** **System effect:** none directly — the **Receiver** persona raises the GRN in the downstream [good-receive-note](/en/inventory/good-receive-note) module, which actually flips `po_status` (`sent → partial` or `sent → completed`).
-4. **Issue the invoice** — **not implemented** in current source. See [03-user-flow-finance.md](./03-user-flow-finance.md) for the full correction on why no invoice / AP-matching feature was found.
+4. **Issue the invoice** — **not implemented against the PO** (AP invoices are built from GRN items). See [03-user-flow-finance.md](./03-user-flow-finance.md) for the full correction on why no invoice / AP-matching feature was found.
 
 ## 3. Decision Branches
 
@@ -68,7 +68,7 @@ The Vendor has **no direct write access** in Carmen Blue. The table below maps e
 
 ## 4. Exit Point / Handoffs
 
-The vendor's involvement on a given PO ends at **physical delivery** (confirmed) — invoice issuance is documented design intent, not a confirmed system interaction. From that point the document state on Carmen Blue is one of:
+The vendor's involvement on a given PO ends at **physical delivery** (confirmed) — invoice issuance against the PO is documented design intent; the AP module records invoices against GRN items. From that point the document state on Carmen Blue is one of:
 
 - `approved` — workflow finished, not yet emailed; goods may nonetheless be received against it.
 - `sent_or_print` — PO transmitted but no GRN posted yet (vendor has not delivered, or delivery is in transit).
@@ -81,7 +81,7 @@ The vendor's involvement on a given PO ends at **physical delivery** (confirmed)
 - Parent overview: [03-user-flow.md](./03-user-flow.md) — global PO state machine and cross-persona handoff table.
 - Sibling: [03-user-flow-purchaser.md](./03-user-flow-purchaser.md) — internal persona that emails the PO (Send Email dialog) and runs the cancel / close loop on the vendor's behalf.
 - Sibling: [03-user-flow-receiver.md](./03-user-flow-receiver.md) — downstream internal persona that physically accepts the vendor's delivery and posts the GRN that drives `{approved, sent_or_print} → partial → completed`.
-- Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7264+), `markSent` (L6150+), `EMAILABLE_PO_STATUSES` (L7127); email templates seeded by `ccc72e78b`; PDF via `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`.
+- Backend: `purchase-order.service.ts` `sendEmailToVendor` (L7111+), `markSent` (L5966+), `EMAILABLE_PO_STATUSES` (L6976); email templates seeded by `ccc72e78b`; PDF via `exportPdfViaMicroReport` → micro-report → FastReport `POST /api/Report/Export/Pdf`.
 - Sibling: [03-user-flow-finance.md](./03-user-flow-finance.md) — documents why no invoice / three-way-match feature was confirmed in current source.
 - Related: [good-receive-note](/en/inventory/good-receive-note) — downstream module that records the vendor's physical delivery and drives the receipt-state transitions on the PO.
 - `../carmen/docs/purchase-order-management/purchase-order-module.md` — primary carmen/docs source for the PO module business analysis and transmission flow; treat its three-way-match description as design intent, not verified current behavior.

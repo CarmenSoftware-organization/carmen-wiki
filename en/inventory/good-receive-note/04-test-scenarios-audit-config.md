@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Test Scenarios — Audit & Config
 description: Why no dedicated GRN configuration console or lot-recall-tool test scenarios exist for good-receive-note in current source, and what is confirmed instead.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, audit-config, inventory, carmen-software
 editor: markdown
@@ -20,7 +20,7 @@ editor: markdown
 | AUD-HP-01..04 (Auditor activity-log query, GRN drill-in, lot-recall trace, sensitive-field export with secondary approval) | No dedicated audit-module route or export-approval workflow found. The underlying data (`workflow_history` JSON, the `inventory_transaction_id` linkage) is real; no purpose-built screen was found reading it. |
 | AUD-HP-05..08 (Sysadmin lot-format change, RBAC adjustment, tax/reason-code maintenance, integration cutover) | Lot-number generation is real but hardcoded — **corrected 2026-09-22:** `<location_code><YYMM><4-digit run>` from `buildLotNo()` (`common/helpers/lot-number.helper.ts`), run number = period-scoped `lot_seq_no`; not configurable through any panel. Tax/currency/running-code configuration is real but lives in the generic [system-config](/en/inventory/system-config) / [master-data](/en/inventory/master-data) modules, not a GRN-specific console. No RBAC-threshold or integration-endpoint panel found. |
 | AUD-PERM-01..07, AUD-VAL-01..08, AUD-EDGE-01..06 | All built on the same unconfirmed configuration-console / lot-recall-tool foundation; not reconstructed. |
-| `GRN_POST_010` post-commit-void co-authorisation (Inventory Manager + Finance) referenced throughout | **Not implemented — post-commit void is refused outright** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2254-2256`); see [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md). |
+| `GRN_POST_010` post-commit-void co-authorisation (Inventory Manager + Finance) referenced throughout | **Not implemented — post-commit void is refused outright** (`GRN_COMMITTED_NOT_VOIDABLE`, `good-received-note.service.ts:2344-2358`); see [02-business-rules.md](./02-business-rules.md) `GRN_POST_010` and [03-user-flow-audit-config.md](./03-user-flow-audit-config.md). |
 
 > **Executable coverage:** permission-denial blocks in `../carmen-frontend-e2e/tests/501-grn.spec.ts` (Requestor-role fixture, `carmensoftware.dev` users, BU `GR2VYNKQ`); status / permission sections of `docs/test-cases/gaps/501-grn-core-gap.md`.
 

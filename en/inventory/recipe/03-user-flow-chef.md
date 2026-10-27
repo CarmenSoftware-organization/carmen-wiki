@@ -2,7 +2,7 @@
 title: Recipe — User Flow — Chef
 description: Chef's flow within the recipe module — creates and revises recipes, maintains sub-recipes, publishes and archives.
 published: true
-date: 2026-07-29T04:45:21.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: recipe, user-flow, chef, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T16:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T16:00:00.000Z
 > **Persona:** Chef / Kitchen Manager (+ Kitchen Staff read-only) &nbsp;·&nbsp; **Module:** [recipe](/en/inventory/recipe) &nbsp;·&nbsp; **Workflow stages:** DRAFT → PUBLISHED → ARCHIVED (+ un-publish round-trip) &nbsp;·&nbsp; **Key permissions (design-target — see status note):** create, edit, publish, archive, edit-published (with versioning), clone
 > **What this persona does:** Authors and maintains the recipe library — ingredients, steps, yield variants, sub-recipes — and owns publish and archive authority.
 
-> **Implementation status (verified 2026-07-15).** No `recipe:*` permission exists — the entire `/operation-plan/*` group is admin-gated by the frontend-only `operation_plan.view` placeholder, so there is no distinct Chef role in the system today. Of the journey below, what is real: create/edit through the single recipe form (`recipe-form.tsx` — header fields, manually-entered `total_ingredient_cost` / `labor_cost` / `overhead_cost`, client-side computed pricing, multipart image gallery) and delete (blocked only by sub-recipe usage). Not implemented: clone, product/sub-recipe pickers (the ingredient grid is preview-only and never saved), prep-step UI (REST endpoints exist, no screen), yield-variant editor, publish gate (`Publish` is just the status dropdown; no `REC_VAL_015`–`018` checks fire), Cost Controller co-approval, versioning (`tb_recipe_version` has no writer), and pricing-history writes. Steps referencing those features are the carmen/docs target flow.
+> **Implementation status (re-verified 2026-10-27).** There is no distinct Chef role: access is the generic `operation_plan.recipe.{view,create,update,delete}` permission set (the old frontend-only `operation_plan.view` placeholder is gone). What is real: create/edit through the recipe form (`recipe-form.tsx`) — header fields, a **product / sub-recipe ingredient grid that is saved** (`PUT .../ingredients`) and costed from stock, editable preparation steps, plating and storage notes, manually-entered `labor_cost` / `overhead_cost`, client-computed pricing and food-cost ceiling, multipart image gallery, comments, activity history — the **cook mode** tablet view at `/operation-plan/recipe/:id`, and delete (blocked while used as a sub-recipe). Not implemented: clone, yield-variant editor, publish gate (`Publish` is just the status dropdown; no `REC_VAL_015`–`018` checks fire), Cost Controller co-approval, versioning (`tb_recipe_version` has no writer), and pricing-history writes. Steps referencing those features are the carmen/docs target flow.
 
 ## 1. Role in This Module
 

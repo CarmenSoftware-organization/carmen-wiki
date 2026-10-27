@@ -2,7 +2,7 @@
 title: Good Receive Note (GRN) — Test Scenarios — Purchaser
 description: Purchaser's test cases (happy path, permission, validation, edge cases) for good-receive-note.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 dateCreated: 2026-05-15T11:00:00.000Z
 tags: good-receive-note, test-scenarios, purchaser, inventory, carmen-software
 editor: markdown
@@ -14,7 +14,7 @@ editor: markdown
 > **Persona:** Purchaser (Procurement Officer + Department Manager) &nbsp;·&nbsp; **Module:** [good-receive-note](/en/inventory/good-receive-note) &nbsp;·&nbsp; **Scenarios:** ~12
 > **Categories:** Happy Path &nbsp;·&nbsp; Permission &nbsp;·&nbsp; Validation &nbsp;·&nbsp; Edge Case
 > **E2E coverage:** maps to `501-grn.spec.ts` in `../carmen-frontend-e2e/`
-> **Re-verified 2026-09-22:** the PO advances at **commit**, not at save; PO statuses are `approved` / `sent_or_print` / `partial` / `completed`; a price-deviation check against the **PO price** now exists at save (`GRN_VAL_007`) — there is still no pricelist check, no `accepted_qty`, no three-way match, and no segregation of duties.
+> **Re-verified 2026-10-27 (unchanged since 2026-09-22 except as noted in PUR-VAL-02 / PUR-PERM-03):** the PO advances at **commit**, not at save; PO statuses are `approved` / `sent_or_print` / `partial` / `completed`; a price-deviation check against the **PO price** now exists at save (`GRN_VAL_007`) — there is still no pricelist check, no `accepted_qty`, no three-way match, and no segregation of duties.
 
 > **Executable coverage:** `../carmen-frontend-e2e/tests/501-grn.spec.ts` (76 cases; Purchaser-relevant groups listed in §5) and `docs/test-cases/gaps/501-grn-core-gap.md` (62) — permission-denial cases use the Requestor-role fixture.
 
@@ -35,7 +35,7 @@ This page captures the test scenarios that the Purchaser persona (the **Purchase
 | - | -------- | --------------------------------------- |
 | PUR-PERM-01 | Purchaser opens a GRN in read mode | **Allow** with `procurement.goods_received_note.view` (`GET …/:id`, guard `goodReceivedNote.findOne`). Header, lines, Stock Movement (once committed), attachments, and activity log are visible; edit / save / commit / void buttons are hidden when the user lacks `.update` / `.commit` / `.delete`. Maps to TC-GRN-010001. |
 | PUR-PERM-02 | Purchaser attempts to open a GRN whose source PO they do **not** own | **Allowed by the backend** — there is no `buyer_id` scope on `findAll` / `findOne` (re-checked 2026-09-22). A user **without** `procurement.goods_received_note.view` gets `403` from the gateway guard and the list route redirects. Maps to TC-GRN-010003 (permission denial, not ownership). |
-| PUR-PERM-03 | Purchaser attempts to modify a GRN header / line | **Deny only by permission key.** Without `.update` the `PATCH …/:id` and detail endpoints return `403`; there is no role-name message and no segregation-of-duties rule — a Purchaser who also holds `.update` can edit a `draft`. Maps to TC-GRN-080005. |
+| PUR-PERM-03 | Purchaser attempts to modify a GRN header / line | **Deny only by permission key.** Without `.update` the `PATCH …/:id` and detail endpoints return `403`; there is no role-name message and no segregation-of-duties rule — a Purchaser who also holds `.update` can edit a `draft` or (with the `GRN_VAL_021`–`023` restrictions) a `saved` GRN. Maps to TC-GRN-080005. |
 | PUR-PERM-04 | Purchaser attempts to create a GRN | **Deny by permission key** (`goodReceivedNote.create` → `403`); the **New** button is hidden without `.create`. |
 | PUR-PERM-05 | Purchaser attempts to save or commit a `saved` GRN | **Deny by permission key** — both `PATCH …/save` and `PATCH …/commit` are behind `goodReceivedNote.commit` (`403` without it). No "Inventory Manager role" message exists. Maps to TC-GRN-110002. |
 
@@ -44,7 +44,7 @@ This page captures the test scenarios that the Purchaser persona (the **Purchase
 | # | Scenario | Trigger | Expected error |
 | - | -------- | ------- | -------------- |
 | PUR-VAL-01 | Purchaser without the commit key calls the commit endpoint directly | A `saved` GRN sits against own PO `PO-X`; Purchaser (no `procurement.goods_received_note.commit`) calls `PATCH …/commit`. | **Reject 403** from `AppIdGuard('goodReceivedNote.commit')`; `doc_status` stays `saved`. Maps to TC-GRN-110002. |
-| PUR-VAL-02 | Purchaser attempts to edit a line on a `saved` GRN | `saved` GRN with `received_qty = 10`; Purchaser calls `PATCH …/:id/details/:detail_id` (or the detail delete). | **Reject** — `GRN_NON_DRAFT_NO_UPDATE_DETAIL` / `_DELETE_DETAIL` (400) regardless of permission, because detail endpoints are `draft`-only; the correct path is to comment and ask the Receiver to void and re-raise (or, after commit, to raise a credit note). |
+| PUR-VAL-02 | Purchaser attempts to edit a line on a `saved` GRN | `saved` GRN with `received_qty = 10`; Purchaser holds `.update` and calls `DELETE …/:id/details/:detail_id`, or `PATCH …/:id` with a changed line. | The detail delete is **rejected** — `GRN_NON_DRAFT_NO_DELETE_DETAIL` (400) regardless of permission (there is no per-detail PATCH endpoint any more). `PATCH …/:id` is **accepted** on a `saved` GRN unless the line is stock-locked (lot drawn or credit-noted → `GRN_LINE_STOCK_LOCKED`, 409); the working convention is still to comment and ask the Receiver (or, after commit, to raise a credit note). |
 
 ## 4. Edge Cases
 

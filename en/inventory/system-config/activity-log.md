@@ -2,7 +2,7 @@
 title: Activity Log (Screen)
 description: The /system-admin/activity-log screen — list/grid over tb_activity with action (all 25 enum values), entity-type and actor filters, XLSX export, print, raw JSON detail sheet. Permission system_admin.activity_log.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, activity-log, audit, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T11:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T11:00:00.000Z
 # Activity Log (Screen)
 
 > **At a Glance**
-> **Route:** `/system-admin/activity-log` &nbsp;·&nbsp; **Sidebar label:** "Activity Monitor" (`modules.activityLog`), distinct from the route's own path segment &nbsp;·&nbsp; **Table:** `tb_activity` — full data model at [reporting-audit/activity](/en/inventory/reporting-audit/activity) &nbsp;·&nbsp; **Permission / licence:** `system_admin.activity_log.view` / `system_admin.activity_log` (`module-list.ts:729-732`; the `system_configuration.view` key this page cited until 2026-09-22 was a frontend ghost that never existed in `tb_permission` — replaced by FE `b9e2de5f` on 2026-09-21; the sibling `/system-admin/user-activity` screen gates on `system_admin.user_activity.view` with the same licence feature) &nbsp;·&nbsp; **Endpoint:** `api/:bu_code/activity-logs` (licence route `app:activity-logs`) &nbsp;·&nbsp; **This page documents the screen's own mechanics** (view modes, filters, export, detail sheet) — see [reporting-audit/activity](/en/inventory/reporting-audit/activity) for the table/enum/business-rules and confirmation that this is the *only* activity UI in the product.
+> **Route:** `/system-admin/activity-log` &nbsp;·&nbsp; **Sidebar label:** "Activity Monitor" (`modules.activityLog`), distinct from the route's own path segment &nbsp;·&nbsp; **Table:** `tb_activity` — full data model at [reporting-audit/activity](/en/inventory/reporting-audit/activity) &nbsp;·&nbsp; **Permission / licence:** `system_admin.activity_log.view` / `system_admin.activity_log` (`module-list.ts:922-927`; the `system_configuration.view` key this page cited until 2026-09-22 was a frontend ghost that never existed in `tb_permission` — replaced by FE `b9e2de5f` on 2026-09-21; the sibling `/system-admin/user-activity` screen gates on `system_admin.user_activity.view` with the same licence feature) &nbsp;·&nbsp; **Endpoint:** `api/:bu_code/activity-logs` (licence route `app:activity-logs`) &nbsp;·&nbsp; **This page documents the screen's own mechanics** (view modes, filters, export, detail sheet) — see [reporting-audit/activity](/en/inventory/reporting-audit/activity) for the table/enum/business-rules and confirmation that this is the *only* activity UI in the product.
 
 ![Activity Log screen](/screenshots/activity-log/index.png)
 
@@ -28,9 +28,9 @@ The screen offers two rendering modes (list and card/grid), three filter axes (a
 | Task | Where | Notes |
 |---|---|---|
 | Switch between list and grid view | Toolbar → list/grid icon toggle | Desktop only — on mobile the screen always uses the grid/card layout regardless of this toggle |
-| Filter by action | Action multi-select | **All 25** `enum_activity_action` values, in schema order, each with its own icon (`ACTION_OPTIONS`, `activity-log-component.tsx:44`; FE `c07d6805`, 2026-09-08) — including the newest member `email_sent` (PO / RFP sent to a vendor). A prior version of this page listed 5 curated options; see [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for the enum |
-| Filter by entity type | Entity Type multi-select (searchable) | 13 curated values (`ENTITY_TYPE_OPTIONS`, `:74`); `entity_type` itself is free-form so other values can exist in the data with no matching filter chip |
-| Filter by user (actor) | User multi-select (searchable) | Populated from `useAllUsers()` — every user in the tenant, not just ones who appear in the log |
+| Filter by action | Action multi-select | **All 25** `enum_activity_action` values, in schema order, each with its own icon (`ACTION_OPTIONS`, `activity-log-component.tsx:49`; FE `c07d6805`, 2026-09-08) — including the newest member `email_sent` (PO / RFP sent to a vendor). A prior version of this page listed 5 curated options; see [reporting-audit/activity](/en/inventory/reporting-audit/activity) §5.1 for the enum |
+| Filter by entity type | Entity Type multi-select (searchable) | 13 curated values (`ENTITY_TYPE_OPTIONS`, `:77`); `entity_type` itself is free-form so other values can exist in the data with no matching filter chip |
+| Filter by user (actor) | User multi-select (searchable) | Multi-select **entity filter** (`ACTOR_ENTITY`, `control: "entity"`, `bareIds`) that lazy-loads users page by page via `useUser` — it no longer pre-fetches every tenant user (`useAllUsers` removed; FE `ee1735e9`). Selected ids are sent as one `actor_id=a,b` query param |
 | Search free-text | Search box | Combined with the three filters (all query params merge into one request) |
 | Toggle table columns (list view only) | Columns icon → column-visibility popover | Not available in grid view |
 | Export the current filtered view | **Export** button | Client-side XLSX (`useExportActivityLog`), same query params as the on-screen list; columns: Date, Action, Entity Type, Entity ID, User, IP Address, Description |
@@ -53,7 +53,9 @@ The screen offers two rendering modes (list and card/grid), three filter axes (a
 - **The sidebar calls this module "Activity Monitor", not "Activity Log".** `modules.activityLog` in the translation file resolves to `"Activity Monitor"` — the route segment (`/system-admin/activity-log`) and the in-page title (`systemAdmin.activityLog.title` → also `"Activity Monitor"`) are consistent with each other but differ from the URL slug and this wiki page's own naming. No functional impact; noted to avoid confusion when cross-referencing screenshots or nav.
 - **One permission for the screen, none for export.** The sidebar entry gates on `system_admin.activity_log.view` (`constant/module-list.ts:729-732`); every `/system-admin/*` entry now carries its own real `tb_permission` resource (`system_admin.business_unit`, `.document`, `.running_code`, `.user_activity`, …) after the 2026-09-21 ghost-key cleanup — the old "one generic `system_configuration.view` for everything" statement no longer holds. There is still no activity-log-specific export permission.
 - **Action chips in the list were removed** (`72d6cd34`, 2026-09-04) — the action is shown as icon + text, chips remain only in the card and detail sheet (`86446384`).
-- **Actor filter list is not scoped to actors who actually appear in the log.** `useAllUsers()` returns every tenant user, so the Actor filter can offer names with zero matching activity rows.
+- **Actor filter list is not scoped to actors who actually appear in the log.** The lookup pages through the tenant's users (`useUser`), so it can still offer names with zero matching activity rows.
+- **Multi-actor filter is comma-separated, split server-side.** The FE sends `actor_id=a,b` (not a `filter` clause). Since backend `52f03ff8d` (2026-10-02) the micro-business service splits on commas, trims, de-duplicates and uses `where.actor_id = { in: [...] }` for 2+ values (single value still exact match). Before this fix, a multi-select produced a non-uuid string and Prisma threw, surfacing as HTTP 400 with a stuck table — a regression check for QA: select two actors and expect rows from either (`activity-log.service.ts`, `actor_id` block in the filter builder).
+- **Layout is the shared `ListPageShell`** (header actions + toolbar + content) rather than a hand-rolled sticky header (FE `ec51e8ed`); no behavioural change to filters, export or print.
 
 ---
 
@@ -74,7 +76,7 @@ The one screen-specific type worth noting: the frontend's `ActivityLog` interfac
 
 - **Frontend route:** `../carmen-frontend/routes/system-admin/activity-log/activity-log.route.tsx`, `activity-log-component.tsx`, `activity-log-card.tsx`, `activity-log-detail-sheet.tsx`, `use-activity-log-table.tsx`.
 - **Frontend hook/type:** `../carmen-frontend/hooks/use-activity-log.ts` — `useActivityLog()`, `useExportActivityLog()`; `types/activity-log.ts` — `ActivityLog`, `getLogCreatedAt()`.
-- **Nav entry:** `../carmen-frontend/constant/module-list.ts:729-732` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`.
+- **Nav entry:** `../carmen-frontend/constant/module-list.ts:922-927` — `activityLog`, `permission: PERMISSIONS.system_admin.activity_log.view`, `licenseFeature: "system_admin.activity_log"`.
 - **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/activity-logs/`; `enum_activity_action` (25 values incl. `email_sent`) in the tenant `schema.prisma`.
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1109-activity-log.md` — catalog only.
 - **Translations:** `../carmen-frontend/messages/en.json` — `systemAdmin.activityLog.*` (`title: "Activity Monitor"`), `modules.activityLog`.

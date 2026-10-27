@@ -2,7 +2,7 @@
 title: Costing — User Flow — Auditor (correction)
 description: Correction page — no read-only audit workspace, chain-of-custody trace tool, or FIFO-vs-Average shadow-drift audit screen exists in the costing module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: costing, user-flow, auditor, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -21,7 +21,7 @@ An earlier draft described a strictly-read-only Auditor persona running three de
 - **No Auditor role or permission key exists.** `enum_stage_role` has no `auditor` member; no auditor-scoped key exists in `constant/permissions.ts`. This mirrors the identical finding on [inventory/03-user-flow-audit-config](/en/inventory/inventory/03-user-flow-audit-config) (already corrected): "No dedicated audit-only screen or permission distinct from `inventory_management.view` was found in this module."
 - **No chain-of-custody trace tool, snapshot-verification tool, or shadow-drift tool exists anywhere in the frontend.** These were fully invented UI concepts with no matching route or component.
 - **The "GL absorbs the difference" / "GL Inventory control-account" claims this page's audit checklist relied on do not exist** — see [02-business-rules](./02-business-rules.md) § 4/§ 6 corrections; a GL module now exists (2026-09) but inventory never posts into it, so there is still no inventory control account to audit against.
-- **The "shadow average under FIFO" the drift audit relied on does not exist** — FIFO receipts write `average_cost_per_unit = 0` (`inventory-transaction.service.ts:998`).
+- **The "shadow average under FIFO" the drift audit relied on does not exist** — FIFO receipts write `average_cost_per_unit = 0` (`inventory-transaction.service.ts:1111`).
 - **The `COST_VAL_009` method-change-drain guard this page's configuration-history audit checked for does not exist in code** — see [02-business-rules](./02-business-rules.md) § 2 correction.
 
 ## 2. Where the real behaviour lives

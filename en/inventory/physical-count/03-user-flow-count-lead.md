@@ -2,7 +2,7 @@
 title: Physical Count — User Flow — List Screen
 description: The location-list screen where a count is started or resumed for the current counting period.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: physical-count, user-flow, count-lead, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -33,10 +33,10 @@ graph LR
 ### What the screen shows
 
 - **Period selector** — the current open fiscal period's physical-count period is loaded via `GET /physical-count-periods/current`; a dropdown (`LookupPhysicalCountPeriod`) lets the user instead pick a previously-closed period (`GET /physical-count-periods/:id`) to review its locations read-only.
-- **KPI tiles** — All / In Progress / Not Started / Complete counts, each clickable as a filter.
+- **Status strip** (`StatusStrip`) — All / In Progress / Not Started / Complete counts, each clickable as a filter, plus an items-counted progress metric (`Σ product_counted / Σ product_total` over the listed locations).
 - **"Include not-counted locations" checkbox** — toggles `include_not_count` on the period-fetch call; unchecked (default), only locations with `physical_count_type = yes` are listed; checked, locations with `physical_count_type = no` are included too (still restricted to `location_type ∈ {inventory, consignment}` and `is_active = true`).
 - **Search bar** — filters the visible location cards by name/code, client-side.
-- **Location cards** (`PcLocationCard`) — one per location, showing a progress bar (`product_counted`/`product_total`), a "Count"/"Not Count" badge sourced from the location's own `physical_count_type` flag, and an action button whose label/behaviour depends on status (§ 3).
+- **Location rows** (`PcLocationRow`, `shared/pc-location-row.tsx`; replaced the earlier `PcLocationCard`) — one per location, showing a progress bar (`product_counted`/`product_total`), a "Not Count" badge shown only for locations whose `physical_count_type` is not `yes` (no badge on counted locations), and an action button whose label/behaviour depends on status (§ 3).
 
 ## 2. Entry Point
 
@@ -48,7 +48,7 @@ graph LR
 | ------ | ------------------ | ------------ | ----- |
 | Start a count for a not-started location | Location has no `tb_physical_count` for this period (`physical_count_id === null`) | `POST /physical-counts` creates a new document directly at `in_progress`; navigates to `/:id/entry` | Per `PHC_VAL_001`–`002`. Requires the period to already be `counting` — while the auto-provisioned round is still `draft`, the list shows the "Counting has not started" dialog (**Go to Period End**) instead of sending the call; press **Start Period Close** on `/inventory-management/period-end` first (see [03-user-flow.md](/en/inventory/physical-count/03-user-flow) § 2). |
 | Resume a count for an in-progress location | `physical_count_id` is set and status is `in_progress` | Navigates directly to `/:id/entry` — no new document created | No API call; a pure client-side route change. |
-| Click a completed location's card | Status is `completed` | **No action.** `PcLocationCard` renders a plain "Done" label (not a button) for `completed` items — there is no `onClick` handler at all in that state. | The list component's own `handleAction` still contains a branch that would show a "Coming Soon" dialog for a completed item, but it is unreachable dead code since the card never calls `onAction` when `actionType === "done"`. There is currently no way to view a completed count's detail from this screen. |
+| Click a completed location's card | Status is `completed` | **No action.** `PcLocationRow` renders a plain "Done" label with a check icon (not a button) for `completed` items — there is no `onClick` handler at all in that state. | The list component's own `handleAction` still contains a branch that would show a "Coming Soon" dialog for a completed item, but it is unreachable dead code since the card never calls `onAction` when `actionType === "done"`. There is currently no way to view a completed count's detail from this screen. |
 | Switch to a previous period | Pick a period from the `LookupPhysicalCountPeriod` dropdown | Loads that period's locations read-only via `GET /physical-count-periods/:id` | Badge switches from "Current Period" to "Previous Period"; the same card grid renders, but completed/in-progress locations from a closed period are still only viewable in the same limited way as above. |
 
 ## 4. Decision Points
@@ -65,7 +65,7 @@ graph LR
 
 ## 6. References
 
-- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`, `routes/inventory-management/shared/pc-location-card.tsx`.
+- **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-component.tsx`, `routes/inventory-management/shared/pc-location-row.tsx`.
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`create`), `.../physical-count-period/physical-count-period.service.ts` (`findCurrent`).
-- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md` (TC-PC-01xxxx list, `TC-PC-900002`–`900004` "Counting has not started" dialog).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no dedicated `750-physical-count` spec exists, but counting is exercised through the real screens by the opt-in period-close specs `921-period-close-count.spec.ts` and `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: count every location, EOP-IN / EOP-OUT compensation documents dated on the period's last day, their cost vs the BU's `si.cost-from`, system quantity = balance at the end of the counted period); run with `bun run test:period-close` (see [inventory/period-end](/en/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (TC-PC-01xxxx list, `TC-PC-900002`–`900004` "Counting has not started" dialog).
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_001`–`003`, `PHC_AUTH_001`), [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter) (the same role's entry/review journey).

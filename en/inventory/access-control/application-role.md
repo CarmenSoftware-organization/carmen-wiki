@@ -11,9 +11,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Application Role
 
 > **At a Glance**
-> **Owner:** Sysadmin (per BU) &nbsp;·&nbsp; **Table:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **Screen:** `/system-admin/role` (+ `/new`, `/:id`) — permission `system_admin.role.view`, licence `system_admin.role` &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/application-roles` (`KeycloakGuard` only — **no `AppIdGuard` and no `@Permission` on any of its five routes**, re-verified 2026-09-22) &nbsp;·&nbsp; **Used by:** every transactional module's permission check &nbsp;·&nbsp; Named bundles of permissions assigned to users inside a BU.
+> **Owner:** Sysadmin (per BU) &nbsp;·&nbsp; **Table:** `tb_application_role` (+ `tb_application_role_tb_permission`, `tb_user_tb_application_role`) &nbsp;·&nbsp; **Screen:** `/system-admin/role` (+ `/new`, `/:id`) — permission `system_admin.role.view`, licence `system_admin.role` &nbsp;·&nbsp; **Endpoint:** `api/config/:bu_code/application-roles` (`KeycloakGuard` only — **no `AppIdGuard` and no `@Permission` on any of its five routes**, re-verified 2026-10-27, `config_application-roles.controller.ts:59`) &nbsp;·&nbsp; **Used by:** every transactional module's permission check &nbsp;·&nbsp; Named bundles of permissions assigned to users inside a BU.
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+- **Detail screen shows what the role actually holds** (FE `93785c34`): `GET …/application-roles/:id` returns the whole permission catalog, each row with `is_granted` (`role_permission.service.ts:91`, `swagger/response.ts:31`). The form now seeds its selection from `grantedPermissionIds(role)` = rows where `is_granted !== false` (`role-form-schema.ts`); before the fix every catalog row was treated as granted, so opening a role and saving could have granted everything. The `originalPermissionIds` diff used to compute `permissions: { add, remove }` uses the same filter.
+- **Duplicate name** now shows under the Name field (`ROLE_NAME_ALREADY_EXISTS`, FE `b71f86ea`); the permission list is fetched page by page (`usePermissionAll`) rather than `perpage=-1`. Layout moved onto `FormPageShell` / `FormToolbar` and `ListPageShell` (no behaviour change).
+- **Finding re-checked and still open:** the role, user-role and permission controllers have no `AppIdGuard` / `@Permission` (`config_application-roles.controller.ts:56-59`, `config_user-application-roles.controller.ts:55-58`, `config_permissions.controller.ts:29-33`), while 22 other controllers now carry `@Permission`. Worth a ticket.
+
+### Earlier status (re-verified 2026-09-22)
 
 - **List vs detail payloads split (BE `d911ad988`, 2026-09-07).** `GET …/application-roles` returns `permissions: { count }` per role plus `audit` (`ApplicationRoleResponseDto`, `swagger/response.ts:38-66`); `GET …/application-roles/:id` returns the **whole permission catalog** with the role's grants marked (`ApplicationRoleDetailResponseDto`, `:91-105`). The FE types mirror this (`types/role.ts`: `Role.permissions: { count }`, `RoleDetail.permissions: RolePermission[]`; FE `3d339913`). Since the 2026-09-17 serializer pass the list row carries `business_unit: { id }` instead of a flat `business_unit_id` (BE `5d64f5dfd` — list only; the detail DTO has no such field).
 - **Create / update payloads:** `CreateRoleDto { name, description?, permissions: { add: string[] } }`, `UpdateRoleDto { …, doc_version, permissions: { add: string[], remove: string[] } }` (`types/role.ts:35-44`).
@@ -27,7 +33,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-Application roles are the **named bundles of [access-control/permission](/en/inventory/access-control/permission)s** assigned to users inside a [master-data/business-unit](/en/inventory/master-data/business-unit). They are the fine-grained, tenant-side authorisation layer that controls *what each user can do in each BU*, distinct from platform-wide roles (`tb_platform_role`, a separate relational, cluster-scoped system owned by Carmen Blue Backstage admin — see [access-control/user](/en/inventory/access-control/user) Edge Cases; the older `tb_user.platform_role` enum column it replaced was dropped 2026-06-10). Every transactional UI action — submitting a PR, approving a GRN, posting an adjustment — is gated by checking whether the active user holds an application role that includes the matching permission atom for the active BU.
+Application roles are the **named bundles of [access-control/permission](/en/inventory/access-control/permission)s** assigned to users inside a [master-data/business-unit](/en/inventory/master-data/business-unit). They are the fine-grained, tenant-side authorisation layer that controls *what each user can do in each BU*, distinct from platform-wide roles (`tb_backstage_role`, a separate relational, cluster-scoped system owned by Carmen Blue Backstage admin — see [access-control/user](/en/inventory/access-control/user) Edge Cases; the older `tb_user.platform_role` enum column it replaced was dropped 2026-06-10). Every transactional UI action — submitting a PR, approving a GRN, posting an adjustment — is gated by checking whether the active user holds an application role that includes the matching permission atom for the active BU.
 
 **Maintained by** Sysadmin (per BU). **Read by** every API endpoint at request time.
 
@@ -163,7 +169,7 @@ Source: platform schema.
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`.
 - **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_application-roles/config_application-roles.controller.ts` (`GET` `:76`, `GET :id` `:140`, `POST` `:190`, `PUT :id` `:253`, `DELETE :id` `:320`; swagger `response.ts`), `config/config_user-application-roles/` (matrix `GET` `:80`, per-user `GET :user_id`, `POST`, `PATCH`, `DELETE`); service `apps/micro-business/src/authen/role_permission/role_permission.service.ts`; serializer `apps/backend-gateway/src/common/dto/application-role/application-role.serializer.ts`.
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/application-roles/`, `config/user-application-roles/`.
 - **Frontend:** `../carmen-frontend/routes/system-admin/role/` (`role.route.tsx`, `role-new.route.tsx`, `role-edit.route.tsx`, `role-component.tsx`, `role-form.tsx`, `role-form-hero.tsx`, `role-form-schema.ts`, `permission-picker.tsx`, `permission-catalog.ts`, `use-permission.ts`, `use-role-print.ts`, `use-role-table.tsx`) for the role screen itself; `../carmen-frontend/routes/system-admin/user/user-assigned-roles.tsx` for user↔role assignment; `types/role.ts`; nav key in `constant/module-list.ts:691-695` / `constant/permissions.ts` (`system_admin.role`).

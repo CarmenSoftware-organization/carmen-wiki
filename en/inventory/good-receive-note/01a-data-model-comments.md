@@ -2,7 +2,7 @@
 title: Goods Receive Note — Data Model — Comment Tables
 description: Document-level and line-level comment / attachment tables for the Goods Receive Note module — message text, attachments JSON, and the user/system comment-type enum.
 published: true
-date: 2026-07-15T00:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: good-receive-note, data-model, inventory, carmen-software, comments, attachments
 editor: markdown
 dateCreated: 2026-05-20T00:00:00.000Z
@@ -41,11 +41,12 @@ Workflow / activity-log entries attached to a GRN header. There is no dedicated 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
+| `doc_version` | `Int` | No | Optimistic-lock counter; default `0` (`@default(0)`), incremented on update by the tenant client. |
 | `good_received_note_id` | `String @db.Uuid` | No | FK to `tb_good_received_note.id`. |
 | `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |
 | `message` | `String` | Yes | Free-text comment body. |
-| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. |
+| `attachments` | `Json @db.JsonB` | Yes | Array of `{ originalName, fileToken, contentType }`; default `[]`. Uploads through the gateway are validated by the shared attachment policy (`AttachmentPolicyService.assertFiles`, driven by the BU's `attachment.*` config keys — default 10 MB per file and the `image` + `pdf` type groups, `attachment-policy.ts:12-50`) instead of the hard-coded 10 MB / five-mime-type constants the controller used to carry. |
 | `created_at` | `DateTime @db.Timestamptz(6)` | Yes | Creation timestamp. |
 | `created_by_id` | `String @db.Uuid` | Yes | Creator id. |
 | `updated_at` | `DateTime @db.Timestamptz(6)` | Yes | Last-update timestamp. |
@@ -63,6 +64,7 @@ Line-level counterpart of `tb_good_received_note_comment`. Captures comments and
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
 | `id` | `String @db.Uuid` | No | Primary key. |
+| `doc_version` | `Int` | No | Optimistic-lock counter; default `0` (`@default(0)`), incremented on update by the tenant client. |
 | `good_received_note_detail_id` | `String @db.Uuid` | No | FK to `tb_good_received_note_detail.id`. |
 | `type` | `enum_comment_type` | No | `user` or `system`; default `user`. |
 | `user_id` | `String @db.Uuid` | Yes | Author user id (null for `system` entries). |

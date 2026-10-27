@@ -2,7 +2,7 @@
 title: Templates
 description: Reusable scaffold definitions consumed by PR and Vendor Pricelist — two structurally different implementations, not one shared mechanic, despite both prefilling a new record on instantiation.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: templates, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T16:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T16:00:00.000Z
 
 ![Templates detail screen](/screenshots/templates/purchase-request-detail.png)
 
-> **Re-verified 2026-09-22:** both sub-pages were re-checked against HEAD. Changes since the previous pass: the PR **From Template** entry is now a full page with a quantity step (`/procurement/purchase-request/from-template`, 2026-09-15); both template APIs return entity references (product, unit, currency, workflow, location, …) as `{ id, name }` objects instead of flat `*_id` / `*_name` pairs (2026-09-17); the PR template list sorts by creator. The backend template modules had no feature commits — only the `TenantScopedService` base-class refactor. **Notification templates** (system-config, app-channel only with real variables since 2026-09-16) are *not* part of this module — see [system-config](/en/inventory/system-config).
+> **Re-verified 2026-10-27:** no schema or API-shape change; the pricelist-template name check now lives only in the service (case-insensitive, `409` with catalog code `PRICE_LIST_TEMPLATE_NAME_ALREADY_EXISTS`), the PR template edit form now sends deleted lines under the key the backend reads (`delete`), and both lists restore filter / sort / page when returning from a detail page. **Earlier, 2026-09-22:** both sub-pages were re-checked against HEAD. Changes since the previous pass: the PR **From Template** entry is now a full page with a quantity step (`/procurement/purchase-request/from-template`, 2026-09-15); both template APIs return entity references (product, unit, currency, workflow, location, …) as `{ id, name }` objects instead of flat `*_id` / `*_name` pairs (2026-09-17); the PR template list sorts by creator. The backend template modules had no feature commits — only the `TenantScopedService` base-class refactor. **Notification templates** (system-config, app-channel only with real variables since 2026-09-16) are *not* part of this module — see [system-config](/en/inventory/system-config).
 
 > **Implementation status (verified 2026-07-29):** the two templates in this module are **not** built the same way, despite the surface-level similarity of "pick a template, get a prefilled record." PR templates deep-clone nothing — selecting one just pre-fills the new-PR form client-side, and the resulting PR keeps no link back to the template. Pricelist templates keep a live, persisted FK (`tb_request_for_pricing.pricelist_template_id`) from every RFQ round issued against them. Delete semantics also diverge: PR template delete is an unconditional hard delete; pricelist template delete is an unconditional soft delete. See each sub-page's own implementation-status callout for the full detail — this page no longer asserts one uniform mechanic for both.
 
@@ -63,5 +63,5 @@ What does **not** hold across both — see the two sub-pages for specifics:
 - `../carmen-frontend/routes/procurement/purchase-request/from-template/` (`from-template-content.tsx`, `qty-step.tsx`, `template-card.tsx`) + `pr-new-content.tsx` + `pr-form-schema.ts` — where a PR template's rows are picked, quantified and merged into a new PR.
 - `../carmen-turborepo-backend/apps/micro-business/src/procurement/purchase-request-template/purchase-request-template.service.ts` — real PR-template data layer (`TenantScopedService`, direct Prisma).
 - `../carmen-turborepo-backend/apps/micro-business/src/master/price-list-template/price-list-template.service.ts` — real pricelist-template data layer (direct Prisma); `apps/backend-gateway/src/application/pricelist-templates/` is a thin RPC proxy in front of it (with the `@Serialize` response schemas that produce the object-shaped references).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (+comment/detail, lines 2711-2870), `tb_pricelist_template` (+comment/detail, lines 4826-4990), `tb_request_for_pricing` (line 5004) as of 2026-09-22.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_purchase_request_template` (+comment/detail, lines 2844-3006), `tb_pricelist_template` (+comment/detail, lines 4993-5163), `tb_request_for_pricing` (line 5165) as of 2026-10-27.
 - `../carmen-frontend-e2e/tests/310-pr-template.spec.ts`, `../carmen-frontend-e2e/tests/160-pl-template.spec.ts` — E2E specs; both contain `describe` blocks for features not present in current code (PR template "Clone"/"Set as Default"; pricelist template's removed Clone, confirmed via its own dedicated "(removed)" suite).

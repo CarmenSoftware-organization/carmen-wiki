@@ -2,7 +2,7 @@
 title: Inventory Adjustment — Test Scenarios — Store Keeper
 description: Test cases for entering a Stock-In / Stock-Out adjustment — save a draft, commit to post, with the period-date and on-hand guards.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, test-scenarios, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -19,9 +19,9 @@ dateCreated: 2026-05-15T13:00:00.000Z
 
 | # | Scenario | Pre-condition | Steps | Expected |
 | - | -------- | ------------- | ----- | -------- |
-| SK-HP-01 | Stock-In draft, then commit (Average BU) | Product `P-1` at `LOC-A`, current cost `฿10.00`; `si_date` inside the current period | 1. Add Stock-In. 2. Reason (`stock_in`), location `LOC-A`. 3. Add line `P-1`, `qty = 10`; `cost_per_unit` pre-fills `฿10.00`, change to `฿12.00`. 4. **Save**. 5. **Commit** → confirm. | Step 4: `POST /stock-ins` → `draft`, `si_no` numbered from `si_date`, no ledger rows. Step 5: `PATCH /stock-ins/{id}/commit` → `completed`; one `tb_inventory_transaction` (`stock_in`), inbound layer `in_qty 10 @ ฿12.00`, lot `{LOC-A code}{YYMM}{seq4}`, `average_cost_per_unit` restamped; on-hand +10. |
+| SK-HP-01 | Stock-In draft, then commit (Average BU) | Product `P-1` at `LOC-A`, current cost `฿10.00`; `si_date` inside the current period | 1. Add Stock-In. 2. Reason (`stock_in`), location `LOC-A`. 3. Add line `P-1`, `qty = 10`; `cost_per_unit` pre-fills from the BU's `si.cost-from` setting (assumed to resolve to `฿10.00` here), change to `฿12.00`. 4. **Save**. 5. **Commit** → confirm. | Step 4: `POST /stock-ins` → `draft`, `si_no` numbered from `si_date`, no ledger rows. Step 5: `PATCH /stock-ins/{id}/commit` → `completed`; one `tb_inventory_transaction` (`stock_in`), inbound layer `in_qty 10 @ ฿12.00`, lot `{LOC-A code}{YYMM}{seq4}`, `average_cost_per_unit` restamped; on-hand +10. |
 | SK-HP-02 | Commit straight from a new form | Same as SK-HP-01 but click **Commit** without saving | Frontend `POST`s the draft, then commits it with the returned `doc_version`; end state identical to SK-HP-01. |
-| SK-HP-03 | Stock-Out for breakage, FIFO product | FIFO BU; `P-2` at `LOC-A`: 5 @ `฿10.00` (`lot_seq_no 1`), 3 @ `฿12.00` (`lot_seq_no 2`); `so_date` inside the current period | 1. Add Stock-Out, reason (`stock_out`), `LOC-A`. 2. Line `P-2`, `qty = 6` (no cost column). 3. Save. 4. Commit. | `createFifoConsumption` consumes 5 from lot 1 and 1 from lot 2 — two outbound layers at their lot costs; `tb_stock_out_detail.cost_per_unit`/`total_cost` stay `0`; on-hand 8 → 2. |
+| SK-HP-03 | Stock-Out for breakage, FIFO product | FIFO BU; `P-2` at `LOC-A`: 5 @ `฿10.00` (`lot_seq_no 1`), 3 @ `฿12.00` (`lot_seq_no 2`); `so_date` inside the current period | 1. Add Stock-Out, reason (`stock_out`), `LOC-A`. 2. Line `P-2`, `qty = 6` (no cost column). 3. Save. 4. Commit. | `createFifoConsumption` consumes 5 from lot 1 and 1 from lot 2 — two outbound layers at their lot costs; `tb_stock_out_detail.cost_per_unit`/`total_cost` are stamped with the posted cost (฿10.00 × 5 + ฿12.00 × 1 = ฿62.00 total); on-hand 8 → 2. |
 | SK-HP-04 | Multi-line document | Two products at the same location | Add both lines, Save, Commit | One header, two detail rows, one `tb_inventory_transaction` per line at commit. |
 | SK-HP-05 | Fractional quantity | Product with fractional UoM (kg) | Line `qty = 1.5` | Accepted (`qty ≥ 0`, `Decimal(20,5)`). |
 | SK-HP-06 | Edit a draft | Draft from SK-HP-01 before step 5 | Open → **Edit** → change qty → **Save** | `PATCH /stock-ins/{id}/save`; `doc_version` increments; still `draft`; no ledger rows. |
@@ -35,7 +35,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 | SK-VAL-03 | No line items | Save with zero lines | Client (`atLeastOneItem`); direct API → 400 `Stock in detail items are required`. |
 | SK-VAL-04 | Unknown product id | Direct API with an unknown `product_id` | Enrichment rejects the line / `PRODUCT_NOT_FOUND` on the detail endpoints. |
 | SK-VAL-05 | Negative cost on Stock-In | `cost_per_unit = -1` | Client rejects (`minZero`). |
-| SK-VAL-06 | Insufficient stock on Stock-Out | Requested qty > on-hand at the location (either costing method) | **Commit** → 400 `Insufficient stock for {product} at {location}: on hand {x}, requested {y}` (`STOCK_OUT_INSUFFICIENT_STOCK`); draft survives, nothing posted. |
+| SK-VAL-06 | Insufficient stock on Stock-Out | Requested qty > on-hand at the location (either costing method) | **Commit** (and also **Save** of the draft) → 400 `Insufficient stock for {product} at {location} on {date}: {x} available, requested {y} (lowest balance from {date} on falls on {day})` (`STOCK_OUT_INSUFFICIENT_STOCK`); nothing posted. |
 | SK-VAL-07 | Stock-in dated in a closed period | `si_date` before the earliest open period | Client `dateOutsidePeriod`; direct API → 422 `The stock-in date does not fall inside any open period` at create **and** at commit. |
 | SK-VAL-08 | Stock-out dated outside the current period | `so_date` in a previous (even still-open) period | 422 `Stock-outs can only be dated inside the current period ({period}: {start} to {end})` at create and commit; 422 `No inventory period is open…` when nothing is open. |
 | SK-VAL-09 | Blank description | Save with empty `description` | Accepted — optional. |

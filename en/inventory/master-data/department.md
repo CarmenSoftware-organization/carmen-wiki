@@ -70,7 +70,7 @@ flowchart TD
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code already in use" | Duplicate `code` on a non-deleted row | Pick a different code |
+| `409 DEPARTMENT_ALREADY_EXISTS` — "Department already exists" | Duplicate `code` on a non-deleted row (create and update; now an error-catalog code, shown under the **Code** field by the form) | Pick a different code |
 | "Department-name typo conflict" | `(code, name)` collides with an existing row | Resolve naming or reactivate the existing row |
 | "Code / name required" | Form submitted blank | Add both |
 | **Unconfirmed** — no delete guard found | `departments.service.ts`'s `delete()` is an unconditional soft-delete (`is_active: false` + `deleted_at`) with no check for open PR/SR references or existing `tb_department_user` rows | A prior version of this page asserted "cannot delete — referenced by open PR/SR" as an enforced error; treat it as **not enforced** until re-verified |

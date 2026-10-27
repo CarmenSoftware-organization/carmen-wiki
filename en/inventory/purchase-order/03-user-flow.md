@@ -2,7 +2,7 @@
 title: Purchase Order — User Flow
 description: Document lifecycle and persona-specific flow files for purchase-order.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: purchase-order, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T10:00:00.000Z
@@ -58,7 +58,7 @@ stateDiagram-v2
 | `(none)` | create | `draft` | Purchaser | Header fields validated (`vendor_id`, `currency_id`, `order_date`, `delivery_date`, `workflow_id`); at least one line required before submission. PR linkage written to the bridge table when sourced from PR; no linkage needed for `manual` or `pricelist` origin. |
 | `draft` | save (edit) | `draft` | Purchaser (owner) | PO still editable; no workflow stage advanced. Header totals (`total_qty`, `total_price`, `total_tax`, `total_amount`) recalculated on save. |
 | `draft` | submit for approval | `in_progress` | Purchaser (owner) | At least one non-deleted line; header complete; selected `workflow_id` is active for scope `purchase-order`. `last_action` set to `submitted`; stage cursor advances to first approval stage. |
-| `draft` | delete | `(none)` | Document owner (`created_by_id`) or platform super-admin | Soft-delete only (`deleted_at` set); allowed solely while the PO is in `draft` (`remove()`: "Only draft purchase orders can be deleted" + `isDocumentOwner` / `isSuperAdmin`). |
+| `draft` | delete | `(none)` | Document owner (`created_by_id`) or Backstage super-admin | Soft-delete only (`deleted_at` set); allowed solely while the PO is in `draft` (`remove()`: "Only draft purchase orders can be deleted" + `isDocumentOwner` / `isSuperAdmin`). |
 | `draft` / `in_progress` / `approved` / `sent_or_print` | cancel | `closed` | Whoever holds the action (no role gate beyond authentication) | Withdraws the commitment; every line's `cancelled_qty = order_qty − received_qty` (`cancel()`). Not available from `partial`. |
 | `in_progress` | approve (this stage, not final) | `in_progress` | Current-stage approver | Approver is in `user_action.execute[]` for `workflow_current_stage`; `last_action` becomes `approved`; stage cursor advances. Authorization to act is purely `user_action.execute[]` membership — no amount threshold gates *who* may approve. Which stage comes next, however, can itself be amount-driven: the workflow's `routing_rules` may skip or jump stages based on `total_amount` (`PO_AUTH_004`). |
 | `in_progress` | approve (final stage) | `approved` | Whoever holds the workflow's final stage | `isFinalApproval` from `buildApproveWorkflow`; `approval_date` set; `workflow_history` gains a `completed` entry. **Nothing is transmitted** — the PO is now receivable and emailable, but the vendor has not seen it. |
@@ -66,12 +66,12 @@ stateDiagram-v2
 | `approved` | mark sent (print / fax / phone) | `sent_or_print` | API caller (`POST .../:id/mark-sent`; no React button yet) | "Only approved orders can be marked as sent."; `tb_activity` "Marked as sent to vendor". |
 | `in_progress` | send-back / review | `in_progress` (unchanged) | Any approver on the chain | Resets `workflow_current_stage` to an earlier stage (e.g. back to the creator); `po_status` does not change. Optional reason recorded as a comment. |
 | `in_progress` | reject | `voided` | Any approver on the chain | Direct, terminal transition — no intermediate state. |
-| `{in_progress, approved, sent_or_print, partial}` | close | `closed` | Any authenticated user (the React header shows **Close** on `approved` / `sent_or_print` when `canClose`, `po-header.tsx` L128-131); no role gate in `closePO()` | Vendor cannot supply the outstanding quantity; remaining open qty (`> 0`) is written to `cancelled_qty`; buyer notified. |
+| `{in_progress, approved, sent_or_print, partial}` | close | `closed` | Any authenticated user (the React header shows **Close** on `approved` / `sent_or_print` when `canClose`, `po-header.tsx` L188-199); no role gate in `closePO()` | Vendor cannot supply the outstanding quantity; remaining open qty (`> 0`) is written to `cancelled_qty`; buyer notified. |
 | `approved` / `sent_or_print` | receive (partial) | `partial` | Receiver via GRN posting (location `can_use` required) | At least one PO line has `received_qty > 0` but `received_qty < order_qty − cancelled_qty` across the PO. State change is computed from line-level GRN postings (`updatePoStatuses`). |
 | `approved` / `sent_or_print` | receive (full) | `completed` | Receiver via GRN posting | Every line satisfies `received_qty + cancelled_qty ≥ order_qty`; all lines closed via GRN in a single transaction. |
 | `partial` | receive (additional) | `partial` | Receiver via GRN posting | Subsequent GRN posts more quantity but the PO still has at least one open line; state remains `partial`. |
 | `partial` | receive (final balance) | `completed` | Receiver via GRN posting | Final GRN clears the outstanding balance on every line; PO transitions to normal completion. |
-| `completed` | (no further action) | `completed` | — | Terminal state for the receipt path. No confirmed three-way-match / invoice feature was found in current source to track beyond this. |
+| `completed` | (no further action) | `completed` | — | Terminal state for the receipt path. No PO-level three-way-match / invoice feature exists to track beyond this (the AP module works from GRN items). |
 
 ## 3. Persona Index
 
@@ -81,7 +81,7 @@ Each persona below has a dedicated drill-down file describing their entry point,
 - [Procurement Manager](./03-user-flow-procurement-manager.md) — Acts as an approver on a configured workflow stage (same generic mechanism as any other approver; the assigned workflow's `routing_rules` can confirmed-ly skip/jump stages by `total_amount`, `PO_AUTH_004`); holds delete-in-draft authority.
 - [Vendor](./03-user-flow-vendor.md) — External party with no system login; receives the PO by email (with optional PDF) or an out-of-band print recorded via `mark-sent`, and fulfils delivery against agreed terms. No confirmed in-system acknowledgement or invoice feature.
 - [Receiver](./03-user-flow-receiver.md) — Receiver / Store Keeper + Inventory Manager. Physically accepts goods, raises the GRN against an `approved` / `sent_or_print` / `partial` PO line by line, and triggers the `→ partial → completed` receipt-state transitions.
-- [Finance](./03-user-flow-finance.md) — Named in legacy design docs as a pre-transmission reviewer and post-receipt AP owner; **unconfirmed** in current source (no distinct stage role, invoice capture, or AP-matching code found).
+- [Finance](./03-user-flow-finance.md) — Named in legacy design docs as a pre-transmission reviewer and post-receipt AP owner; **unconfirmed** as a PO persona (no distinct stage role, no PO-level invoice match; an AP module exists but starts from GRN items).
 - [Audit / Config](./03-user-flow-audit-config.md) — Auditor (read-only review of POs, amendments, and activity log) and System Administrator (workflow stage configuration, RBAC, numbering).
 
 ### 3.1 Actor / Use-Case Overview
@@ -129,7 +129,7 @@ The table below captures the moments where the PO moves from one persona's respo
 | Approver (any stage) | Send-back / review with reason | Purchaser (or creator-only stage) | `in_progress` unchanged (only `workflow_current_stage` resets — does not reach `draft`) |
 | Vendor | Physical delivery of goods | Receiver | `approved` or `sent_or_print` (system state unchanged until GRN is posted) |
 | Receiver | Post GRN — partial fulfilment | Purchaser, Inventory Manager | `partial` (one or more lines still open) |
-| Receiver | Post GRN — final balance | — | `completed` (every line fully received; no confirmed downstream invoice/AP handoff) |
+| Receiver | Post GRN — final balance | — | `completed` (every line fully received; no PO-level invoice/AP handoff; AP reads GRN items) |
 | Procurement Manager / Inventory Manager | Close PO with remaining qty as cancelled | — (close-out review target unconfirmed) | `closed` (remaining qty written as `cancelled_qty`) |
 | Any approver at the current stage | Reject (direct, terminal) | Auditor (post-hoc review only) | `voided` (only reachable from `in_progress`) |
 

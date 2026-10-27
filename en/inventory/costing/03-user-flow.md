@@ -2,7 +2,7 @@
 title: Costing — User Flow
 description: Cost-flow lifecycle and persona-specific flow files for costing.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: costing, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-05-15T12:30:00.000Z
 > **Module:** [costing](/en/inventory/costing) &nbsp;·&nbsp; **Personas:** none distinct — see the correction note below; the module has no persona-gated screen
 > **Workflow lifecycle:** Cost-layer row born (inbound — GRN commit, or GRN save on average units) → picked (FIFO/WA outbound) → revalued (credit-note) → period-close anchor (average-method only writes `tb_inventory_period_snapshot`; FIFO carries lots forward instead) → period-open rollforward.
 > **Drill into per-persona pages below — each is a correction page pointing at the real behaviour**
-> **Re-verified 2026-09-22:** `tb_period*` renamed `tb_inventory_period*`; average is per product; GRN receipts carry landed cost (extra cost + FOC); average-unit GRNs post at save and can be unwound before commit; stock-in / stock-out now have a draft → commit step; GL module exists but is not wired to inventory.
+> **Re-verified 2026-10-27:** `average_per_location` is a third method (per-product-and-location average; perpetual period close); FIFO draws lots in commit order (transaction clock); period resolution tightened — a movement with a document date must fall in the **active** period (oldest `open`/`locked`), others post into the active period; count surplus is priced from BU `si.cost-from`. **Re-verified 2026-09-22:** `tb_period*` renamed `tb_inventory_period*`; average is per product; GRN receipts carry landed cost (extra cost + FOC); average-unit GRNs post at save and can be unwound before commit; stock-in / stock-out now have a draft → commit step; GL module exists but is not wired to inventory.
 
 > **Correction (verified 2026-07-22, re-checked 2026-09-22):** the three per-persona pages linked from Section 3 (Finance, Inventory Controller, Auditor) previously documented dedicated screens — a valuation-policy console, a sub-ledger ↔ GL reconciliation dashboard, an adjustment cost-pick-preview approval queue, a read-only audit workspace — none of which exist. The engine has **no persona-gated UI of its own**: it runs as a side effect of GRN commit (or save on average units), SR issue, inventory-adjustment commit, credit-note approval, and period-end close, each gated only by that source document's own generic permission. `enum_stage_role` (the only workflow-role enum in the tenant schema) is `{create, approve, purchase, issue, view_only}` — no `finance` or `auditor` member. This mirrors the identical correction already made on [inventory/03-user-flow](/en/inventory/inventory/03-user-flow), which found "no Finance role, GL reconciliation, or period-lock flow exists" for the same period-end surface this module's engine plugs into.
 
@@ -55,7 +55,7 @@ sequenceDiagram
     Note over TX,COST: Physical Count — variance exists
     TX->>INV: ±qty variance (physical count transaction type)
     INV->>LOT: Lots adjusted up (overage) or consumed down (shortage)
-    LOT->>COST: Recalc only if variance exists — cost source per enum_physical_count_costing_method (COST_CALC_008)
+    LOT->>COST: Recalc only if variance exists — cost source per BU si.cost-from (COST_CALC_008)
 
     Note over TX,COST: Physical Count — no variance
     TX->>INV: Count confirmed, no qty change
@@ -89,7 +89,7 @@ Two state machines coexist in this module: the **per-cost-layer-row** lifecycle 
 | From state | Action | To state | Allowed for | Pre-conditions |
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | create period | `open` | System-provisioned — `ensureNextPeriod` auto-creates the next period as part of every close | Fiscal year/month sequencing; no overlap with existing period rows. |
-| `open` (or `locked`) | accept cost-layer writes | same | Whoever holds the triggering document's own permission | **Corrected 2026-09-22 — two resolution rules coexist.** **GRN receipts** are stamped into the period whose date range contains `grn_date` (`resolvePeriodForDate` → `findOpenPeriodForDate`, `inventory-period.helper.ts`; last day inclusive; narrowest period wins on overlap) and are **rejected** (`GRN_DATE_OUTSIDE_OPEN_PERIOD`, 422) when no `open`/`locked` period covers that date — never re-dated. **Issues, transfers, credit notes, EOP rows** still use the current open period or `resolveDocumentPeriod` (`inventory-transaction.service.ts:1801,1910,2274,2752…`), so a backdated issue lands in the open period rather than being refused. |
+| `open` (or `locked`) | accept cost-layer writes | same | Whoever holds the triggering document's own permission | **Corrected 2026-09-22 — two resolution rules coexist.** **GRN receipts** are stamped into the period whose date range contains `grn_date` (`resolvePeriodForDate` → `findOpenPeriodForDate`, `inventory-period.helper.ts`; last day inclusive; narrowest period wins on overlap) and are **rejected** (`GRN_DATE_OUTSIDE_OPEN_PERIOD`, 422) when no `open`/`locked` period covers that date — never re-dated. **Issues, transfers, credit notes, EOP rows** use the **active** period — the oldest `open`/`locked` one: a movement without a document date goes through `resolveCurrentPeriod` (`inventory-transaction.service.ts:1588`), and one carrying a document date (the SR issue) through `resolveDocumentPeriod` (`:1569`), which throws when the date lies outside the active period instead of re-homing it (changed 2026-10, `f37b35881`). Document days are cut in the BU's timezone, not the server's (`ef78ac667`). |
 | `open` (or `locked`) | close period | `closed` | Whoever holds `inventory_management.period_end.execute` | All blocking-document gates clear (see [inventory/period-end](/en/inventory/inventory/period-end) § 2). Runs atomically under a row lock with re-validation; writes lot carry-over; average-method tenants also get `tb_inventory_period_snapshot` rows; auto-provisions the next `open` period. This module's own routes (`period-end.controller.ts`) expose **only** `find-all` / `find-current` / `close` / `find-review` — there is no re-open or lock action here. |
 | `closed` | — | — | — | `locked` is a status value this module can observe (period-end screens treat a `locked` period the same as `open` for the "current period" lookup, and `findOpenPeriodForDate` accepts both) but does not set — it is written by the **separate** inventory-period service behind [system-config/period](/en/inventory/system-config/period), outside this wiki module's scope. |
 

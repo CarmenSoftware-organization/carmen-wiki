@@ -2,7 +2,7 @@
 title: Notification
 description: Notification fan-out after the 2026-08 redesign — personal rows (doc_type + event), system/BU broadcasts with lazy per-user read state, the internal NotifyInput bridge, and BU-scoped platform news with a publish lifecycle.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: reporting-audit, notification, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,13 +11,23 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Notification
 
 > **At a Glance**
-> **Owner:** Workflow runtime + micro-cronjobs/micro-report (writes) · Platform Admin (broadcasts `broadcast.send`, news) · BU admin (per-BU `tb_notification_template` for email/in-app copy) &nbsp;·&nbsp; **Tables (platform):** `tb_notification` (personal) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **Gone:** `tb_message_format` (dropped 2026-08-11) &nbsp;·&nbsp; **Used by:** every workflow stage transition, comments, scheduled-report delivery, platform bulletins.
+> **Owner:** Workflow runtime + micro-cronjobs/micro-report (writes) · Backstage admin (broadcasts `broadcast.send`, news) · BU admin (per-BU `tb_notification_template` for email/in-app copy) &nbsp;·&nbsp; **Tables (platform):** `tb_notification` (personal) + `tb_broadcast_notification` / `tb_user_broadcast_action` (broadcast) + `tb_news` &nbsp;·&nbsp; **Gone:** `tb_message_format` (dropped 2026-08-11) &nbsp;·&nbsp; **Used by:** every workflow stage transition, comments, scheduled-report delivery, platform bulletins.
 
 ![Notification screen](/screenshots/reporting-audit/notification.png)
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
 
-The notification tables were **redesigned in August 2026** (platform migrations `20260810000000_notification_redesign_additive` and `20260811000000_notification_redesign_drop_legacy`; frontend contract `ac44c550`). Corrections to the 2026-07-22 version of this page:
+**2026-10-27 changes** (backend `ef4d6f08f..c9d788829`, 2026-10-05 extraction):
+
+1. **`micro-notification` left the monorepo** (`c22fbb5de`, 2026-10-05) and is now its own repository (`../micro-notification`), deployed separately from the five lock-step backend apps ("server-first": the Backstage migration must be applied before it deploys). Its contract lives in `packages/notification-contract` (19 commands, request/response/socket schemas, `c72bbde63`). Paths below that read `apps/micro-notification/...` now mean `../micro-notification/src/...`.
+2. **The `/ws` socket is authenticated.** Gateway `notification-native.gateway.ts` (path `/ws`): the client must send `{ type: "auth", token }` within 5 s (`WS_AUTH_TIMEOUT_MS`); the identity comes only from the verified Keycloak token (a client `register` message is ignored); on success the gateway replies `{ type: "authenticated", user_id }` and pushes `{ type: "notification", data }` to **every tab of the owner only** (the old broadcast-to-all behaviour is gone). Close codes: `4401` (auth timeout, invalid token, token expired mid-session — the client must refresh its token and reconnect; the FE gives up refreshing after repeated consecutive 4401s, `hooks/use-notification.ts`), `1013` (Keycloak unreachable, or more than 500 sockets waiting for auth — the client backs off without refreshing). The gateway registers with micro-notification only for a user's first tab.
+3. **Mark-as-read ownership (IDOR fix).** A personal notification is now looked up by `id` **and** `to_user_id = caller`; someone else's id returns 404 (not 403). `markAsRead` over the socket was removed — use the REST route (`d09e94f8a`).
+4. **External REST `/v1`.** micro-notification exposes `/v1` endpoints for other systems with per-caller API keys and scopes: recipient e-mail domain allow-list, `from_user_id` cannot be forged, broadcast needs its own scope, and `/v1/emails` accepts only the `notification` flow (`d84fa51f7`, `fac9658cf`, `d0d9827dd`). Not used by the inventory UI.
+5. Gateway list endpoints for notifications, public news and reports share one `perpage` rule of 1-100 (`fe80fc14b`). Backstage rename: tables stay `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news`, now in the Backstage schema (`prisma-shared-schema-backstage`).
+
+**2026-09-22 verification (kept).**
+
+The notification tables were **redesigned in August 2026** (Backstage migrations `20260810000000_notification_redesign_additive` and `20260811000000_notification_redesign_drop_legacy`; frontend contract `ac44c550`). Corrections to the 2026-07-22 version of this page:
 
 1. `tb_notification` lost `type`, `category` and `is_sent`; it now carries `doc_type enum_notification_doc_type` (`system`, `business_unit`, `purchase_request`, `store_requisition`, `purchase_order`, `good_received_note`, `credit_note`), `event enum_notification_event` (`info`, `workflow`, `comment`) and `pushed_at`. The `SYS_INFO` / `BU_INFO` / `PR_COMMENT` discriminator strings and the `system` / `user-to-user` category are gone.
 2. `tb_broadcast_notification` lost `category` and `type`; it now carries `scope enum_broadcast_scope` (`system` | `business_unit`) + `scope_id`, plus the same `doc_type` / `event` pair. The `'system-to-user'` / `'bu-to-user'` strings on this page were the pre-redesign contract.
@@ -31,15 +41,15 @@ Still true: `tb_news` has real BU scoping and a `draft` / `published` / `archive
 
 The notification entity is the **inbound message pipe** — every workflow stage transition, comment, scheduled-report delivery, system bulletin and platform announcement is materialised so the app shell can render a badge + inbox drawer (and optionally send email through the BU's email profile).
 
-Four platform-schema tables collaborate:
+Four Backstage-schema tables collaborate:
 
 - `tb_notification` — row-per-recipient personal inbox (workflow events, comments, report-ready notices).
 - `tb_broadcast_notification` + `tb_user_broadcast_action` — the broadcast mechanism: one row per broadcast message regardless of audience size, with per-user read state created lazily on first action (open/dismiss) rather than fanned out on write.
 - `tb_news` — platform-wide or BU-scoped bulletins with a `draft` / `published` / `archived` lifecycle.
 
-All live in the **platform schema** because notifications cross BU boundaries and broadcasts must reach every tenant.
+All live in the **Backstage schema** because notifications cross BU boundaries and broadcasts must reach every tenant.
 
-**Maintained by** the workflow runtime and other services through `NotifyInput` (personal + broadcast rows per event), Platform Admin (broadcasts, news), BU admin (`tb_notification_template` copy). **Read by** the app shell inbox (`notification.controller.ts` unified list merging both sources).
+**Maintained by** the workflow runtime and other services through `NotifyInput` (personal + broadcast rows per event), Backstage admin (broadcasts, news), BU admin (`tb_notification_template` copy). **Read by** the app shell inbox (`notification.controller.ts` unified list merging both sources).
 
 ## 2. Common Tasks
 
@@ -49,9 +59,9 @@ All live in the **platform schema** because notifications cross BU boundaries an
 | Mark a personal notification as read | Click message | `PUT /api/notifications/{id}/read` with `{ source: "personal" }` (or omitted) → `tb_notification.is_read = true` |
 | Mark a broadcast as read | Click message | Same endpoint with `{ source: "broadcast" }` → upserts a `tb_user_broadcast_action` row (lazily created on first action) |
 | Mark everything read | Inbox → mark all | `PUT /api/notifications/mark-all-read` |
-| Push a system-wide or BU broadcast | Platform admin | `POST /api/notifications/broadcasts/system` / `broadcasts/bu` — platform permission `broadcast.send`; sender-side list/edit/delete at `GET/PATCH/DELETE /api/notifications/broadcasts[/:id]` |
+| Push a system-wide or BU broadcast | Backstage admin | `POST /api/notifications/broadcasts/system` / `broadcasts/bu` — Backstage permission `broadcast.send`; sender-side list/edit/delete at `GET/PATCH/DELETE /api/notifications/broadcasts[/:id]` |
 | Edit the copy of workflow / report emails for this BU | `/system-admin/notification-template` | Tenant `tb_notification_template` rows per channel (`enum_notification_channel`) — see [system-config/notification-template](/en/inventory/system-config/notification-template) |
-| Post a platform bulletin | Platform Admin → News | Defaults to `status = draft` — **not** visible publicly until explicitly set to `published`; can be scoped to specific BUs via `business_unit_ids` |
+| Post a platform bulletin | Backstage admin → News | Defaults to `status = draft` — **not** visible publicly until explicitly set to `published`; can be scoped to specific BUs via `business_unit_ids` |
 | Schedule a notification | Set `scheduled_at` in `NotifyInput` | Dispatcher fires when the schedule passes; `pushed_at` records delivery |
 | Notify from another service | `POST /api/internal/notifications` | `NotifyInput` envelope (§5.6); used by micro-cronjobs report fires and micro-report |
 
@@ -80,7 +90,7 @@ All live in the **platform schema** because notifications cross BU boundaries an
 
 ## 5. Data Model (Dev)
 
-Source: platform schema (`packages/prisma-shared-schema-platform/prisma/schema.prisma`).
+Source: Backstage schema (`packages/prisma-shared-schema-backstage/prisma/schema.prisma`).
 
 ### 5.1 `tb_notification`
 
@@ -175,7 +185,7 @@ NotifyInput {
 
 - **Two delivery mechanisms, one envelope.** Personal, per-recipient events use `tb_notification`; system/BU broadcasts use `tb_broadcast_notification` + lazily-created `tb_user_broadcast_action` rows. Both are produced from `NotifyInput.audience.kind`.
 - **Read state.** Owned by the recipient in both mechanisms; the client must echo the row's `source` when marking read.
-- **Broadcast sending is a platform permission** (`broadcast.send`), not a tenant permission.
+- **Broadcast sending is a Backstage permission** (`broadcast.send`), not a tenant permission.
 - **News is BU-scopeable and gated by publish status.** `business_unit_ids` (empty = global) and `status` (`draft` default; only `published` + `published_at <= now()` rows are publicly visible) both enforced server-side in `news.service.ts`.
 - **Scheduling.** `scheduled_at` defers; `pushed_at` records delivery (personal). `tb_broadcast_notification` carries `scheduled_at` / `end_at`; the broadcast dispatch-timing mechanism was not independently traced in this pass.
 
@@ -191,9 +201,9 @@ NotifyInput {
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news`, `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope`, `enum_news_status`; migrations `20260810000000_notification_redesign_additive`, `20260811000000_notification_redesign_drop_legacy`.
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification`, `tb_broadcast_notification`, `tb_user_broadcast_action`, `tb_news`, `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope`, `enum_news_status`; migrations `20260810000000_notification_redesign_additive`, `20260811000000_notification_redesign_drop_legacy`.
 - **Contract:** `../carmen-turborepo-backend/packages/notification-contract/src/notify-input.schema.ts`.
-- **Backend (unified read/write):** `../carmen-turborepo-backend/apps/micro-notification/src/notification/notification.service.ts`, `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (`GET /`, `recent`, `unread`, `broadcasts*`, `:id`, `PUT :id/read`, `PUT mark-all-read`, `POST broadcasts/system|bu`), `internal-notification.controller.ts` (`POST /api/internal/notifications`).
+- **Backend (unified read/write):** `../micro-notification/src/notification/notification.service.ts` (extracted from the monorepo 2026-10-05), `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (`GET /`, `recent`, `unread`, `broadcasts*`, `:id`, `PUT :id/read`, `PUT mark-all-read`, `POST broadcasts/system|bu`), `internal-notification.controller.ts` (`POST /api/internal/notifications`).
 - **Backend (news):** `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` (admin CRUD), `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/public-news.service.ts` (public read).
 - **Backend (per-BU templates):** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_notification-templates/config_notification-templates.controller.ts`; tenant `tb_notification_template` (migration `20260525041511_add_notification_template`).
 - **Frontend:** `../carmen-frontend/types/notification.ts` (`Notification`, `NotificationSource`, `NotificationDocType`, `NotificationListResponse.summary`), `constant/api-endpoints.ts` (`NOTIFICATIONS`, `NOTIFICATIONS_UNREAD`, `NOTIFICATIONS_MARK_ALL_READ`, `NOTIFICATION_MARK_READ`, `NOTIFICATION_TEMPLATES`).

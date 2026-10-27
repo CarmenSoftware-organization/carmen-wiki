@@ -2,7 +2,7 @@
 title: Activity
 description: Tenant-wide activity log — every state change as a row with actor, entity, before/after snapshot, IP and user agent; read via /system-admin/activity-log and, since 2026-08, a per-record Activity sheet on every list and detail page.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -15,7 +15,15 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ![Activity screen](/screenshots/reporting-audit/activity.png)
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+**2026-10-27 changes** (backend `ef4d6f08f..c9d788829`, `micro-business/src/log/activity-log/`):
+
+1. **PR/PO price fields are hidden in activity rows** for callers who may not see prices (`c031d8dac`, 2026-10-22). `ActivityLogService.maskPrices` runs `maskActivityRows` (`activity-price-mask.ts`) on every read path — list, record timeline, detail — and the `changes` diff of the detail endpoint is computed **from the masked snapshots**, so a hidden price cannot leak through the diff. Scope: `entity_type` in `purchase_request`, `purchase_request_detail`, `purchase_order`, `purchase_order_detail`, `purchase_order_detail_tb_purchase_request_detail`; the same key lists as the document APIs (`PR_LINE_PRICE_KEYS`, `PR_HEADER_PRICE_KEYS`, `po-price-mask.ts`), groups `price_per_unit` and `total_price`. The decision uses the parent document's **current** workflow stage and the caller (`WorkflowOrchestratorService.resolveHiddenPriceFields`), not the stage when the row was written; masked keys are **omitted** from the snapshot (not nulled), including inside nested child tables and `createMany` `data` arrays. Rows whose snapshot names no parent (e.g. delete logs) are matched through the line's `entity_id`, including soft-deleted lines (`dd0a1d58e`, `a1335a0db`). Other entity types (GRN, CN, SR, ...) are not masked. See [purchase-request](/en/inventory/purchase-request) for the stage rule.
+2. **Multi-actor filter.** `actor_id` on the list accepts a comma-separated list (`actor_id=a,b`), compared as `IN` after de-duplication; a single value is an equality test (`52f03ff8d`, 2026-10-02).
+3. **Rename.** The Backstage audit trail is now `api-system/backstage/activity-logs` (controller `backstage-activity-logs.controller.ts`).
+
+**2026-09-22 verification (kept).**
 
 Three corrections to the 2026-07-22 version of this page:
 
@@ -73,7 +81,7 @@ A create has no `old_data` and a delete has no `new_data`, so every field of the
 
 - **Append-only from application code.** Writers never update rows — `updated_*` exists for symmetry only. Soft/hard delete endpoints exist on the gateway (see §2) for retention purges; no UI path calls them.
 - **No FK enforcement on `entity_id`.** Polymorphic across many tables; stale rows are intentional (still valuable for deleted-entity audit).
-- **Cross-schema actor.** `actor_id` references platform `tb_user.id` without an enforced relation. `NULL` = system actor.
+- **Cross-schema actor.** `actor_id` references Backstage `tb_user.id` without an enforced relation. `NULL` = system actor.
 - **`email_sent` is written on failure too.** `purchase-order.service.ts` records one `email_sent` row per PO email-send attempt, success or failure (`1897b4fc1`); RFP email send does the same (`request-for-pricing.service.ts`).
 - **Retention.** Tenant-policy driven; schema imposes no cap. No scheduled purge for `tb_activity` exists in `micro-cronjobs` (its `activity_retention` job targets `tb_activity_event`, the telemetry table — §9).
 
@@ -114,7 +122,7 @@ Source: tenant schema.
 | `GET /:activity_log_id` | `activityLog.findOne` | One row |
 | `DELETE /:id`, `DELETE /batch/soft`, `DELETE /:id/hard`, `DELETE /batch/hard` | `activityLog.delete` / `deleteMany` / `hardDelete` / `hardDeleteMany` | No frontend caller found |
 
-Platform records (clusters, business units, users, report templates) have their own audit trail in the **platform** `tb_activity` with `api-system/platform/activity-logs/record/:entity_id` and `/:id/detail` (platform permissions `activity_log.read` / `activity_log.detail`, `platform-activity-logs.controller.ts`, 2026-08-31) — documented in the Platform book, not here.
+Backstage records (clusters, business units, users, report templates) have their own audit trail in the **Backstage** `tb_activity` with `api-system/backstage/activity-logs/record/:entity_id` and `/:id/detail` (Backstage permissions `activity_log.read` / `activity_log.detail`, `backstage-activity-logs.controller.ts`, 2026-08-31; renamed from `platform` in 2026-10) — documented in the Platform book, not here.
 
 ## 6. Business Rules
 

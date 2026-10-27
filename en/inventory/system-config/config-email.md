@@ -2,7 +2,7 @@
 title: Email Configuration (Sender Profiles & Message Library)
 description: Outbound email is two screens — Email Profile (SMTP sender profiles, key email_profiles) and Email Template (per-document message library, key email_templates). The single report_email screen is unrouted. No RBAC guard.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,16 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![Email Configuration screen](/screenshots/system-config/config-email.png)
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+- **Profiles now have three sign-in methods** (BE `email-profile.schema.ts:7`, FE `f9cc9dfc`): `smtp.auth_type` = `password` (default when absent), `oauth2_delegated` (a personal Hotmail / Outlook.com mailbox, tenant fixed to `consumers`, preset `smtp-mail.outlook.com:587`) or `oauth2_app` (the customer's own Microsoft 365 app registration, preset `smtp.office365.com:587`). Both OAuth types carry `smtp.oauth{ tenant_id, client_id, client_secret?, refresh_token?, connected_account?, connected_at? }`. The form requires `smtp_password` for `password`, `oauth_client_id` for both OAuth types, and additionally `oauth_tenant_id` + `oauth_client_secret` for `oauth2_app` (`email-profile-schema.ts:25-33`). The backend refuses an OAuth profile whose `host` is not one of `smtp-mail.outlook.com`, `smtp.office365.com`, `smtp.outlook.com` (`MICROSOFT_SMTP_HOSTS`, `email-profile.schema.ts:34-38,58-67`) so an access token cannot be pointed at another server.
+- **Connecting a Hotmail mailbox uses the device-code flow** (FE `ef8f94f8`, BE `74bb9f6d6`): `email-profile-oauth-dialog.tsx` calls `POST /api/config/:bu_code/app-config/email-profile/oauth/start` `{ profile_id }` (returns `user_code`, `verification_uri`, `interval`, `expires_in`, `handle`), the admin signs in at that URL, and the dialog polls `…/email-profile/oauth/poll` `{ profile_id, handle }` until `status` is `connected` (with `account`); the other statuses are `pending`, `slow_down`, `expired`, `denied`, `error` (`email-profile-oauth.service.ts:48`). The list shows a connection state per profile (`isOAuthConnected` = `connected_at` present). Both routes map to the `configuration.email_profile` licence (`permission.route-map.ts:265`).
+- **Token fields are server-owned.** On every save the backend discards `refresh_token`, `connected_account` and `connected_at` sent by the client and re-fills them from the stored profile only while the identity (auth type, `client_id`, `tenant_id`, username) is unchanged; if any changes the connection is cleared and must be re-done. `client_secret` is encrypted and masked (`***ENCRYPTED***`) and restored by profile `id`, like the password (`app-config.service.ts:416-523`).
+- **Page split**: `email-profile.route.tsx` / `email-template.route.tsx` were reduced to thin wrappers over `email-profile-component.tsx` / `email-template-component.tsx` inside `ListPageShell` (FE `633570ee`) — no behaviour change.
+- **Backend Zod moved** to `apps/micro-business/src/app-config/email-profile.schema.ts` (`EmailProfilesSchema`); line cites below updated. Line cites for the controller moved: `PUT :key` `:162`, `DELETE :key` `:246`, `assertSharedListViewsAdmin` `:287`.
+- **Permission finding re-checked 2026-10-27 — still open.** The class guard is still `@UseGuards(KeycloakGuard)` only (`config_app-config.controller.ts:56`) and the new OAuth `start`/`poll` routes carry no `AppIdGuard` either.
+
+### Earlier status (re-verified 2026-09-22)
 
 This page previously described one screen editing one `report_email` JSON blob. Between 2026-08-08 and 2026-09-20 outbound email was rebuilt as a **master list of named sender profiles** plus a **per-document-type message library**, each on its own screen with its own licence feature:
 
@@ -23,22 +32,22 @@ This page previously described one screen editing one `report_email` JSON blob. 
 |---|---|---|
 | Screen | `/system-admin/config-email` (one form) | `/system-admin/email-profile` (`routes/system-admin/email-profile/`) + `/system-admin/email-template` (`routes/system-admin/email-template/`); `config-email` is absent from `routes/router.tsx` and `constant/module-list.ts` — the component folder is dead code |
 | Config key | `report_email` (single SMTP + recipients + `subject_prefix`) | `email_profiles` = `{ default_profile_id, profiles[] }` (BE `f5c3e5c5b` 2026-08-08); `email_templates` = `{ defaults, templates[] }` (FE `2b80f83c` 2026-09-16) |
-| Backend schema | `ReportEmailSchema` | `EmailProfilesSchema` / `EmailProfileSchema` (`app-config.service.ts:101-128`); **`email_templates` has no backend Zod schema** — stored as sent, HTML sanitised on the frontend only (`sanitizeEmailHtml`) |
+| Backend schema | `ReportEmailSchema` | `EmailProfilesSchema` / `EmailProfileSchema` (`email-profile.schema.ts:84-103`); **`email_templates` has no backend Zod schema** — stored as sent, HTML sanitised on the frontend only (`sanitizeEmailHtml`) |
 | Secret handling | `smtp.password` encrypted, masked `***ENCRYPTED***` | `profiles[*].smtp.password` encrypted and masked; masked/blank values on save are restored **by profile `id`, not array index** (`49162675a`), so deleting a profile mid-list cannot shift another profile's password |
 | Test send | `POST /app-config/test-email` using the saved `report_email` | `POST /api/config/:bu_code/app-config/test-email-profile` `{ profile_id, to? }` — per profile, optional explicit recipient (`f00088307`, `7d82d77f9`); the dialog is `email-profile-test-dialog.tsx` |
 | Runtime consumer | `micro-notification` via `getReportEmailForSend` (RPC) | `getEmailProfileForSend(bu_code, profile_id?)` (`app-config.service.ts:828`), exported to the Purchase Order module for `POST /api/:bu_code/purchase-orders/:id/send-email` (`purchase-orders.controller.ts:2474`, BE `1897b4fc1`) and Request for Pricing `POST …/request-for-pricings/:id/send-email` (`:480`); each send writes a `tb_activity` row with the new `enum_activity_action.email_sent` |
-| Lookup for the send dialog | — | `GET /api/:bu_code/email-senders` → `{ default_profile_id, profiles[{ id, name, enabled, from_email, from_name }] }` and `GET /api/:bu_code/email-messages` — the `smtp` block is stripped entirely so the dialog never receives host/username (`email-lookup.service.ts:22-54`, BE `6a859f9e2` 2026-09-20); both map to the generic `configuration.app_config` licence (`permission.route-map.ts:55-56`) |
+| Lookup for the send dialog | — | `GET /api/:bu_code/email-senders` → `{ default_profile_id, profiles[{ id, name, enabled, from_email, from_name }] }` and `GET /api/:bu_code/email-messages` — the `smtp` block is stripped entirely so the dialog never receives host/username (`email-lookup.service.ts:22-54`, BE `6a859f9e2` 2026-09-20); both map to the generic `configuration.app_config` licence (`permission.route-map.ts:56-57`) |
 | Licence | `configuration.app_config` | `configuration.email_profile` for `app-config/email_profiles` + `test-email-profile`; `configuration.email_template` for `app-config/email_templates` (`LICENSE_ROUTE_OVERRIDES`, 2026-09-20); `GET /app-config` (list) no longer returns either key |
-| Profile fields | — | `id`, `name`, `enabled`, `smtp{host,port,secure,username,password}`, `from_email`, `from_name` (FE `types/email-profile.ts`); the backend schema still accepts `reply_to`, `default_cc`, `subject_template`, `body_template`, `note` with defaults — the form dropped them on 2026-09-16 (`e98ef3ee`) because message content moved to the template library |
+| Profile fields | — | `id`, `name`, `enabled`, `smtp{host,port,secure,username,auth_type?,password?,oauth?}`, `from_email`, `from_name` (FE `types/email-profile.ts`); the backend schema still accepts `reply_to`, `default_cc`, `subject_template`, `body_template`, `note` with defaults — the form dropped them on 2026-09-16 (`e98ef3ee`) because message content moved to the template library |
 | Template fields | — | `id`, `name`, `doc_type` (`po` \| `rfp`), `enabled`, `subject_template` (plain text), `body_template` (HTML), `default_cc[]`, `note`; `defaults[doc_type]` names the template pre-selected in that document's send dialog |
 
-**Permission finding — still open.** `config_app-config.controller.ts` at HEAD carries only the class-level `@UseGuards(KeycloakGuard)` (`:56`). `PUT :key` (`:141`) and `DELETE :key` (`:224`) call `assertSharedListViewsAdmin()` (`:264`), which returns early for every key not matching `/^list_views_/` — so `email_profiles` and `email_templates` are writable by **any authenticated member of the BU** whose contract holds the licence feature. `system_admin.config_email.view` exists in `tb_permission` and gates the sidebar entries (`module-list.ts:680,687`), but no route checks it. The licence interceptor answers "may this BU use the feature", never "may this user". See [system-config/application-config](/en/inventory/system-config/application-config) for the module-wide version of this finding.
+**Permission finding — still open.** `config_app-config.controller.ts` at HEAD carries only the class-level `@UseGuards(KeycloakGuard)` (`:56`). `PUT :key` (`:162`) and `DELETE :key` (`:246`) call `assertSharedListViewsAdmin()` (`:287`), which returns early for every key not matching `/^list_views_/` — so `email_profiles` and `email_templates` are writable by **any authenticated member of the BU** whose contract holds the licence feature. `system_admin.config_email.view` exists in `tb_permission` and gates the sidebar entries (`module-list.ts:680,687`), but no route checks it. The licence interceptor answers "may this BU use the feature", never "may this user". See [system-config/application-config](/en/inventory/system-config/application-config) for the module-wide version of this finding.
 
 ## 1. What & Who
 
 Two settings screens, one runtime path:
 
-- **Email Profile** (`/system-admin/email-profile`) — a list of named SMTP sender identities for the business unit. Each profile is one SMTP host + credentials + `From:` identity with an `enabled` toggle; exactly one profile is the **default** (`default_profile_id`, "Set as default" row action). Deleting the last remaining profile clears the default; adding the first one makes it the default automatically (`email-profile.route.tsx:71,98`).
+- **Email Profile** (`/system-admin/email-profile`) — a list of named SMTP sender identities for the business unit. Each profile is one SMTP host + credentials + `From:` identity with an `enabled` toggle; exactly one profile is the **default** (`default_profile_id`, "Set as default" row action). Deleting the last remaining profile clears the default; adding the first one makes it the default automatically (`email-profile-component.tsx:79,106`).
 - **Email Template / "Email Messages"** (`/system-admin/email-template`) — a library of subject + HTML body templates keyed by document type. Supported `doc_type`s at HEAD: `po` and `rfp` (`EMAIL_DOC_TYPES`, `types/email-template.ts`). Placeholders are fixed per type (`lib/email-template.ts:14-24`): PO `{{po_no}}`, `{{vendor_name}}`, `{{bu_name}}`, `{{total}}`, `{{delivery_date}}`; RFP `{{rfp_name}}`, `{{vendor_name}}`, `{{contact_person}}`, `{{bu_name}}`, `{{start_date}}`, `{{end_date}}`, `{{portal_url}}`. Unsupplied placeholders render as empty strings.
 - **Runtime** — the *Send by email* dialogs on a Purchase Order (`po-send-email-dialog.tsx`) and a Request for Pricing (`rfp-send-email-dialog.tsx`) load senders and messages through the secret-free lookups, let the user pick a profile and a message (pre-filled from `defaults[doc_type]`), and `POST …/send-email`. The backend decrypts the chosen profile's password via `getEmailProfileForSend`, sends the PDF-attached mail, and logs `email_sent`.
 
@@ -87,7 +96,7 @@ Workflow approval notifications do **not** use these profiles — the workflow d
 
 Source: tenant schema. **No dedicated table** — two `tb_application_config` rows.
 
-### 5.1 `email_profiles` (Zod: `EmailProfilesSchema`, `app-config.service.ts:101-128`)
+### 5.1 `email_profiles` (Zod: `EmailProfilesSchema`, `email-profile.schema.ts:84-103`)
 
 ```
 {
@@ -102,7 +111,13 @@ Source: tenant schema. **No dedicated table** — two `tb_application_config` ro
         "port": 587,                         // int 1..65535
         "secure": true,
         "username": "purchasing@example.com",
-        "password": "***ENCRYPTED***"        // encrypted at rest, masked on read
+        "auth_type": "password",             // optional: password (default) | oauth2_delegated | oauth2_app
+        "password": "***ENCRYPTED***",       // encrypted at rest, masked on read; required for password auth
+        "oauth": {                           // required for the two oauth2_* types; host must be a Microsoft SMTP host
+          "tenant_id": "consumers", "client_id": "…",
+          "client_secret": "***ENCRYPTED***",   // oauth2_app only
+          "refresh_token": "…", "connected_account": "…", "connected_at": "…"   // written by the backend only
+        }
       },
       "from_email": "purchasing@example.com",
       "from_name": "Carmen Blue Purchasing",
@@ -139,6 +154,8 @@ Source: tenant schema. **No dedicated table** — two `tb_application_config` ro
 GET  /api/config/:bu_code/app-config/email_profiles         licence configuration.email_profile
 PUT  /api/config/:bu_code/app-config/email_profiles         { value }  (doc_version echoed by the hook)
 POST /api/config/:bu_code/app-config/test-email-profile     { profile_id, to? }  licence configuration.email_profile
+POST /api/config/:bu_code/app-config/email-profile/oauth/start  { profile_id }  licence configuration.email_profile
+POST /api/config/:bu_code/app-config/email-profile/oauth/poll   { profile_id, handle }  licence configuration.email_profile
 GET  /api/config/:bu_code/app-config/email_templates        licence configuration.email_template
 PUT  /api/config/:bu_code/app-config/email_templates        { value }
 GET  /api/:bu_code/email-senders                            secret-free { default_profile_id, profiles[] }
@@ -151,7 +168,7 @@ All under `KeycloakGuard`; the two lookups additionally carry no `AppIdGuard` (`
 
 ## 6. Business Rules
 
-- **Sysadmin-only by convention, not by enforcement.** No RBAC guard on the app-config controller (re-verified 2026-09-22).
+- **Sysadmin-only by convention, not by enforcement.** No RBAC guard on the app-config controller (re-verified 2026-10-27).
 - **Licence per key group** (`configuration.email_profile`, `configuration.email_template`) via `LICENSE_ROUTE_OVERRIDES`; generic list endpoint hides both keys.
 - **Password encryption + masking**, id-based restore; blank never deletes a secret.
 - **One default profile per BU** (`default_profile_id`); `enabled: false` keeps the profile but should exclude it from send dialogs.
@@ -169,8 +186,8 @@ All under `KeycloakGuard`; the two lookups additionally carry no `AppIdGuard` (`
 ## 8. References
 
 - **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/app-config/app-config.service.ts` — `EmailProfileSchema`/`EmailProfilesSchema` (`:96-128`), `secretPathsFor` (`:216`), `retainMaskedEmailProfileSecrets` (`:396`), `getEmailProfileForSend` (`:828`), `testEmailProfile`; `app-config.module.ts` (export for the PO module).
-- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` (`test-email-profile` `:395`); `apps/backend-gateway/src/application/email-lookup/{email-lookup.controller,email-lookup.service}.ts`; `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts:55-56,257-260`.
+- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` (`test-email-profile` `:395`); `apps/backend-gateway/src/application/email-lookup/{email-lookup.controller,email-lookup.service}.ts`; `packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts:55-56,257-260`.
 - **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/src/seed-data/email-templates.ts`; `apps/micro-business/src/authen/tenant_seed/seed-sets/email-templates.seed-set.ts`.
-- **Frontend:** `../carmen-frontend/routes/system-admin/email-profile/` (`email-profile.route.tsx`, `email-profile-dialog.tsx`, `email-profile-test-dialog.tsx`, `email-profile-schema.ts`); `routes/system-admin/email-template/`; `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `hooks/use-email-senders.ts`, `hooks/use-email-messages.ts`; `types/email-profile.ts`, `types/email-template.ts`, `lib/email-template.ts`; `routes/procurement/purchase-order/po-send-email-dialog.tsx`, `routes/vendor-management/request-price-list/rfp-send-email-dialog.tsx`. Legacy: `routes/system-admin/config-email/` (unrouted).
+- **Frontend:** `../carmen-frontend/routes/system-admin/email-profile/` (`email-profile.route.tsx`, `email-profile-component.tsx`, `email-profile-dialog.tsx`, `email-profile-oauth-dialog.tsx`, `use-email-profile-oauth.ts`, `email-profile-test-dialog.tsx`, `email-profile-schema.ts`); `routes/system-admin/email-template/`; `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `hooks/use-email-senders.ts`, `hooks/use-email-messages.ts`; `types/email-profile.ts`, `types/email-template.ts`, `lib/email-template.ts`; `routes/procurement/purchase-order/po-send-email-dialog.tsx`, `routes/vendor-management/request-price-list/rfp-send-email-dialog.tsx`. Legacy: `routes/system-admin/config-email/` (unrouted).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/app-config/POST-test-email-profile-config-app-config.bru`.
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1116-email-profile.md` (30 cases), `1117-email-template.md` (30 cases) — catalogs only, no Playwright spec.

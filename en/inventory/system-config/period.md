@@ -1,8 +1,8 @@
 ---
 title: Inventory Period (formerly Period)
-description: Inventory (accounting) periods and per-period cost snapshots. Renamed from Period on 2026-09-16 — tb_inventory_period*, /system-admin/inventory-period, api/:bu_code/inventory-periods, key system_admin.inventory_period. Plain CRUD.
+description: Inventory periods and per-period cost snapshots (tb_inventory_period*, /system-admin/inventory-period, system_admin.inventory_period). Status changes only through period end, not the edit dialog.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, period, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -26,14 +26,23 @@ The module was renamed from **Period** to **Inventory Period** in three breaking
 | `AppIdGuard` api names | `period.*` | `inventoryPeriod.findOne` / `findAll` / `create` / `update` / `delete` | same controller |
 | Permission resource | `system_admin.period` | `system_admin.inventory_period` (`view`/`create`/`update`/`delete`) | platform migration `20260916140000_rename_period_to_inventory_period`; `seed.permission.data.ts` |
 | Licence feature | `system_admin.period` ("Period") | `system_admin.inventory_period` ("Inventory Period") | same migration + `20260916150000_fix_license_group_item_inventory_period_key`; `license-catalog.generated.ts` |
-| Licence route map | `app:periods` | `app:inventory-periods` → `system_admin.inventory_period`; `config:period-comments` also points at the new key | `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` |
+| Licence route map | `app:periods` | `app:inventory-periods` → `system_admin.inventory_period`; `config:period-comments` also points at the new key | `packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts` |
 | Frontend | `routes/system-admin/period/`, `/system-admin/period` | `routes/system-admin/inventory-period/` (`inventory-period-component.tsx`, `-dialog.tsx`, `-card.tsx`, `-form-schema.ts`, `use-inventory-period.ts`, `use-inventory-period-table.tsx`), `/system-admin/inventory-period`; `router.tsx:640-643` keeps `period` as a `<Navigate replace>` redirect "so old bookmarks don't break"; `constant/permissions.ts:119` `system_admin.inventory_period`; `constant/module-list.ts:611-615` | FE `06c68975`, `1caecb42` |
 | Bruno | `master-data/period/*` | folder **not renamed**, but every request URL inside it already points at `/api/{{bu_code}}/inventory-periods…` (Bruno PR #27); `config/period-comment/*` still uses `api/config/:bu_code/period-comments/:period_id` (that controller was not renamed) | `carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/period/` |
 | Comments | `config_period-comments` controller, `tb_period_comment` | controller path unchanged (`api/config/:bu_code/period-comments`), table renamed to `tb_inventory_period_comment` | `apps/backend-gateway/src/config/config_period-comments/` |
 
 Deploy order matters: the platform migration must run before or with the gateway — a gateway that renames `api_name` before the `tb_application_api` rows are renamed answers 401 and bounces users to login (commit message of `c8de2fa76`). The tenant table rename is a hard cutover: old code pointing at `tb_period` breaks the moment the migration runs.
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+- **Status can no longer be changed from this screen** (BE `8b87e475b`, 2026-09-23). `PATCH api/:bu_code/inventory-periods/:id` rejects any `status` that differs from the stored one with `PERIOD_STATUS_VIA_PERIOD_END_ONLY` (422, "Period status can only be changed through period end"); closing and locking belong to period end (see [inventory/period-end](/en/inventory/period-end)). `PATCH` and `DELETE` additionally refuse (all 422, `findMutationBlock`, `inventory-period.service.ts:269-329`): a **closed** period (`PERIOD_CLOSED_NOT_EDITABLE`), a period whose physical-count round is `counting` (`PERIOD_COUNTING_NOT_EDITABLE`), and the **current** period — the earliest `open`/`locked` one (`PERIOD_CURRENT_NOT_EDITABLE`). Earlier revisions of this page said the status was a free-form field and the dialog could reopen a closed month; that is no longer true. The edit dialog **still renders the Status `<Select>`** with all three values (`inventory-period-dialog.tsx:192-215`) and submits it, so choosing a different value just returns the error above — a front-end leftover worth a ticket.
+- **Nothing can be created or moved before the current period** (BE `68b20ad71`): `create` and an `update` that changes `fiscal_year` / `fiscal_month` / `start_at` fail with `PERIOD_BEFORE_CURRENT_NOT_ALLOWED` ("Period {period} would fall before the current period {current}") when the candidate's month or start date is earlier than the current period (`findBeforeCurrentBlock`, `:331`).
+- **Duplicate errors now carry catalog codes** (`PERIOD_ALREADY_EXISTS`, `PERIOD_FISCAL_COMBINATION_EXISTS`; BE `016b62808`).
+- **"Current" means the oldest open/locked period everywhere** (BE `f37b35881`): the inventory code no longer resolves "the period that today falls in" for on-hand, SR submit/issue, outbound documents with a `doc_date`, period-end start-counting, physical-count period create/current, `generateNextPeriods`, or default dates of stock-out / stock-in / wastage; `locked` is no longer treated as closed by those checks (only `closed` is, `getClosedPeriods` / `isLotPeriodClosed`). Credit-note `cn_date` must fall in the active period at create and submit (catalog codes 3050003 / 3050004). GRN / Stock-In may still be dated into the next open period (the #719 rule is kept).
+- **Generate Next counts `locked` as open**: it now tops up to `count` open-or-locked periods (`generateNextPeriods`, `:510`, `:542-548`). The FE button computes `toCreate = 12 − (periods with status "open")` (`inventory-period-component.tsx:174-175`), so on a BU holding a `locked` period its confirm text can say more periods will be created than the backend actually creates.
+- **Screen redesign** (FE `54d095d1`, `c3fe01ea`): above the list there is a **fiscal-year timeline strip** (`inventory-period-timeline.tsx`) with one cell per month of the selected fiscal year (arrows to change year) coloured by *phase* — `closed`, `locked`, `overdue` (status `open` but `end_at` is before today), `active` (open and today inside the range) and `upcoming` (open, `start_at` after today); it names the current period and counts overdue periods, and clicking a cell opens that period's edit dialog (`inventory-period-phase.ts`). The list is full-width inside `ListPageShell`, the period cell carries a "Current" badge and an overdue warning icon, and the strip loads **all** periods (`useInventoryPeriodAll`), not just the table page. Backend errors are shown in the toast (FE `6e09a459`).
+
+### Earlier status (re-verified 2026-09-22)
 
 The `/system-admin/inventory-period` screen (`inventory-period-component.tsx` + `inventory-period-dialog.tsx`) is still a **generic CRUD list**: search, status filter, Add / Generate Next / Export / Print, and a row-edit dialog with plain fields — `fiscal_year`, `fiscal_month`, `start_at`, `end_at`, and a **status `<Select>`** offering `open`/`closed`/`locked` directly (`inventory-period-form-schema.ts:17` `z.enum(["open","closed","locked"])`, dialog `:192-207`), submitted like any other field via `PATCH`. Status renders as an icon + label in the list since 2026-08-24 (`26a403d4`). There is still no distinct "Close" / "Lock" / "Reopen" button, confirmation or audit-reason prompt, or "Snapshot" tab anywhere in the component tree. The enum values and posting-guard semantics (§5, §6) are unaffected by the rename — but §6's guard description was corrected this pass after reading `inventory-period.helper.ts`: **`locked` does not block inbound postings; only `closed` does.**
 
@@ -51,8 +60,8 @@ The **footer status bar** of every screen (`components/footer/status-bar.tsx`, F
 
 | Task | Where | Notes |
 |---|---|---|
-| Open the next periods | Inventory Period list → **Generate Next** (`CalendarPlus` button) | `POST api/:bu_code/inventory-periods/next` with `{ count, start_day }` (`types/inventory-period.ts` `GenerateNextInventoryPeriodDto`); `count` must be positive (`COMMON_COUNT_MUST_BE_POSITIVE`); the service starts from the month after the last *open* period, else the last period of any status, else the current month, and creates them as `open` (`inventory-period.service.ts:315-470`) |
-| Change a period's status | Row → **Edit** → **Status** dropdown → Save | Same generic edit dialog as fiscal year/month/dates — picking `closed` or `locked` here is a plain field edit, not a distinct workflow action; `PATCH` requires `doc_version` (`COMMON_DOC_VERSION_REQUIRED`, `:243`) |
+| Open the next periods | Inventory Period list → **Generate Next** (`CalendarPlus` button) | `POST api/:bu_code/inventory-periods/next` with `{ count, start_day }` (`types/inventory-period.ts` `GenerateNextInventoryPeriodDto`); `count` must be positive (`COMMON_COUNT_MUST_BE_POSITIVE`); the service starts from the month after the last *open* period, else the last period of any status, else the current month, and creates them as `open` (`inventory-period.service.ts:510-682`) |
+| Change a period's status | **Not from this screen** — use period end ([inventory/period-end](/en/inventory/period-end)) | The edit dialog still shows a Status dropdown, but a changed value is rejected with `PERIOD_STATUS_VIA_PERIOD_END_ONLY`; `PATCH` requires `doc_version` (`COMMON_DOC_VERSION_REQUIRED`, `:406`) |
 | Find the current period | `GET api/:bu_code/inventory-periods/current` | Earliest period whose status is `open` **or `locked`** (`:478-497`) |
 | View snapshot | ~~Period detail → Snapshot tab~~ | **No such screen exists** — snapshots are costing-engine-internal |
 | Generate close snapshot | Costing engine job | Writes `tb_inventory_period_snapshot` for every (location, product, lot); not triggered from this screen |
@@ -67,14 +76,16 @@ The **footer status bar** of every screen (`components/footer/status-bar.tsx`, F
 | `PERIOD_NOT_FOUND` | Unknown `period_id` | Refresh the list |
 | `period` mismatch with fiscal date | `period != (fiscal_year-2000) * 100 + fiscal_month` | Recompute and fix one value |
 | Roll-forward discrepancy | Closing N ≠ Opening N+1 | Surfaces in `diff_amount`; review snapshot (not visible in any UI — query directly) |
-| Status changed to `closed`/`locked` with no confirmation step | Expected — the edit dialog has no distinct guard for this field | There is no undo screen; re-edit the row back to `open` if this was a mistake |
+| `PERIOD_STATUS_VIA_PERIOD_END_ONLY` after changing the Status dropdown | Status is owned by period end since 2026-09-23 | Leave Status as is; close via period end |
+| `PERIOD_CLOSED_NOT_EDITABLE` / `PERIOD_COUNTING_NOT_EDITABLE` / `PERIOD_CURRENT_NOT_EDITABLE` on edit or delete | The period is closed, has a counting round in progress, or is the current period | Not editable by design; a closed period cannot be reopened here |
+| `PERIOD_BEFORE_CURRENT_NOT_ALLOWED` | New or moved period starts before the current period | Pick a later month |
 | Old bookmark `/system-admin/period` | Route renamed | Client-side redirect to `/system-admin/inventory-period` (`router.tsx:640-643`) |
 | 401 bounce to login right after a deploy | Gateway deployed before platform migration `20260916140000` renamed `tb_application_api.api_name` | Apply the migration; see Rename notice |
 
 ## 4. Edge Cases
 
-- **Status is a plain editable field, not a workflow.** Any user with `system_admin.inventory_period.update` can set any status value directly — there is no separate audit-reason prompt for reopening a closed period.
-- **`locked` is not "closed" to the posting guards.** `OPEN_STATUSES = [open, locked]` in `inventory-period.helper.ts:18`; both `findOpenPeriodForDate` and `findCurrentOpenPeriod` accept `locked`. The only status that blocks postings is `closed`. Treat `locked` as a Finance-facing label with no runtime effect at HEAD.
+- **Status is no longer a plain editable field.** `update()` refuses a changed `status` (`PERIOD_STATUS_VIA_PERIOD_END_ONLY`); only period end writes it. The Status dropdown in the dialog is a front-end leftover.
+- **`locked` is not "closed" to the posting guards.** `OPEN_STATUSES = [open, locked]` in `inventory-period.helper.ts:19`; both `findOpenPeriodForDate` and `findCurrentOpenPeriod` accept `locked`. The only status that blocks postings is `closed`. Treat `locked` as a Finance-facing label with no runtime effect at HEAD.
 - **Last-day membership.** `end_at` is stored as midnight UTC of the last day of the month, so the guard compares day-to-day (`toValidDate` + day normalisation, `:20-42`); a document dated on the last day belongs to that period (a live bug fixed since baseline — every tenant used to report "no open period" on the 31st).
 - **Guard runs where the running number is issued**, not only on create — a draft raised while the period was open and submitted after it closed is rejected at submit (`:167-176`).
 - **Snapshot regeneration.** Re-running close for the same period either overwrites or appends per Finance policy; **append at new `snapshot_at`** is the recommended audit-preserving pattern (costing-engine behaviour, unconfirmed against a UI since none exists here).
@@ -140,7 +151,7 @@ Every route is `KeycloakGuard` + `AppIdGuard('inventoryPeriod.<verb>')`; RBAC re
 
 - **Uniqueness.** Both `period` and `(fiscal_year, fiscal_month)` unique among non-deleted; should agree (`period == (fiscal_year-2000) * 100 + fiscal_month` for 2000-2099).
 - **Date integrity.** `start_at < end_at`; periods contiguous, non-overlapping (Generate Next produces them that way; the edit dialog does not re-check overlap server-side — unconfirmed, no overlap error in the catalog).
-- **Status is a free-form field in the UI, not an enforced state machine.** The edit dialog's status `<Select>` offers all three values unconditionally regardless of the row's current status, and no backend transition guard (e.g. blocking `locked → open`) exists in `inventory-period.service.ts`. Treat `open → closed → locked` as *intended* usage discipline.
+- **Status transitions happen in period end, not in CRUD.** The edit dialog's Status `<Select>` still offers all three values unconditionally, but the service refuses any change (`PERIOD_STATUS_VIA_PERIOD_END_ONLY`), so the dialog cannot reopen or close a month; transition rules live in the period-end service.
 - **Inbound posting guard (GRN, stock-in): the document date must fall inside a period whose status is `open` or `locked`.** `assertDateInOpenPeriod` — `good-received-note.logic.ts:113`, `good-received-note.verify-create.ts`, `stock-in.service.ts:525`.
 - **Outbound posting guard (stock-out, SR issue): the document date must fall inside the *current* period** (earliest still open/locked), deliberately stricter so back-dated issues cannot consume lots in an order the ledger never saw — `assertDateInCurrentPeriod`, `stock-out.service.ts:400,534`, `sr-date.helper.ts`.
 - **`closed` is the only blocking status.** A prior version of this page said "closed/locked"; corrected 2026-09-22.
@@ -159,7 +170,7 @@ Every route is `KeycloakGuard` + `AppIdGuard('inventoryPeriod.<verb>')`; RBAC re
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1223), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `enum_period_status` (line 1342), `tb_inventory_period` (1229-1261), `tb_inventory_period_comment` (1263-1296), `tb_inventory_period_snapshot` (1298-1351).
 - **Migrations:** tenant `20260916141000_rename_tb_period_to_tb_inventory_period`; platform `20260916140000_rename_period_to_inventory_period`, `20260916150000_fix_license_group_item_inventory_period_key`.
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/inventory-periods/inventory-periods.controller.ts` (+ `inventory-periods-legacy.controller.ts` alias).
 - **Service / guards:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/inventory-period/inventory-period.service.ts`; `.../inventory/inventory-period.helper.ts` (`findOpenPeriodForDate`, `findCurrentOpenPeriod`, `assertDateInOpenPeriod`, `assertDateInCurrentPeriod`).
