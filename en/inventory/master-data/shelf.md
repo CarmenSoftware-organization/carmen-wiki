@@ -2,7 +2,7 @@
 title: Shelf
 description: BU-wide shelf master (walk order for counts) assigned per product-location row — added 2026-08, decoupled from location on 2026-08-20.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: master-data, shelf, location, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -38,7 +38,7 @@ So today: **one shelf list per BU, reusable at any location.** The frontend's Lo
 | Same, from the location side | API only — `PATCH /locations/:id` `products.add[] / update[].shelf_id` | The location form's product transfer list has no shelf picker |
 | Clear a shelf assignment | Send `shelf_id: null` on the product-location row | Omit the field to leave it unchanged |
 | See what is on a shelf | `GET /api/config/:bu_code/shelves/:id` | Detail adds `product_count` + `products[]` (`product_code`, `product_name`, `product_local_name`, `product_sku`, `location_code`, `location_name`) sorted by product code (`shelf.helper.ts:16-70`); the list endpoint carries no products |
-| Deactivate | Toggle `is_active` | Hidden from the product form's lookup (`lookup-shelf.tsx:41` filters `is_active`); existing assignments keep their snapshot |
+| Deactivate | Toggle `is_active` | Hidden from the product form's lookup (`components/lookup/lookup-shelf.tsx` now calls the Lookup API, `useLookupResource("location_shelf")`; per its doc comment the endpoint filters active rows itself and skips that filter only for already-selected `?ids=`); existing assignments keep their snapshot |
 | Delete | **Delete** action | **Blocked** while any live `tb_product_location` row references the shelf — one of the few master-data delete guards that actually exists |
 
 ## 3. Validation & Errors

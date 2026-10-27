@@ -2,7 +2,7 @@
 title: Location
 description: Storage and consumption locations classified as inventory, direct, or consignment — drives stock posting and physical-count behaviour.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: master-data, location, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -33,6 +33,7 @@ The same record configures period-end count behaviour (`physical_count_type` = `
 |---|---|---|
 | Add a location | Configuration → Master Data → Location → **New** | Required: `code`, `name`, `location_type` |
 | Tag default delivery point | Location detail | Sets `delivery_point_id` + denormalised `delivery_point_name` |
+| Set the default cost center | Location form → **Cost center** (same row as the delivery point) | Sets `cost_center_id` (nullable UUID, accepted on create and update). It is the **default cost center** for this location's rows in [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping); the list has a **Cost center** column showing `code · name` or a warning-coloured "Not assigned". Not validated against `tb_cost_center` beyond the FK |
 | Set count behaviour | Toggle `physical_count_type` | `no` skips period-end count; spot check still applies |
 | Deactivate | Toggle `is_active` | Hidden from pickers; historical postings preserved |
 | Change `location_type` | Edit dialog | **Not actually blocked** — `update()` accepts a new value with no prior-movement check found (unconfirmed guard, see Edge Cases); doing so after postings exist would still corrupt the meaning of historical reporting |
@@ -103,7 +104,7 @@ sequenceDiagram
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code already in use" | Duplicate `code` among active rows | Pick a different code |
+| `409 LOCATION_ALREADY_EXISTS` — "Location already exists" | Duplicate `code` among active rows (create and update; now an error-catalog code, shown under the **Name** field by the form (`serverFieldErrors: { LOCATION_ALREADY_EXISTS: "name" }`)) | Pick a different code |
 | **Unconfirmed** — no delete or location_type-change guard found | `locations.service.ts`'s `delete()` is an unconditional soft-delete with no non-zero-balance or open-SR/GRN-reference check; `update()` accepts a new `location_type` with no check for prior movement | A prior version of this page asserted "cannot delete — non-zero balance", "cannot delete — referenced by open SR/GRN", and "cannot change location_type after first movement" as enforced server errors — none were found this pass; treat all three as **not enforced** until re-verified |
 | Delivery-point name in reports | `delivery_point_name` snapshot may differ if not kept in sync | Query `delivery_point.name` via join for authoritative value |
 | `404 SHELF_NOT_FOUND` on location update | A `products.add[]` / `products.update[]` entry names a `shelf_id` that does not exist or is soft-deleted (`locations.service.ts` → `resolveShelfAssignments`, `~1290`) | Pick a live shelf from `GET /api/config/:bu_code/shelves`, or send `shelf_id: null` |
@@ -135,20 +136,21 @@ Source: tenant schema.
 | `delivery_point_id` | `String? @db.Uuid` | Yes | Optional FK to `tb_delivery_point`. |
 | `delivery_point_name` | `String? @db.VarChar` | Yes | Denormalised display copy. |
 | `physical_count_type` | `enum_physical_count_type` | No | `no` (default) — skip; `yes` — include. |
-| `department_account_code` | `String? @db.VarChar` | Yes | Free-text accounting code echoed on update (`locations.service.ts` `locationData`); no consumer found in GL code this pass. |
+| `department_account_code` | `String? @db.VarChar` | Yes | Free-text accounting code echoed on update (`locations.service.ts` `locationData`); the 2026-10 migration deliberately did **not** backfill `cost_center_id` from it ("free string, not an FK"). No consumer found. |
+| `cost_center_id` | `String? @db.Uuid` | Yes | FK → `tb_cost_center` (`onDelete: NoAction`, index `location_cost_center_id_idx`), added by `20261014100100_account_mapping`. Default cost center for account mapping. |
 | `is_active` | `Boolean?` | Yes | Active flag. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*`. |
 
-**Constraints:** primary key on `id`. FK on `delivery_point_id` → `tb_delivery_point` `onDelete: NoAction`. Uniqueness on `code` enforced at app layer.
+**Constraints:** primary key on `id`. FK on `delivery_point_id` → `tb_delivery_point` and on `cost_center_id` → `tb_cost_center`, both `onDelete: NoAction`. Uniqueness on `code` enforced at app layer.
 
 `enum_location_type` values: `inventory`, `direct`, `consignment`.
 `enum_physical_count_type` values: `no`, `yes`.
 
 ### 5.2 `tb_location_user` (renamed 2026-09-04)
 
-The user-to-location junction was renamed from `tb_user_location` to `tb_location_user` by migration `20260904131500_rename_shelf_and_user_location` (indexes `location_user_user_id_location_id_u` / `_idx`; columns unchanged: `user_id`, `location_id`, `note`, `info`, `doc_version`, audit). The gateway still exposes it under two paths — `api/config/:bu_code/locations-users` and the older `api/config/:bu_code/user-locations` — and the location detail response still embeds it as `user_location[]` (`common/dto/location/location.serializer.ts:66`), so only the table name moved.
+The user-to-location junction was renamed from `tb_user_location` to `tb_location_user` by migration `20260904131500_rename_shelf_and_user_location` (indexes `location_user_user_id_location_id_u` / `_idx`; columns unchanged: `user_id`, `location_id`, `note`, `info`, `doc_version`, audit). The older `api/config/:bu_code/user-locations` controller was **removed** in the 2026-10 window (`config_user-locations/` is gone); only `api/config/:bu_code/locations-users` remains. The location detail response still embeds the junction as `user_location[]` (`common/dto/location/location.serializer.ts:72`), and now omits soft-deleted user grants and product assignments (`where: { deleted_at: null }`) so the edit form's transfer lists cannot show a deleted row as still assigned.
 
 ### 5.3 Shelf columns on `tb_product_location`
 
@@ -164,6 +166,7 @@ Migration `20260814150000_add_location_shelf` added `shelf_id` (FK → `tb_locat
 - **Delivery-point coupling.** The location form shows the live name from `delivery_point.name` (nested object), so the displayed label is always current. The `delivery_point_name` column is a legacy snapshot field that the UI no longer depends on for display.
 - **Optimistic lock.** Location PATCH carries a `doc_version`; the client must echo the current `doc_version` on save or receive a `409 Conflict`, and the version increments on success. Scope is the `tb_location` header only — junction sub-tables (`tb_location_user`, `tb_product_location`) are not guarded.
 - **Shelf assignment is validated, not free-typed.** Every `shelf_id` in `products.add[]` / `products.update[]` must resolve to a live `tb_location_shelf` row or the whole update fails with `SHELF_NOT_FOUND` (`resolveShelfAssignments`, `master/shelf/shelf.helper.ts:109`); the resolved `code`/`name` are copied onto the junction row by `shelfColumns()`.
+- **Cost center default.** `update()` keeps the stored `cost_center_id` when the field is omitted and clears it when `null` is sent.
 - **Default sort.** `GET /locations` with no `?sort=` returns `code:asc, name:asc, id:asc` (`locations.service.ts`, `withDefaultSort`, 2026-09-13).
 
 ## 7. Cross-References
@@ -174,13 +177,14 @@ Migration `20260814150000_add_location_shelf` added `shelf_id` (FK → `tb_locat
 - [physical-count](/en/inventory/physical-count) — counts scoped to locations with `physical_count_type = yes`.
 - [spot-check](/en/inventory/spot-check) — sessions enumerate locations.
 - [master-data/shelf](/en/inventory/master-data/shelf) — shelf walk order per product-location row.
+- [master-data/cost-center](/en/inventory/master-data/cost-center) and [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) — `cost_center_id` default.
 - [purchase-request](/en/inventory/purchase-request) and [purchase-order](/en/inventory/purchase-order) — detail lines may carry destination location.
 
 ## 8. References
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location` (line ~1354), `tb_location_shelf` (~1441), `tb_location_user` (~5428), `tb_product_location` (~5334), `enum_location_type` (~229), `enum_physical_count_type` (~51).
-- **Migrations:** `20260814150000_add_location_shelf`, `20260904131500_rename_shelf_and_user_location`.
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/locations/locations.service.ts`; gateway `apps/backend-gateway/src/config/config_locations/` (+ `config_locations-users/`, `config_user-locations/`).
+- **Migrations:** `20260814150000_add_location_shelf`, `20260904131500_rename_shelf_and_user_location`, `20261014100100_account_mapping` (`cost_center_id`).
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/locations/locations.service.ts`; gateway `apps/backend-gateway/src/config/config_locations/` (+ `config_locations-users/`; `config_user-locations/` removed).
 - **E2E:** `../carmen-frontend-e2e/tests/080-location.spec.ts` (17 cases) + `docs/test-cases/gaps/080-location-gap.md` (45 uncovered cases).
 - **Frontend:** `../carmen-frontend/routes/config/location/`.
 - **carmen/docs:** `../carmen/docs/settings/locations.md` — wireframes.

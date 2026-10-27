@@ -1,8 +1,8 @@
 ---
 title: Master Data
-description: Business master data referenced by transactional documents — units, departments, locations, shelves, vendors, currencies, tax profiles, chart of accounts, cost centres, and related catalogs.
+description: Business master data referenced by transactional documents — units, departments, locations, shelves, vendors, currencies, tax profiles, chart of accounts, account mapping, cost centres, and related catalogs.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: master-data, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,23 +11,23 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Master Data
 
 > **At a Glance**
-> **Module purpose:** Catalogue of named records (units, vendors, currencies, locations, tax profiles, reason codes) that transactional documents reference via FK + denormalised snapshot &nbsp;·&nbsp; **Audience:** Product Admin, Configurator, Sysadmin &nbsp;·&nbsp; **Key entities/tables:** `tb_unit`, `tb_vendor`, `tb_currency` + `tb_exchange_rate`, `tb_tax_profile`, `tb_location`, `tb_location_shelf`, `tb_chart_of_accounts`, `tb_cost_center` &nbsp;·&nbsp; **Sub-pages:** 17
+> **Module purpose:** Catalogue of named records (units, vendors, currencies, locations, tax profiles, reason codes) that transactional documents reference via FK + denormalised snapshot &nbsp;·&nbsp; **Audience:** Product Admin, Configurator, Sysadmin &nbsp;·&nbsp; **Key entities/tables:** `tb_unit`, `tb_vendor`, `tb_currency` + `tb_exchange_rate`, `tb_tax_profile`, `tb_location`, `tb_location_shelf`, `tb_chart_of_accounts`, `tb_cost_center`, `tb_account_mapping` &nbsp;·&nbsp; **Sub-pages:** 18
 
 ![Master Data screen](/screenshots/master-data/index.png)
 
 ## 1. Overview
 
-Master data is the set of named records that transactional documents *reference* but do not own. Units, departments, locations, shelves, delivery points, business units, currencies, vendors, tax profiles, credit terms, extra-cost types, adjustment types, credit-note reasons, the chart of accounts, and cost centres all live here. (Pricelist templates are a separate entity, owned by the [vendor-pricelist](/en/inventory/vendor-pricelist) module's `vendor-management/price-list-template` route — not part of this module.) Each one is small on its own, and each one is referenced by many transactional rows.
+Master data is the set of named records that transactional documents *reference* but do not own. Units, departments, locations, shelves, delivery points, business units, currencies, vendors, tax profiles, credit terms, extra-cost types, adjustment types, credit-note reasons, the chart of accounts, the GL/AP account mapping, and cost centres all live here. (Pricelist templates are a separate entity, owned by the [vendor-pricelist](/en/inventory/vendor-pricelist) module's `vendor-management/price-list-template` route — not part of this module.) Each one is small on its own, and each one is referenced by many transactional rows.
 
-**A note on scope (re-verified 2026-09-22):** the frontend's actual `/config/*` route tree (`routes/config/`) now has 15 leaf screens — `unit`, `department`, `location`, `shelf`, `delivery-point`, `currency`, `exchange-rate`, `tax-profile`, `credit-term`, `extra-cost`, `adjustment-type`, `credit-note-reason`, `business-type`, `chart-of-accounts`, `chart-of-account-mapping`. Since the 2026-07-29 baseline `certification` moved to `routes/vendor-management/certification` and `eco` moved to `routes/product-management/eco` (frontend commit `ac1e7c56`, 2026-09-03), so they are no longer Configuration screens — see [vendor](/en/inventory/master-data/vendor) § 5.5 and [product/01-data-model](/en/inventory/product/01-data-model) § 2.10 respectively. Three screens/entities were added in the same window and now have sub-pages: [shelf](/en/inventory/master-data/shelf), [chart-of-accounts](/en/inventory/master-data/chart-of-accounts), and [cost-center](/en/inventory/master-data/cost-center) (backend + Bruno only — no `/config/*` route yet). `chart-of-account-mapping` (renamed from "Account Mapping" on 2026-09-20, frontend `11ec09a3`) is a **read-only list that still renders the in-repo mock `coam-mock.ts`** — it has no gateway endpoint; the backend's `LICENSE_ONLY_RESOURCES` map (`permission.route-map.ts:429-432`) says exactly that, and its licence key `configuration.chart_of_account_mapping` is locked at the frontend only. It gets no sub-page until an endpoint exists. Conversely, two of this module's wiki sub-pages — [vendor](/en/inventory/master-data/vendor) and [business-unit](/en/inventory/master-data/business-unit) — document entities whose real UI lives outside `/config/*` (`vendor-management/vendor` and the separate `carmen-backstage` admin app, respectively); they are kept here as cross-references because inventory documents and the costing engine depend on them, not because their screens live under Configuration → Master Data.
+**A note on scope (re-verified 2026-10-27):** the frontend's `/config/*` route tree (`routes/config/`) now has 27 leaf directories, up from 15 in the 2026-09-22 round. The **inventory-relevant** screens are `unit`, `department`, `location`, `shelf`, `delivery-point`, `currency`, `exchange-rate`, `tax-profile`, `credit-term`, `extra-cost`, `adjustment-type`, `credit-note-reason`, `business-type`, `chart-of-accounts`, `chart-of-account-mapping` and `cost-center`; they have sub-pages here. The rest are accounting configuration (GL / AP / AR / asset) and get only a summary row in § 3.5. `certification` and `eco` live outside Configuration (`routes/vendor-management/certification`, `routes/product-management/eco`) - see [vendor](/en/inventory/master-data/vendor) § 5.5 and [product/01-data-model](/en/inventory/product/01-data-model) § 2.10. Changes since 2026-09-22: **chart-of-account-mapping is no longer a read-only mock** - it is backed by `api/:bu_code/account-mapping` and `tb_account_mapping` and decides which GL account and cost center an inventory movement exports against (new sub-page [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping)); **cost center now has frontend screens** (`/config/cost-center`, `/config/cost-center-group`), an optional group, a Carmen GL department import and an in-use delete guard; **locations carry a default `cost_center_id`**; **chart of accounts moved from a dialog to a full-page form**. Conversely, two of this module's wiki sub-pages - [vendor](/en/inventory/master-data/vendor) and [business-unit](/en/inventory/master-data/business-unit) - document entities whose real UI lives outside `/config/*` (`vendor-management/vendor` and the separate `carmen-backstage` admin app, respectively); they are kept here as cross-references because inventory documents and the costing engine depend on them, not because their screens live under Configuration -> Master Data.
 
 Two principles drive how this umbrella is organised. First, **snapshot semantics**: documents store an FK to a master record *and* a denormalised display copy (name, rate, code) so that historical documents render correctly even if the master record is later renamed or inactivated. Second, **soft-delete with active flag**: every entity uses `is_active` + `deleted_at` to retire records without breaking referential integrity, so the standard answer to "delete X" is "inactivate X".
 
-The umbrella spans both Prisma schemas. Most entities live in the **tenant** schema (the per-property data store), but `business-unit` and `currency-iso` are **platform**-level (shared across tenants), and `currency` is mixed — its ISO reference is platform, its enabled-currencies list and dated rates are tenant.
+The umbrella spans both Prisma schemas. Most entities live in the **tenant** schema (the per-property data store), but `business-unit` and `currency-iso` are **backstage-schema** entities (the schema was called "platform" until the 2026-10 rename) (shared across tenants), and `currency` is mixed — its ISO reference is platform, its enabled-currencies list and dated rates are tenant.
 
 ## 2. Audience
 
-Product Admin and Configurator manage these. Sysadmin oversees integration and RBAC, and is the sole owner of `business-unit` and platform-level `currency-iso` configuration.
+Product Admin and Configurator manage these. Sysadmin oversees integration and RBAC, and is the sole owner of `business-unit` and backstage-level `currency-iso` configuration.
 
 ## 3. Entity List
 
@@ -48,8 +48,9 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 | [adjustment-type](/en/inventory/master-data/adjustment-type) | Coded reasons for stock-in / stock-out adjustments | Product Admin |
 | [credit-note-reason](/en/inventory/master-data/credit-note-reason) | Coded reasons for credit notes raised against GRN | Product Admin |
 | [shelf](/en/inventory/master-data/shelf) | BU-wide shelf master (walk order for counts) assigned per product-location | Product Admin |
-| [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) | GL account codes (nature / type / category, file + Carmen GL import) | Sysadmin / Finance |
-| [cost-center](/en/inventory/master-data/cost-center) | Cost-center groups, cost centers, and per-center account allow-list — API only | Sysadmin / Finance |
+| [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) | GL account codes (nature / type / category, account group, dimension rules, file + Carmen GL import) | Sysadmin / Finance |
+| [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) | Per location x item group x movement GL/AP account and cost-center overrides, with resolved defaults from the category tree and the location | Sysadmin / Finance |
+| [cost-center](/en/inventory/master-data/cost-center) | Cost-center groups, cost centers, Carmen GL import, and per-center account allow-list (allow-list API only) | Sysadmin / Finance |
 
 ### 3.1 Added since the 2026-07-29 baseline
 
@@ -57,7 +58,8 @@ Product Admin and Configurator manage these. Sysadmin oversees integration and R
 | ------ | -------------- | --------- | -------------- | ----- | -------- |
 | Shelf | `tb_location_shelf` | `20260814150000_add_location_shelf` → `20260820120000_rename_location_shelf_to_shelf` (drops `location_id`) → `20260904131500_rename_shelf_and_user_location` (back to `tb_location_shelf`) | `api/config/:bu_code/shelves` | `config/location-shelves/*` (6) | `routes/config/shelf/` |
 | Chart of accounts | `tb_chart_of_accounts` + `enum_chart_of_accounts_{nature,type,category,use_in}` | `20260820140000_add_account_code` → `20260827140000_rename_account_code_to_chart_of_accounts` → `20260909170000_gl_core_master` (adds `category`, `is_require_cost_center`, `account_group_id`) | `api/config/:bu_code/chart-of-accounts` (+ `/import`, `/import-from-interface/carmen-gl`) | `config/chart-of-accounts/*` (8) | `routes/config/chart-of-accounts/` |
-| Cost center | `tb_cost_center_group`, `tb_cost_center`, `tb_cost_center_account` | `20260904103000_add_cost_center` | `api/config/:bu_code/cost-center-groups`, `api/config/:bu_code/cost-centers` (+ `PUT :id/accounts`) | `config/cost-center-groups/*` (6), `config/cost-centers/*` (7) | none |
+| Cost center | `tb_cost_center_group`, `tb_cost_center`, `tb_cost_center_account` | `20260904103000_add_cost_center`, `20261016120000_cost_center_group_optional` | `api/config/:bu_code/cost-center-groups`, `api/config/:bu_code/cost-centers` (+ `PUT :id/accounts`, `POST import-from-interface/carmen-gl`) | `config/cost-center-groups/*` (6), `config/cost-centers/*` (7) | `routes/config/cost-center/`, `routes/config/cost-center-group/` |
+| Account mapping | `tb_account_mapping` + `enum_account_mapping_{type,movement,origin}`; `tb_location.cost_center_id` | `20261014100100_account_mapping`, `20261016140000_account_mapping_contra_defaults` | `api/:bu_code/account-mapping` (+ `/review`, `/batch-update`, `/generate`, `/resolve`) | none found | `routes/config/chart-of-account-mapping/` |
 
 ### 3.2 Table renames since the baseline
 
@@ -86,6 +88,20 @@ Every master-data `findAll` now passes its `?sort=` through `withDefaultSort()` 
 
 List and detail responses on the config controllers no longer emit flat `<entity>_id` / `<entity>_name` pairs for their foreign keys; they emit a nested `{ id, name, ... }` object (`@ExpandRefs` / `@Serialize` on the gateway — e.g. exchange-rate rows carry `currency: { id, code, name }`, department detail carries `department_users[].user`, location detail carries `delivery_point`). The frontend types under `types/*.ts` were realigned in the same window (`75244fde`, `b55294b3`, `f8d4026c`). Snapshot columns such as `tb_location.delivery_point_name` still exist in the schema but are no longer what the UI reads.
 
+### 3.5 Other configuration screens (summary)
+
+Screens under `/config/*` that are not inventory master data but sit in the same menu. They get no sub-page; the "Backed by" column says whether the screen reads a real API or an in-repo mock.
+
+| Screen (route) | Purpose | Backed by | Where documented |
+| --- | --- | --- | --- |
+| Account Grouping (`/config/account-grouping`) | Tree editor for `tb_gl_account_group` (create / move / delete groups, assign chart-of-accounts rows to a leaf) | `api/config/:bu_code/gl-account-groups` + `account_group_id` on chart-of-accounts | [general-ledger](/en/inventory/general-ledger); assignment rules in [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) |
+| Dimension (`/config/dimension`) | GL analysis dimensions and their values; per-account `mandatory / optional / prohibited` rules are set on the chart-of-accounts form | `gl-dimensions`, `gl-dimension-values`, `gl-account-dimension-rules` (tenant tables `tb_gl_dimension`, `tb_gl_dimension_value`, `tb_gl_account_dimension_rule`) - used on GL JV, AP and AR lines; **no inventory document reads dimensions** | not documented (out of inventory scope) |
+| GL Period, JV Prefix (`/config/gl-period`, `/config/jv-prefix`) | GL calendar and journal prefixes | `gl-periods`, `gl-jv-prefixes` | [general-ledger](/en/inventory/general-ledger) |
+| Bank Account (`/config/bank-account`) | AP bank accounts | `api/config/:bu_code/bank-accounts` | not documented (AP) |
+| Payment Type, WHT Service Type, WHT Form, Asset Category, Title Master (`/config/payment-type`, `wht-service-type`, `wht-form`, `asset-category`, `title-master`) | AP / asset reference lists | **In-repo mock only** (`mock-config-list.tsx`, `accounting-master-mock.ts`); no gateway endpoint | not documented |
+
+Only Account Mapping and Cost Center / Chart of Accounts affect how inventory movements reach the ledger; the rest do not touch stock, costing or any inventory document.
+
 ## 4. Cross-Module Dependencies
 
 - [purchase-request](/en/inventory/purchase-request) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/department](/en/inventory/master-data/department), [master-data/location](/en/inventory/master-data/location), [master-data/vendor](/en/inventory/master-data/vendor), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [master-data/currency](/en/inventory/master-data/currency), [master-data/exchange-rate](/en/inventory/master-data/exchange-rate).
@@ -100,20 +116,21 @@ List and detail responses on the config controllers no longer emit flat `<entity
 - [vendor-pricelist](/en/inventory/vendor-pricelist) requires [master-data/vendor](/en/inventory/master-data/vendor), [master-data/currency](/en/inventory/master-data/currency), [master-data/tax-profile](/en/inventory/master-data/tax-profile), [templates/price-list](/en/inventory/templates/price-list).
 - [product](/en/inventory/product) requires [master-data/unit](/en/inventory/master-data/unit), [master-data/tax-profile](/en/inventory/master-data/tax-profile).
 - [recipe](/en/inventory/recipe) requires [master-data/unit](/en/inventory/master-data/unit).
+- The accounting export (`GET api/ext/v1/gl-journals`, `GET api/ext/v1/ap-invoices`) resolves GRN / credit-note / adjustment / store-requisition lines through [master-data/chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping), which reads the category-tree account codes ([product/category](/en/inventory/product/category)) and each location's default cost center ([master-data/location](/en/inventory/master-data/location)).
 - [physical-count](/en/inventory/physical-count) and [spot-check](/en/inventory/spot-check) can read [master-data/shelf](/en/inventory/master-data/shelf) walk order via the `shelf_*` columns on `tb_product_location`; no count code was found that sorts by it yet (see the shelf page).
 
 ### 4.1 General-ledger master (pointer only)
 
-The 2026-09-09 `gl_core_master` migration added GL master tables that live under the same `api/config/:bu_code/*` prefix — `gl-account-groups` (`tb_gl_account_group`), `gl-jv-prefixes` (`tb_gl_jv_prefix`), and `gl-periods` (`tb_gl_period`, deliberately separate from `tb_inventory_period`). They are documented in the [general-ledger](/en/inventory/general-ledger) book section, not here; this module only owns the two entities the GL master depends on — [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) (`account_group_id` → `tb_gl_account_group`) and [cost-center](/en/inventory/master-data/cost-center) (the allow-list JV lines are validated against).
+The 2026-09-09 `gl_core_master` migration added GL master tables that live under the same `api/config/:bu_code/*` prefix — `gl-account-groups` (`tb_gl_account_group`), `gl-jv-prefixes` (`tb_gl_jv_prefix`), and `gl-periods` (`tb_gl_period`, deliberately separate from `tb_inventory_period`). They are documented in the [general-ledger](/en/inventory/general-ledger) book section, not here; this module owns the entities the GL master depends on - [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) (`account_group_id` → `tb_gl_account_group`; the account-group tree itself is edited on Account Grouping, § 3.5), [cost-center](/en/inventory/master-data/cost-center) (the allow-list JV lines are validated against), and [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) (inventory movements → accounts, for the accounting export).
 
 ## 5. References
 
 - **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`.
-- **Prisma platform:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`.
-- **Migrations (tenant, since 2026-07-29):** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260820140000_add_account_code`, `20260827140000_rename_account_code_to_chart_of_accounts`, `20260904103000_add_cost_center`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260909170000_gl_core_master`, `20260909203000_add_vendor_tax_branch_rating`, `20260915120000_po_header_delivery_point`.
+- **Prisma backstage (formerly platform):** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`.
+- **Migrations (tenant, since 2026-07-29):** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260820140000_add_account_code`, `20260827140000_rename_account_code_to_chart_of_accounts`, `20260904103000_add_cost_center`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260909170000_gl_core_master`, `20260909203000_add_vendor_tax_branch_rating`, `20260915120000_po_header_delivery_point`, and since 2026-09-22: `20260923060040_accounting_foundation_ap` (tax-profile classification), `20261014100000_account_type_direct`, `20261014100100_account_mapping`, `20261016120000_cost_center_group_optional`, `20261016140000_account_mapping_contra_defaults`.
 - **Default sort:** `../carmen-turborepo-backend/apps/micro-business/src/common/libs/default-sort.ts`; per-entity fallbacks in each `master/<entity>/<entity>.service.ts` `findAll`.
-- **Licence-only resources:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (`LICENSE_ONLY_RESOURCES`, `configuration.chart_of_account_mapping`).
-- **E2E:** `../carmen-frontend-e2e/tests/{010-department,020-unit,029-business-type,030-extra-cost,031-adjustment-type,032-credit-term,040-currency,041-exchange-rate,042-tax-profile,079-delivery-point,080-location,082-chart-of-accounts,083-shelf}.spec.ts` with gap reports under `docs/test-cases/gaps/` and generated user stories under `docs/user-stories/`.
+- **Account-mapping access:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts:98` (`'app:account-mapping': 'configuration.chart_of_account_mapping'`), `seed.permission.data.ts:1027-1037`, `seed.license-feature.data.ts:164`. The earlier `LICENSE_ONLY_RESOURCES` entry no longer applies.
+- **E2E:** `../carmen-frontend-e2e/tests/{010-department,020-unit,029-business-type,030-extra-cost,031-adjustment-type,032-credit-term,040-currency,041-exchange-rate,042-tax-profile,079-delivery-point,080-location,081-chart-of-account-mapping,082-chart-of-accounts,083-shelf}.spec.ts` with gap reports under `docs/test-cases/gaps/` and generated user stories under `docs/user-stories/`.
 - **carmen/docs:** `../carmen/docs/settings/locations.md` (referenced by [master-data/location](/en/inventory/master-data/location) only).
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.
 - **Plan:** `.specs/2026-05-16-master-config-plan.md`.

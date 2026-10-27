@@ -17,7 +17,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 1. What & Who
 
-Currency master data spans **three tables across two schemas**: a **platform ISO reference** (`tb_currency_iso`), a **tenant enabled-currencies catalogue** (`tb_currency`) with a "current" rate cache, and the **tenant dated rate history** (`tb_exchange_rate`). Together they let any priced document be expressed in any currency the tenant has enabled and let the costing engine pick the right rate for the document's date.
+Currency master data spans **three tables across two schemas**: a **backstage-schema ISO reference** (`tb_currency_iso`, formerly the "platform" schema), a **tenant enabled-currencies catalogue** (`tb_currency`) with a "current" rate cache, and the **tenant dated rate history** (`tb_exchange_rate`). Together they let any priced document be expressed in any currency the tenant has enabled and let the costing engine pick the right rate for the document's date.
 
 Each tenant chooses a subset of ISO currencies to enable. The BU's `default_currency_id` (see [master-data/business-unit](/en/inventory/master-data/business-unit)) points to one of these enabled rows. **Maintained by** Sysadmin (ISO seed) and Product Admin (tenant catalogue); **read by** developers on the FX / costing paths and testers on document FX flows.
 
@@ -30,7 +30,7 @@ Each tenant chooses a subset of ISO currencies to enable. The BU's `default_curr
 | Set BU default currency | [master-data/business-unit](/en/inventory/master-data/business-unit) detail | Must reference an active `tb_currency` row |
 | Maintain rates | See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) | Dated history lives there, not on this entity |
 | Deactivate a currency | Toggle `is_active` | Blocked if it is any BU's `default_currency_id` |
-| Seed a new ISO code | Platform DB migration | Tenants cannot write `tb_currency_iso` |
+| Seed a new ISO code | Backstage DB migration | Tenants cannot write `tb_currency_iso` |
 
 The currency list applies a status filter and a text filter before rendering:
 
@@ -72,9 +72,9 @@ flowchart TD
 
 ## 5. Data Model (Dev)
 
-Mixed source: tenant + platform.
+Mixed source: tenant + backstage schema (renamed from "platform" in 2026-10).
 
-### 5.1 `tb_currency_iso` (platform)
+### 5.1 `tb_currency_iso` (backstage schema)
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
@@ -129,7 +129,7 @@ See [master-data/exchange-rate](/en/inventory/master-data/exchange-rate) for the
 ## 8. References
 
 - **Prisma (tenant):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_currency` (line ~561), `tb_exchange_rate` (~769).
-- **Prisma (platform):** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_currency_iso` (line ~323).
+- **Prisma (backstage):** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_currency_iso` (line ~428).
 - **Bruno:** `config/currencies/*`; `master-data/currencies/GET-find-all-iso-master-data-currencies.bru` (ISO list). Note: `master-data/currencies/GET-get-fleet-summary-master-data-currencies.bru` is a misfiled platform request (`/api-system/clusters/summary`) and has nothing to do with currency.
 - **E2E:** `../carmen-frontend-e2e/tests/040-currency.spec.ts` + `docs/test-cases/gaps/040-currency-gap.md`.
 - **Frontend:** `../carmen-frontend/routes/config/currency/`.

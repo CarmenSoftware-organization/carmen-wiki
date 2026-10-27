@@ -2,7 +2,7 @@
 title: Adjustment Type
 description: Coded reasons for stock-in / stock-out adjustments — used by the inventory-adjustment module's manual postings; physical count and spot check do not set it.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ Adjustment types classify *why* a stock balance moves up or down — write-off, 
 
 | Symptom / Message | Cause | Action |
 |---|---|---|
-| "Code already in use" | Duplicate `code` on a non-deleted row | Pick a different code or reactivate the existing row |
+| `ADJUSTMENT_TYPE_ALREADY_EXISTS` (catalog; dialog shows it under **Code**) | Duplicate `code` on a non-deleted row | Pick a different code or reactivate the existing row |
 | "Type required" | Form submitted without `stock_in` / `stock_out` | Pick the direction — the UI filters by it |
 | **Unconfirmed** — no delete guard or type-lock found | A direct read of `adjustment-type.service.ts`'s `delete()` and `update()` this pass found **no** check for existing stock-in/out references before soft-delete, and **no** check preventing `type` from being changed on `update()` — `...data` is spread straight into the Prisma update with only a code-uniqueness check. A prior version of this page asserted both as enforced server errors | Treat "cannot delete — referenced by postings" and "type cannot be changed" as **not enforced** until re-verified; inactivating or retyping a reason already in use will currently succeed |
 
@@ -44,6 +44,7 @@ Adjustment types classify *why* a stock balance moves up or down — write-off, 
 
 - **Direction flip after use is possible today.** No code blocks it — `update()` accepts a new `type` on an already-referenced row. This would corrupt direction-based reporting for existing postings; treat the prior "the system rejects it" claim as unconfirmed.
 - **Deletion of a referenced reason currently succeeds.** `delete()` is an unconditional soft-delete (`is_active: false` + `deleted_at`) with no FK-reference check — historical rows still resolve the name via the (soft-deleted) FK either way.
+- **GL account per adjustment type lives elsewhere.** Which account an adjustment posts to is set per location x item group x adjustment type in [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) (GL tab, `movement = adjustment`), not on this record.
 - **Direction filtering** is at the picker — stock-in screens never see `stock_out` rows and vice versa.
 
 ---
@@ -61,6 +62,7 @@ Source: tenant schema.
 | `name` | `String @db.VarChar` | No | Display name. |
 | `type` | `enum_adjustment_type` | No | `stock_in` or `stock_out`. |
 | `description` | `String? @db.VarChar` | Yes | Free text. |
+| `chart_of_accounts_id` | `String? @db.Uuid` | Yes | Counter-account hint added by `20261016140000_account_mapping_contra_defaults`; **no FK**. Accepted on create/update and validated as an active, postable [chart-of-accounts](/en/inventory/master-data/chart-of-accounts) row (`422 GL_ACCOUNT_NOT_POSTABLE` otherwise). **Nothing reads it:** the account-mapping resolver dropped its adjustment-type fallback (commit `db3544c76`), and the frontend removed the picker again (`bd572120`, "nothing reads it"). Treat as vestigial. |
 | `is_active` | `Boolean?` | Yes | Active flag. |
 | `note`, `info`, `dimension` | — | Yes | Standard metadata. |
 | `doc_version` | `Int` | No | Optimistic-lock version (default `0`). |
@@ -83,6 +85,7 @@ Source: tenant schema.
 
 - [inventory-adjustment](/en/inventory/inventory-adjustment) — every manual Stock-In / Stock-Out line carries an adjustment-type FK; the only module that actually sets it.
 - [physical-count](/en/inventory/physical-count) — its variance rollup creates `tb_stock_in`/`tb_stock_out` rows directly but does **not** set `adjustment_type_id` (confirmed `null` on every row it creates) — no reason code, no link back to this table.
+- [chart-of-account-mapping](/en/inventory/master-data/chart-of-account-mapping) — one GL mapping row per active adjustment type.
 - [spot-check](/en/inventory/spot-check) — its `submit()` does not create `tb_stock_in`/`tb_stock_out` rows at all, so it never references this table.
 
 ## 8. References
