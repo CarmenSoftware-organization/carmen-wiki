@@ -2,7 +2,7 @@
 title: Attachment
 description: File-metadata registry used by every module with uploads — MinIO-backed tb_file_tag in a separate file-service database served by micro-file. The tenant tb_attachment table has zero code references and is dead.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: reporting-audit, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # Attachment
 
 > **At a Glance**
-> **Owner:** Owning module's upload flow &nbsp;·&nbsp; **Table:** `tb_file_tag` — in a **separate `prisma-shared-schema-file` (`CARMEN_FILE`) database**, not the tenant schema &nbsp;·&nbsp; **Storage:** MinIO &nbsp;·&nbsp; **Used by:** every module with file uploads &nbsp;·&nbsp; The tenant schema's `tb_attachment` table is dead — zero non-schema code references.
+> **Owner:** Owning module's upload flow &nbsp;·&nbsp; **Table:** `tb_file_tag` — in a **separate file-service database (Prisma schema in the `micro-file` repo, `CARMEN_FILE`)**, not the tenant schema &nbsp;·&nbsp; **Storage:** MinIO &nbsp;·&nbsp; **Used by:** every module with file uploads &nbsp;·&nbsp; The tenant schema's `tb_attachment` table is dead — zero non-schema code references.
 
 ![Attachment screen](/screenshots/reporting-audit/attachment.png)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 The previous version of this page described `tb_attachment` (tenant schema) as the live, shared file-metadata catalogue, with an S3-backed `s3_token`/`s3_folder` shape and a `doc_version` "re-render counter... incremented on re-render; older versions retained for audit." A repo-wide search of `carmen-turborepo-backend/apps` found **zero references to `tb_attachment` outside its own Prisma model declaration** — no service, controller, repository, or DTO reads or writes it anywhere. `tb_attachment.doc_version` is likewise never incremented or read by any code path; it is inert schema, not a working re-render counter. This mirrors the already-confirmed [system-config/document](/en/inventory/system-config/document) finding for the same table.
 
-The real file-storage path is the **`micro-file`** microservice (`micro-file/src/files/files.service.ts`), which writes to **MinIO** object storage and to **`tb_file_tag`** — a table in a wholly separate `@repo/prisma-shared-schema-file` database (the `CARMEN_FILE` schema), not the tenant or platform schema. This page is corrected to describe that mechanism. See [system-config/document](/en/inventory/system-config/document) for the full admin-screen walkthrough (`/system-admin/document`) — this page focuses on the entity as consumed by other modules.
+The real file-storage path is the **`micro-file`** microservice, which since 2026-10-05 lives in **its own repository** (`../micro-file`; removed from the monorepo in `73c80a0de`, together with `packages/prisma-shared-schema-file`) (`micro-file/src/files/files.service.ts`), which writes to **MinIO** object storage and to **`tb_file_tag`** — a table in a wholly separate database whose Prisma schema is `micro-file/prisma/schema.prisma` (the `CARMEN_FILE` schema), not the tenant or platform schema. This page is corrected to describe that mechanism. See [system-config/document](/en/inventory/system-config/document) for the full admin-screen walkthrough (`/system-admin/document`) — this page focuses on the entity as consumed by other modules.
 
 ## 1. What & Who
 
@@ -27,7 +27,7 @@ The real file registry is `tb_file_tag`, one row per uploaded MinIO object, link
 
 Each `tb_file_tag` row carries the MinIO object key (`object_name`), original file metadata (`original_name`, `content_type`, `size`), and structured/free-form tags (`reference_type`/`reference_id`/`reference_no`, `tags` JSONB) for lookups. There is **no `doc_version`/re-render-versioning column on `tb_file_tag`** — re-uploading a document's PDF is a plain new upload, not a versioned revision of an existing row.
 
-**Maintained by** the owning module's upload flow, via `micro-file`'s RPC commands (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `micro-file/src/files/files.controller.ts`; RPC now runs HTTP-as-RPC, not TCP). *(Spot-checked 2026-09-22: `tb_file_tag` columns, the 3600-second presigned TTL and the `/:filetoken/download` fallback route all match HEAD; the command list above gained `summary` and `uploadLegacy`.)* **Read by** the owning module's detail screens, which resolve each `fileToken` back to a fresh, time-limited MinIO URL.
+**Maintained by** the owning module's upload flow, via `micro-file`'s RPC commands (`Files.upload` / `get` / `info` / `findAll` / `summary` / `delete` / `presignedUrl` / `updateTags` / `uploadLegacy` — `../micro-file/src/files/files.controller.ts`; RPC now runs HTTP-as-RPC, not TCP). *(Spot-checked 2026-09-22: `tb_file_tag` columns, the 3600-second presigned TTL and the `/:filetoken/download` fallback route all match HEAD; the command list above gained `summary` and `uploadLegacy`.)* **Read by** the owning module's detail screens, which resolve each `fileToken` back to a fresh, time-limited MinIO URL.
 
 ### 1.1 File retrieval — the stored URL is never trusted
 
@@ -68,13 +68,13 @@ Comment responses additionally **strip internal author fields** (`user_id`, `use
 - **Delete is hard on storage, soft on the registry row, and never cascades.** `deleteFile()` removes the MinIO object immediately (unrecoverable) and sets `tb_file_tag.deleted_at` on a best-effort basis. The owning document's `attachments` JSONB array is **not** updated — a deleted file's token renders as "missing" on any document still referencing it.
 - **No polymorphic FK — by design.** Linkage is one-directional: the owning table's `attachments` JSONB holds `fileToken`s pointing at `tb_file_tag`; there is no reverse index on `tb_file_tag` back to every owning row.
 - **MIME / size trust.** Both come from the upload request and are not re-verified server-side — do not rely on them for security.
-- **Separate database.** `tb_file_tag` lives in a distinct Postgres database/schema (`CARMEN_FILE`) from both the tenant and platform schemas — cross-schema joins are not possible at the SQL level; resolution is always via the `micro-file` service API.
+- **Separate database.** `tb_file_tag` lives in a distinct Postgres database/schema (`CARMEN_FILE`) from both the tenant and Backstage schemas — cross-schema joins are not possible at the SQL level; resolution is always via the `micro-file` service API.
 
 ---
 
 ## 5. Data Model (Dev)
 
-Source: **separate `prisma-shared-schema-file` database** — not the tenant schema.
+Source: **separate file-service database** (`../micro-file/prisma/schema.prisma`) — not the tenant schema.
 
 ### 5.1 `tb_file_tag` (real metadata registry)
 
@@ -116,7 +116,7 @@ Source: **separate `prisma-shared-schema-file` database** — not the tenant sch
 - **No server-side size or MIME validation** on the underlying upload path (`files.service.ts`'s `uploadFile()`).
 - **Delete is immediate and unrecoverable on MinIO**, best-effort soft-delete on `tb_file_tag`, and never cascades to owning-document `attachments` arrays.
 - **URL lifecycle.** Always re-resolve via the file service — never cache a `fileUrl` across sessions; the presigned URL expires after 1 hour.
-- **Cross-database linkage.** `tb_file_tag` cannot be joined at the SQL level with tenant or platform tables — resolution is always through the `micro-file` service API.
+- **Cross-database linkage.** `tb_file_tag` cannot be joined at the SQL level with tenant or Backstage tables — resolution is always through the `micro-file` service API.
 
 ## 7. Cross-References
 
@@ -128,7 +128,7 @@ Source: **separate `prisma-shared-schema-file` database** — not the tenant sch
 
 ## 8. References
 
-- **Prisma (file schema — the real registry):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49).
-- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (line ~4790).
+- **Prisma (file schema — the real registry):** `../micro-file/prisma/schema.prisma` — `tb_file_tag` (`:21-51`; moved out of the monorepo on 2026-10-05).
+- **Prisma (tenant schema — dead table, for contrast):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (line ~5570).
 - **Backend gateway (proxy layer):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` (`GET :filetoken/download` fallback) + `.service.ts` — forwards to the `FILE_SERVICE` microservice over `Files.*` RPC commands (HTTP-as-RPC).
-- **Backend file microservice (actual storage + registry):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD.
+- **Backend file microservice (actual storage + registry):** `../micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD; also serves `api/files/{upload,list,info/:filetoken,download/:filetoken,presigned-url/:filetoken}` and `DELETE api/files/:filetoken` over HTTP besides the `Files.*` command handlers. The command definitions are the external contract package `@repo/file-contract` (`../carmen-turborepo-backend/packages/file-contract`, split from `rpc-contract` in `8b4dd9e75`, 2026-10-05).
