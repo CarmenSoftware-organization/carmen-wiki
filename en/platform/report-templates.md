@@ -1,6 +1,6 @@
 ---
 title: Report Templates
-description: XML-based report template catalogue with a tabbed Dialog/Content/Export XML/Preview editor (drag-and-drop Dialog layout editor), database source binding, EN/TH names, business-unit and costing-method scoping, run/export switches, version history with restore, JSON backup/import, and per-report-group default form templates.
+description: XML report template catalogue: tabbed Dialog/Content/Export XML/Preview editor, source binding, EN/TH names, BU and costing-method scope, run/export switches, version history, and JSON backup/import.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: platform/report-templates, carmen-software

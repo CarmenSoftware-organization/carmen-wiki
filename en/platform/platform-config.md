@@ -1,6 +1,6 @@
 ---
 title: Platform Config
-description: One screen, eleven cards, ten config keys — invitations, sign-up, legacy email verification, password reset, internal notification email, license enforcement, expiry-warning thresholds, Google sign-in switches, the external API root URL, and the Backstage migration API switch.
+description: One screen, eleven cards, ten config keys: invitations, sign-up, email verification, password reset, notification email, license enforcement, expiry thresholds, Google sign-in, external API URL, migration API switch.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: book/platform, platform-config

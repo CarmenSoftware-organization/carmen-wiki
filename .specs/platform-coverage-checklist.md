@@ -15,7 +15,7 @@ instead, and content there counts toward whichever axis it serves. Symbols:
 ✅ complete · 🟡 partial/stub · ⬜ missing · — axis not applicable to this row.
 Tracks the **EN locale** (canonical); TH state is summarized in "Locale coverage."
 
-## Summary (full rewrite as of 2026-09-06 against carmen-platform HEAD `157a65e`; **incrementally updated 2026-09-22 against HEAD `f1c69f1`, 2026-09-22 12:32:33 +0700** — 20 commits / 78 files of SPA drift folded in, rows 2.12–2.13, 9.10–9.11, 10.9–10.10, 16.7–16.8 added, several existing rows re-worded; EN only, TH deferred)
+## Summary (full rewrite as of 2026-09-06 against carmen-platform HEAD `157a65e`; **incrementally updated 2026-09-22 against HEAD `f1c69f1`, 2026-09-22 12:32:33 +0700** — 20 commits / 78 files of SPA drift folded in, rows 2.12–2.13, 9.10–9.11, 10.9–10.10, 16.7–16.8 added, several existing rows re-worded; EN only, TH deferred; **incrementally updated again 2026-10-27 against carmen-backstage HEAD `8405788f`** — see the 2026-10-27 note below; the SPA was renamed carmen-platform → carmen-backstage in between)
 
 This replaces the 2026-06-11-dated summary and its 2026-09-05 interim patch
 (86 → 78 sub-processes). Both prior numbers measured a June snapshot of the SPA
@@ -29,41 +29,44 @@ counted" below for method and the arithmetic reconciliation.
 | Module | Sub-processes | Done | Partial | Not yet | % rows ✅ (sampled check) |
 |--------|--------------:|-----:|--------:|--------:|-----------:|
 | **Table A — modules with a sub-page folder** | | | | | |
-| Clusters | 10 | 10 | 0 | 0 | 100% |
-| Business Units | 13 | 13 | 0 | 0 | 100% |
-| Users | 10 | 10 | 0 | 0 | 100% |
-| Platform RBAC | 8 | 8 | 0 | 0 | 100% |
-| Applications | 9 | 9 | 0 | 0 | 100% |
+| Clusters | 12 | 12 | 0 | 0 | 100% |
+| Business Units | 15 | 15 | 0 | 0 | 100% |
+| Users | 11 | 11 | 0 | 0 | 100% |
+| Platform RBAC | 10 | 10 | 0 | 0 | 100% |
+| Applications | 11 | 11 | 0 | 0 | 100% |
 | Broadcasts | 12 | 12 | 0 | 0 | 100% |
 | News | 10 | 10 | 0 | 0 | 100% |
-| Report Templates | 11 | 11 | 0 | 0 | 100% |
-| Licenses | 11 | 11 | 0 | 0 | 100% |
+| Report Templates | 18 | 18 | 0 | 0 | 100% |
+| Dashboard Templates | 7 | 7 | 0 | 0 | 100% |
+| Licenses | 14 | 14 | 0 | 0 | 100% |
 | License Catalog | 10 | 10 | 0 | 0 | 100% |
 | Cluster Admin | 8 | 8 | 0 | 0 | 100% |
-| Platform Config | 9 | 9 | 0 | 0 | 100% |
+| Platform Config | 11 | 11 | 0 | 0 | 100% |
 | Email Settings | 6 | 6 | 0 | 0 | 100% |
 | User Platform | 6 | 6 | 0 | 0 | 100% |
 | Feature Flags | 6 | 6 | 0 | 0 | 100% |
-| Tenant Migrations | 8 | 8 | 0 | 0 | 100% |
+| AI Providers | 6 | 6 | 0 | 0 | 100% |
+| Tenant Migrations | 9 | 9 | 0 | 0 | 100% |
+| Tenant Seed | 7 | 7 | 0 | 0 | 100% |
 | Tenant Imports | 7 | 7 | 0 | 0 | 100% |
 | Activity Events | 6 | 6 | 0 | 0 | 100% |
 | Database Pools | 7 | 7 | 0 | 0 | 100% |
-| Cronjobs | 8 | 8 | 0 | 0 | 100% |
-| **Table A subtotal** | **175** | **175** | **0** | **0** | **100%** |
+| Cronjobs | 10 | 10 | 0 | 0 | 100% |
+| **Table A subtotal** | **219** | **219** | **0** | **0** | **100%** |
 | **Table B — landing-only modules** | | | | | |
 | Platform Migrations | 7 | 7 | 0 | 0 | 100% |
 | Report Form Groups | 6 | 6 | 0 | 0 | 100% |
-| Super Admins | 6 | 6 | 0 | 0 | 100% |
+| Super Admins | 7 | 7 | 0 | 0 | 100% |
 | Usage Analytics | 7 | 7 | 0 | 0 | 100% |
-| **Table B subtotal** | **26** | **26** | **0** | **0** | **100%** |
+| **Table B subtotal** | **27** | **27** | **0** | **0** | **100%** |
 | **Table C — standalone pages (not modules)** | | | | | |
 | Changelog | 3 | 3 | 0 | 0 | 100% |
-| Dashboard | 3 | 3 | 0 | 0 | 100% |
+| Dashboard | 4 | 4 | 0 | 0 | 100% |
 | Landing | 3 | 3 | 0 | 0 | 100% |
-| Profile | 3 | 3 | 0 | 0 | 100% |
+| Profile | 5 | 5 | 0 | 0 | 100% |
 | SQL Workbench | 6 | 6 | 0 | 0 | 100% |
-| **Table C subtotal** | **18** | **18** | **0** | **0** | **100%** |
-| **Project total** | **219** | **219** | **0** | **0** | **100%** |
+| **Table C subtotal** | **21** | **21** | **0** | **0** | **100%** |
+| **Project total** | **267** | **267** | **0** | **0** | **100%** |
 
 **Read the 100% figures above as a full enumeration, checked on a sample:**
 every one of the 211 rows was enumerated from the current pages and given a
@@ -74,7 +77,7 @@ that all 211 rows were individually re-verified this pass. See "Depth of
 verification" under "How this was counted," immediately below, for the exact
 file list and what "checked at header level" did and did not confirm.
 
-Arithmetic check: 175 + 26 + 18 = 219 (was 167 + 26 + 18 = 211 before the 2026-09-22 update), matching the "Project total" row; each
+Arithmetic check: 219 + 27 + 21 = **267** (2026-10-27; was 175 + 26 + 18 = 219 after the 2026-09-22 update and 167 + 26 + 18 = 211 before it), matching the "Project total" row; each
 module's own Done+Partial+Not-yet also sums to its own Sub-processes count. No
 `print-template-mapping` row appears anywhere in this file — the module was
 deleted from the product on 2026-07-24 (`de11377`) and its wiki page removed in
@@ -82,6 +85,29 @@ this plan's Task 11; its historical replacement (`is_default`/`template_type` on
 `tb_report_template`, plus this book's own [Report Form Groups](/en/platform/report-form-groups)
 module) is covered under Report Templates row 11 and the Report Form Groups
 Table B rows.
+
+### 2026-10-27 incremental update (carmen-backstage `8405788f`, carmen-turborepo-backend `c9d788829`)
+
+Source HEADs: **carmen-backstage `8405788f`** (baseline: carmen-platform `f1c69f1`) and **carmen-turborepo-backend `c9d788829`** (baseline `ef4d6f08f`), 2026-10-27. Between the two baselines the product was renamed platform → backstage (backend `e0eaeff61`, SPA `318949a3`): routes moved `/platform/*` → `/backstage/*`, permission keys `platform_*` → `backstage_*`, "Platform Config" → "Backstage Config", "Platform Migrations" → "Backstage Migrations". Module names in this file keep their original headings so existing cross-references stay valid; the wiki pages themselves carry the new names.
+
+**Previous totals, kept as history:** 219 (2026-09-22: A 175 + B 26 + C 18) · 211 (2026-09-06) · 86 → 78 (June / 2026-09-05 interim). **New total: 267** (A 219 + B 27 + C 21), all ✅.
+
+| Change | Rows |
+|--------|-----:|
+| 3 new Table A modules (AI Providers 6, Dashboard Templates 7, Tenant Seed 7) | +20 |
+| Existing Table A modules: Clusters +2, Business Units +2, Users +1, Platform RBAC +2, Applications +2, Report Templates +7, Licenses +3, Platform Config +2, Tenant Migrations +1, Cronjobs +2 | +24 |
+| Table B: Super Admins +1 | +1 |
+| Table C: Dashboard +1, Profile +2 | +3 |
+| **Total added** | **+48** |
+
+Arithmetic: 175 + 20 + 24 = 219 (Table A) · 26 + 1 = 27 (Table B) · 18 + 3 = 21 (Table C) · 219 + 27 + 21 = **267** = 219 (previous total) + 48.
+Done 267 · Partial 0 · Not yet 0 → 267 / 267 = **100%**.
+
+Book size, re-measured from the filesystem: `find en/platform -name '*.md' | wc -l` = **84** (was 74); 32 top-level pages (29 + 3 new) = 23 modules with a sub-page folder + 4 landing-only modules + 5 standalone pages; 52 sub-pages (45 + 7). `th/platform` still holds 74 files, so the three new modules are EN-only (see "Locale coverage").
+
+Re-worded in place (no row added): Platform Migrations row 3 (`seed-report-template-upload` dropped — 8 seeds, not 9), Cluster Admin row 6 (Seats / Modules / Interface sub-tabs), License Catalog row 10 (112 rows / 13 root areas, new `ai` root), Email Settings row 5 (`notification` flow goes through micro-notification `POST /v1/emails`). The "Dashboard hub + Landing page" gaps listed in the pre-September summary are closed: Table C Dashboard and Landing rows are ✅ against the current `dashboard.md` (home hub, §2–§5) and `landing.md` (§2–§5).
+
+Verification depth for this update: the three new modules' landing and `ui-screens` pages were read in full (plus `dashboard-templates/lifecycle` §6 and `ai-providers/data-model` §2.2); every other added row was confirmed by locating the matching section in the cited `en/platform/` page and reading it. The "19 of 74 files read in full" caveat from 2026-09-06 still applies to every row this update did not touch.
 
 ### How this was counted
 
@@ -139,6 +165,9 @@ Table B rows.
   the backend at HEAD `937cf5ac4` (2026-09-06, as cited throughout the pages
   themselves). New SPA features add rows here; this file is due for another
   pass whenever either HEAD moves meaningfully.
+- **2026-10-27 update** re-based the file on carmen-backstage `8405788f` and
+  carmen-turborepo-backend `c9d788829` (see the dated note under Summary). The
+  `157a65e` / `937cf5ac4` HEADs above are the 2026-09-06 baseline.
 
 ## Source mapping
 
@@ -156,7 +185,7 @@ Table B rows.
 | license-catalog | `/license-features`, `/license-feature-groups[...]` | `LicenseCatalog` (2 tabs), `LicenseFeatureGroupEdit` | `license_feature.read`/`.manage`; `license_feature_group.read`/`.manage` | `license_features`, `license_feature_groups` | none |
 | cluster-admin | `/cluster-admin[...]` (6 sub-routes) | `ClusterAdminEntry`, `ClusterProfile`, `BusinessUnitList`, `BusinessUnitForm`, `ClusterUsers`, `ClusterAdminLicenses` | none — membership via `isClusterAdminOf`, no RBAC key | `cluster_admin_cluster`/`_business_units`/`_licenses`/`_users` | none |
 | platform-config | `/platform/configs` | `PlatformConfigManagement` | `platform_config.read`/`.manage` (+ `license.manage` and super-admin for 2 of 9 cards) | `platform_config` | none |
-| email-settings | `/platform/email-settings` | `EmailSettingManagement` | `email_setting.read`/`.manage` (Routing card also needs `platform_config.*`) | `email_settings` | none |
+| email-settings | `/platform/email-settings` | `EmailSettingManagement` | `email_setting.read`/`.manage` (Routing card also needs `platform_config.*`) | `email_settings` | smoke only (stale `/platform/...` path) |
 | user-platform | `/platform/user-platform[...]` | `UserPlatformManagement`, `UserPlatformEdit` | `user_platform.read`/`.manage` (detail page also depends on Users' `user.read`) | `user_platform` | `user-platform` |
 | super-admins | `/platform/super-admins` | `SuperAdminManagement` | none — `superAdminOnly: true`, no permission string | `super_admins` | `super-admins` (fixture-level failure, pre-dates the 2026-09-02 rewrite) |
 | feature-flags | `/platform/features` | `FeatureFlagManagement` | `feature_flag.manage` (nav; no separate `.read`) | none (deliberately ungated) | none |
@@ -164,15 +193,20 @@ Table B rows.
 | tenant-imports | `/tenant-imports` | `TenantImportWizard` | `data_import.manage` (nav; no separate `.read`) | `tenant_imports` | none |
 | usage-analytics | `/analytics` | `UsageAnalytics`, `StatCards`, `TopList`, `UsageChart` | `activity_event.read` (nav) + `.detail` (drill-down) | `usage_analytics` | none |
 | activity-events | `/activity-events` | `ActivityEventManagement`, `EventDetailSheet` | `activity_event.detail` (nav) | `activity_events` | none |
-| platform-migrations | `/platform/migrations` | `PlatformMigrationManagement`, `OpRow`, `RunConsole` | none — `superAdminOnly: true`, or deploy-token at the backend | `platform_migrations` | none |
-| database-pools | `/platform/database-pools[...]` | `DatabasePoolManagement`, `DatabasePoolEdit` | `database_pool.read`/`.manage` | `database_pools` | none |
-| cronjobs | `/cronjobs[...]` | `CronJobManagement`, `CronJobEdit` | `cronjob.read`/`.manage` | `cronjobs` | none |
-| report-form-groups | `/report-form-groups` | `ReportFormGroupManagement`, `GroupCard` | `report_template.read`/`.create`/`.update` (reused; no dedicated key) | `report_form_groups` | none |
-| sql-workbench | `/sql-workbench` | `SqlWorkbench` | `sql_workbench.read`/`.manage` | `sql_workbench` | none |
+| platform-migrations | `/platform/migrations` | `PlatformMigrationManagement`, `OpRow`, `RunConsole` | none — `superAdminOnly: true`, or deploy-token at the backend | `platform_migrations` | smoke only (stale `/platform/...` paths) |
+| database-pools | `/platform/database-pools[...]` | `DatabasePoolManagement`, `DatabasePoolEdit` | `database_pool.read`/`.manage` | `database_pools` | smoke only (stale `/platform/...` path) |
+| cronjobs | `/cronjobs[...]` | `CronJobManagement`, `CronJobEdit` | `cronjob.read`/`.manage` | `cronjobs` | smoke only |
+| report-form-groups | `/report-form-groups` | `ReportFormGroupManagement`, `GroupCard` | `report_template.read`/`.create`/`.update` (reused; no dedicated key) | `report_form_groups` | smoke only (page renders; sidebar link) |
+| sql-workbench | `/sql-workbench` | `SqlWorkbench` | `sql_workbench.read`/`.manage` | `sql_workbench` | smoke only |
 | dashboard | `/dashboard` | `Dashboard` | none — visible to anyone with platform authority | none | `dashboard` |
 | landing | `/` | `Landing` | none — public route | none | `landing` |
 | profile | `/profile` (shared with `/cluster-admin/:clusterId/profile`) | `Profile` | none — acts on the caller's own account | none | `profile` |
 | changelog | `/changelog` | `Changelog` | none — public route | none | `changelog` |
+| ai-providers | `/purchase-request-ai-providers` (old `/ai-providers` redirects) | `AiProviderManagement`, `AiProviderEditDialog` | `ai_provider.read`/`.create`/`.update`/`.delete` | `ai_providers` | none |
+| dashboard-templates | `/dashboard-templates` (System / BU default / Deploy tabs) | `TemplateListPanel`, `TemplateEditDialog`, `DeployPanel` | `dashboard_template.read`/`.create`/`.update`/`.delete`/`.deploy` | see page | none |
+| tenant-seed | `/tenant-seeds` | `TenantSeedManagement`, `SeedFleetSummary`, `SeedSetPickerDialog` | `tenant_seed.read`/`.apply` (+ kill switch `TENANT_MIGRATION_API_ENABLED`) | `tenant_seeds` | none |
+
+2026-10-27 note: since the platform → backstage rename the `/platform/...` routes, `platform_*` keys and `PlatformXxx` component names in the rows above are the pre-rename spellings; the SPA now serves `/backstage/...` (with a `/platform/*` redirect), uses `backstage_*` keys and `Backstage*` components. The wiki pages carry the current names.
 
 ## Table A — Modules with a sub-page folder
 
@@ -190,6 +224,8 @@ Table B rows.
 | 8 | Add BU from cluster page (`?cluster_id=` preselect) | — | ✅ | ✅ | ✅ Done | [UI §4.3](/en/platform/clusters/ui-screens) |
 | 9 | View History (`activity_log.read`) — cross-cutting, new since June baseline | — | ✅ | ✅ | ✅ Done | [PERM §8](/en/platform/clusters/permissions) |
 | 10 | Platform-authority resolution layer + audit columns (`everEdited` precedence) | ✅ | ✅ | ✅ | ✅ Done | [PERM §5](/en/platform/clusters/permissions) |
+| 11 | Notes tab — internal staff timeline, up to 5 files per note (10 MB each), edit / soft-delete / restore, files panel (new 2026-10-26) | ✅ | ✅ | ✅ | ✅ Done | [UI §4.6](/en/platform/clusters/ui-screens) |
+| 12 | Users tab seat **Release / Restore** (`SeatActions`; no RBAC key — super admin or cluster admin; `seat.released` / `seat.restored` audit events) | — | ✅ | ✅ | ✅ Done | [UI §4.4](/en/platform/clusters/ui-screens), [Landing](/en/platform/clusters) |
 
 ### 2. Business Units — `en/platform/business-units/{data-model,tenant-migrations,ui-screens}.md`
 
@@ -208,6 +244,8 @@ Table B rows.
 | 11 | Audit columns + View History (`activity_log.read`) | ✅ | ✅ | ✅ | ✅ Done | [UI §2.5](/en/platform/business-units/ui-screens) |
 | 12 | Interface Entitlement card removed (PR #286, 2026-09-08) — entitlement moved to `interface`-kind licence groups; Technical tab now holds two advanced cards, and the migration card gained an error panel + Resolve (PR #297) | ✅ | ✅ | ✅ | ✅ Done | [UI §4.5](/en/platform/business-units/ui-screens) |
 | 13 | List: stored-page snap-back when `page_business_units` is out of range (`outOfRangePage`, PR #298) + in-memory sortable headers on the Users card / Configuration section (PR #292) | — | ✅ | — | ✅ Done | [UI §2.1, §4.4, §4.6](/en/platform/business-units/ui-screens) |
+| 14 | Notes tab (7th tab) — staff-only notes + file attachments, `tb_business_unit_note`, `bu_note.view` / `bu_note.manage`, never shown to tenants (new 2026-10-26) | ✅ | ✅ | ✅ | ✅ Done | [UI §4.8](/en/platform/business-units/ui-screens), [DM §2.6](/en/platform/business-units/data-model) |
+| 15 | Attachment policy section on the Technical tab (`attachment.allowed_types` / `attachment.max_size_mb` stored as `config[]` rows; tenant-side writes of `attachment.*` keys rejected) | ✅ | ✅ | — | ✅ Done | [UI §4.4](/en/platform/business-units/ui-screens), [Landing](/en/platform/business-units) |
 
 ### 3. Users — `en/platform/users/{data-model,lifecycle,ui-screens}.md`
 
@@ -223,6 +261,7 @@ Table B rows.
 | 8 | Bulk soft delete / bulk hard delete (super-admin only) — new | ✅ | ✅ | ✅ | ✅ Done | [Lifecycle §5.3](/en/platform/users/lifecycle) |
 | 9 | Login gate / effective permissions resolution | ✅ | — | ✅ | ✅ Done | [DM §5](/en/platform/users/data-model) |
 | 10 | Audit columns + View History (`activity_log.read`) | ✅ | ✅ | ✅ | ✅ Done | [UI §2.5](/en/platform/users/ui-screens) |
+| 11 | MCP tokens card (`UserMcpTokensCard`) + admin **Revoke all MCP tokens** (`user.update`; offboarding step) — new 2026-10-14 | ✅ | ✅ | ✅ | ✅ Done | [UI §4.3](/en/platform/users/ui-screens), [Lifecycle §8](/en/platform/users/lifecycle) |
 
 ### 4. Platform RBAC — `en/platform/rbac/{data-model,permissions,ui-screens}.md`
 
@@ -241,6 +280,8 @@ modules below, not repeated here.
 | 6 | Effective permissions + `checkPermission` resolution walkthrough | ✅ | — | ✅ | ✅ Done | [PERM §4](/en/platform/rbac/permissions) |
 | 7 | Bootstrap exception (user count ≤ 1) | — | — | ✅ | ✅ Done | [PERM §5](/en/platform/rbac/permissions) |
 | 8 | Gate composition (route/sidebar/`<Can>`) incl. legacy migration | — | — | ✅ | ✅ Done | [PERM §3](/en/platform/rbac/permissions) |
+| 9 | Access-shape strip (`AccessShapeStrip` in `RoleIdentityHero` — one tick per catalog resource, grouped by menu section) | — | ✅ | — | ✅ Done | [UI §2.6](/en/platform/rbac/ui-screens) |
+| 10 | Escalation marking — granted `backstage_role.create` / `.update` and `user_backstage.manage` chips render amber (`ESCALATION_KEYS`) | — | ✅ | ✅ | ✅ Done | [UI §2.6](/en/platform/rbac/ui-screens) |
 
 ### 5. Applications — `en/platform/applications/{data-model,permissions,ui-screens}.md`
 
@@ -255,6 +296,8 @@ modules below, not repeated here.
 | 7 | View History (`activity_log.read`) — new since June baseline | — | ✅ | ✅ | ✅ Done | [PERM §2](/en/platform/applications/permissions) |
 | 8 | Runtime enforcement: `AppIdGuard` + allowlist refresh | ✅ | — | ✅ | ✅ Done | [PERM §3](/en/platform/applications/permissions) |
 | 9 | Audit precedence via shared `auditColumns()`/`normalizeAudit()` | ✅ | ✅ | — | ✅ Done | [UI §2.3](/en/platform/applications/ui-screens) |
+| 10 | Live controls: service-status filter/control (Running / Maintenance / Read-only / Disabled) and bypass users | ✅ | ✅ | ✅ | ✅ Done | [Landing §1.1](/en/platform/applications), [UI §3.5](/en/platform/applications/ui-screens) |
+| 11 | App secret card — generate / rotate / reveal (masked `cas_` stub) + require-secret switch (`application.secret.manage`; `AppIdGuard` enforcement) | ✅ | ✅ | ✅ | ✅ Done | [Landing §1.1](/en/platform/applications), [UI §3.5](/en/platform/applications/ui-screens) |
 
 ### 6. Broadcasts — `en/platform/broadcasts/{data-model,permissions,ui-screens}.md`
 
@@ -307,6 +350,28 @@ following an August notification redesign.
 | 9 | Permission gates (`report_template.*`; empty-state Add is gated, not merely disabled) | — | — | ✅ | ✅ Done | [PERM §7](/en/platform/report-templates/permissions) |
 | 10 | Historical relation to the removed Print Template Mapping module | ✅ | — | — | ✅ Done | [Landing §3](/en/platform/report-templates) |
 | 11 | `report-form-groups` sub-page vs. the new top-level module (cross-reference) | — | ✅ | — | ✅ Done | [Form Groups sub-page](/en/platform/report-templates/form-groups) |
+| 12 | Export XML tab (`export_xml`, `.xml`/`.txt` upload, non-blocking validation notes) — added 2026-10 | ✅ | ✅ | — | ✅ Done | [UI §4.7](/en/platform/report-templates/ui-screens) |
+| 13 | Dialog layout editor (Preview tab, edit mode on wide screens; `@dnd-kit` drag columns / ColSpan) | — | ✅ | — | ✅ Done | [UI §4.8](/en/platform/report-templates/ui-screens) |
+| 14 | XML versions sheet + restore (`tb_report_template_version`) | ✅ | ✅ | ✅ | ✅ Done | [UI §5.3](/en/platform/report-templates/ui-screens), [DM §2.2](/en/platform/report-templates/data-model) |
+| 15 | JSON **Backup all** / selected-row backup download + **Import** dialog (`report_template.create`) | — | ✅ | ✅ | ✅ Done | [UI §2.3–2.4, §5.4–5.5](/en/platform/report-templates/ui-screens) |
+| 16 | Availability scope: costing-method filter (`calculation_methods`: `average` / `fifo` / `average_per_location`) + run / export switches (`allow_run`, `allow_export`, list templates only) | ✅ | ✅ | — | ✅ Done | [Landing §3](/en/platform/report-templates), [DM §2.1](/en/platform/report-templates/data-model) |
+| 17 | EN/TH names (`name_i18n`, `description_i18n`; `name_th` field) | ✅ | ✅ | — | ✅ Done | [UI §4.1](/en/platform/report-templates/ui-screens), [DM §2.1](/en/platform/report-templates/data-model) |
+| 18 | Source lineage strip under the page title (`SourceLineage`: Dialog fields → source → builder; absent in create mode) | — | ✅ | — | ✅ Done | [UI §4](/en/platform/report-templates/ui-screens) |
+
+### 25. Dashboard Templates — `en/platform/dashboard-templates/{data-model,lifecycle,ui-screens}.md`
+
+Section numbers 25–27 are append-only IDs (numbers 1–24 stay stable for cross-references); the three new modules sit at their Backstage-SPA nav position, not at their number. Dashboard Templates is a Content-group module; it sits after Report Templates here because Report Form Groups, its nav neighbour, lives in Table B.
+
+| # | Sub-process | DM | UI | PERM | Status | Doc link |
+|---|-------------|----|----|------|--------|----------|
+| 1 | System tab — `TemplateListPanel` (module picker, widget table, live-read system widgets, 60 s gateway cache) | ✅ | ✅ | ✅ | ✅ Done | [UI §2](/en/platform/dashboard-templates/ui-screens), [Landing §2, §3.2](/en/platform/dashboard-templates) |
+| 2 | BU default tab — starter board incl. **Main** (`module: null`); allow/deny BU lists rejected on `bu_default` | ✅ | ✅ | ✅ | ✅ Done | [UI §2](/en/platform/dashboard-templates/ui-screens), [Landing §3.1–3.2](/en/platform/dashboard-templates) |
+| 3 | Widget dialog (`TemplateEditDialog`) — dataset / widget type / EN-TH titles / params / BU lists / Active; catalog validation (422) | ✅ | ✅ | ✅ | ✅ Done | [UI §3–4](/en/platform/dashboard-templates/ui-screens), [Landing §3.2–3.3](/en/platform/dashboard-templates) |
+| 4 | Reorder (arrows swap neighbours; whole module renumbered 10, 20, 30…) | ✅ | ✅ | ✅ | ✅ Done | [Lifecycle §4](/en/platform/dashboard-templates/lifecycle) |
+| 5 | Deploy tab — per-BU status (`never` / `customized` / `outdated` / `current`), modes `skip_customized` vs `overwrite`, type-`OVERWRITE` confirm, 409 on version drift | ✅ | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/dashboard-templates/ui-screens), [Lifecycle §6](/en/platform/dashboard-templates/lifecycle) |
+| 6 | Global BU-default version counter (`tb_dashboard_bu_default_version`; bumped by every BU-default write, shown as a version badge) | ✅ | ✅ | — | ✅ Done | [DM §2.2](/en/platform/dashboard-templates/data-model), [UI §2.1](/en/platform/dashboard-templates/ui-screens) |
+| 7 | Permission gates (`dashboard_template.read` / `.create` / `.update` / `.delete` / `.deploy`; backstage-wide guard on writes; default roles) | — | ✅ | ✅ | ✅ Done | [Landing §5](/en/platform/dashboard-templates) |
+
 
 ### 9. Licenses — `en/platform/licenses/{data-model,permissions,ui-screens}.md`
 
@@ -323,6 +388,9 @@ following an August notification redesign.
 | 9 | Permission gates (`subscription.read`/`.manage`; two purchase-form routes need only `.read`) | — | — | ✅ | ✅ Done | [PERM §3](/en/platform/licenses/permissions) |
 | 10 | Interface (INF) licence ledger — `tb_business_unit_interface_license`, group `kind`, union-of-windows rule, two-condition `in_force`, `GET /api/license` folding, the 2026-09-08 data loss and the 2026-09-10 guarded data migration | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.6](/en/platform/licenses), [DM §2.4](/en/platform/licenses/data-model) |
 | 11 | Every-column header sorting on `/licenses` tables incl. server-side `status` key (PR #290) | ✅ | ✅ | — | ✅ Done | [UI §2.5](/en/platform/licenses/ui-screens) |
+| 12 | Summary band above the subscription / purchase tables (`SubscriptionSummary` clickable filter chips: All / Active / Expired / Expiring soon / Deleted) | — | ✅ | — | ✅ Done | [UI §2.4–2.5](/en/platform/licenses/ui-screens) |
+| 13 | Deleted-licence view (super admin): restore and permanent (hard) delete | ✅ | ✅ | ✅ | ✅ Done | [UI §2.6](/en/platform/licenses/ui-screens) |
+| 14 | Retired licence numbers (`tb_license_number_retired` — numbers of permanently deleted licences are not reused) | ✅ | — | — | ✅ Done | [DM §2.5](/en/platform/licenses/data-model) |
 
 ### 10. License Catalog — `en/platform/license-catalog/{data-model,ui-screens}.md`
 
@@ -337,7 +405,7 @@ following an August notification redesign.
 | 7 | `affected_bu_count` computation (deliberately includes expired subscriptions) | ✅ | — | — | ✅ Done | [DM §6](/en/platform/license-catalog/data-model) |
 | 8 | Permission gates (two tab-specific pairs + cross-module dependency) | — | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/license-catalog) |
 | 9 | Bundle `kind` (`standard` \| `interface`) — create-only segmented control, locked on edit, Interface badge on the list, 400 on the wrong ledger pairing | ✅ | ✅ | — | ✅ Done | [Landing §3.4](/en/platform/license-catalog), [DM §2.2, §5](/en/platform/license-catalog/data-model) |
-| 10 | `LICENSE_ONLY_RESOURCES` generator set + re-verified counts 107/12/100/7 (+19/−2 since 2026-09-05, incl. `system_admin.period` → `inventory_period` rename) | ✅ | — | — | ✅ Done | [Landing §3.2](/en/platform/license-catalog), [DM §3](/en/platform/license-catalog/data-model) |
+| 10 | `LICENSE_ONLY_RESOURCES` generator set + counts re-verified 2026-10-27 at 112 rows / 13 root areas / 99 non-root / 105 active / 7 inactive (was 107/12/100/7 on 2026-09-22; new `ai` root; earlier `system_admin.period` → `inventory_period` rename) | ✅ | — | — | ✅ Done | [Landing §3.2](/en/platform/license-catalog), [DM §3](/en/platform/license-catalog/data-model) |
 
 ### 11. Cluster Admin — `en/platform/cluster-admin/{permissions,ui-screens}.md`
 
@@ -348,7 +416,7 @@ following an August notification redesign.
 | 3 | `BusinessUnitList` — no create action, Over-limit rank badge | — | ✅ | ✅ | ✅ Done | [UI §4](/en/platform/cluster-admin/ui-screens) |
 | 4 | `BusinessUnitForm` — 6-tab document (Overview/People/Hotel/Company/Configuration/Licenses — the last added PR #291 with two read-only cards, deep-linkable via `?tab=licenses`) | — | ✅ | ✅ | ✅ Done | [UI §5](/en/platform/cluster-admin/ui-screens) |
 | 5 | `ClusterUsers` — Members/Invitations tabs | — | ✅ | ✅ | ✅ Done | [UI §6](/en/platform/cluster-admin/ui-screens) |
-| 6 | `ClusterAdminLicenses` — still no write path; since PR #291 also shows Subscriptions and Interface-licence cards (membership-checked `/clusters/:id/subscriptions`; rows link within the shell) | — | ✅ | ✅ | ✅ Done | [UI §7](/en/platform/cluster-admin/ui-screens) |
+| 6 | `ClusterAdminLicenses` — still no write path; since PR #291 shows Subscriptions and Interface-licence cards (membership-checked `/clusters/:id/subscriptions`; rows link within the shell), reshaped 2026-10 into three licence-type sub-tabs (Seats / Modules / Interface; selection kept in `?license=`) | — | ✅ | ✅ | ✅ Done | [UI §7](/en/platform/cluster-admin/ui-screens) |
 | 7 | No RBAC permission anywhere — membership (`isClusterAdminOf`) is the whole check | — | — | ✅ | ✅ Done | [PERM §3](/en/platform/cluster-admin/permissions) |
 | 8 | Mid-session 403 pattern (`ClusterAccessLost`) — 4 of 6 screens implement it | — | ✅ | ✅ | ✅ Done | [PERM §4](/en/platform/cluster-admin/permissions) |
 
@@ -365,6 +433,8 @@ following an August notification redesign.
 | 7 | Platform Migration card (super-admin-only write; deploy-token machine path preserved) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/platform-config) |
 | 8 | `license.manage` conjunction (lives here, not in Licenses) | — | ✅ | ✅ | ✅ Done | [Landing §4.3](/en/platform/platform-config) |
 | 9 | Two registry keys never shown on this screen (`email_routing`, `feature_flags`) | ✅ | — | ✅ | ✅ Done | [Landing §3.5](/en/platform/platform-config) |
+| 10 | Google Sign-in card (`google_sign_in`: independent `backstage` / `app` switches for the Google button and flow) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/platform-config) |
+| 11 | External API card (`external_api.base_url` — public gateway root URL for external systems; page now "eleven cards, ten keys") | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.1–3.2](/en/platform/platform-config) |
 
 ### 13. Email Settings — `en/platform/email-settings/data-model.md`
 
@@ -374,7 +444,7 @@ following an August notification redesign.
 | 2 | Email Routing card (5 flows → profile mapping) | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2](/en/platform/email-settings) |
 | 3 | Password handling (masked, patch-preserves-on-blank semantics) | ✅ | ✅ | — | ✅ Done | [Landing §3.4](/en/platform/email-settings) |
 | 4 | Send test email | — | ✅ | ✅ | ✅ Done | [Landing §3.5](/en/platform/email-settings) |
-| 5 | Flow-to-consumer trace (register/verify_email/forgot_password/invitation/notification) | ✅ | — | — | ✅ Done | [Landing §3.2](/en/platform/email-settings) |
+| 5 | Flow-to-consumer trace (register/verify_email/forgot_password/invitation/notification; `notification` goes through micro-notification `POST /v1/emails`) | ✅ | — | — | ✅ Done | [Landing §3.2](/en/platform/email-settings) |
 | 6 | Cross-module permission trap — `platform_config.read` without `.manage` | — | ✅ | ✅ | ✅ Done | [Landing §4.2–4.3](/en/platform/email-settings) |
 
 ### 14. User Platform — `en/platform/user-platform/{permissions,ui-screens}.md`
@@ -399,6 +469,20 @@ following an August notification redesign.
 | 5 | Orphan-key detection UI | — | ✅ | — | ✅ Done | [Landing §4](/en/platform/feature-flags) |
 | 6 | Edge cases (last-write-wins on the whole map; fail-open on fetch failure) | ✅ | — | — | ✅ Done | [DM §6](/en/platform/feature-flags/data-model) |
 
+### 26. AI Providers — `en/platform/ai-providers/{data-model,ui-screens}.md`
+
+New 2026-10-27 (nav group `navGroup.ai`, after the Backstage group). Numbered 26 as an append-only ID; see the note under section 25.
+
+| # | Sub-process | DM | UI | PERM | Status | Doc link |
+|---|-------------|----|----|------|--------|----------|
+| 1 | List screen `AiProviderManagement` — columns (Provider / Opens / Default prompt / Status / Business units / Order), inactive rows shown, no search/paging | ✅ | ✅ | — | ✅ Done | [UI §2](/en/platform/ai-providers/ui-screens) |
+| 2 | Create / edit dialog `AiProviderEditDialog` (identity, link, default prompt with `{items}` token, availability toggles; `code` create-only; `doc_version` conflict handling) | ✅ | ✅ | ✅ | ✅ Done | [UI §3–4](/en/platform/ai-providers/ui-screens), [Landing §3.3](/en/platform/ai-providers) |
+| 3 | Validation and the `{query}` placeholder rules (https-only, `{query}` only after first `?`/`#`, 4000-char prompt; pre-filled vs copy-to-paste) | ✅ | ✅ | — | ✅ Done | [Landing §1, §3.2](/en/platform/ai-providers) |
+| 4 | Delete (soft delete, global effect; per-BU settings kept but ignored; code reusable after delete) | ✅ | ✅ | ✅ | ✅ Done | [UI §2.4](/en/platform/ai-providers/ui-screens), [Landing §5](/en/platform/ai-providers) |
+| 5 | BU override resolution (`tb_application_config` key `ask_ai`; visible = active AND override.enabled ?? default_enabled_for_bu; prompt = override or default) | ✅ | — | — | ✅ Done | [DM §2.2](/en/platform/ai-providers/data-model), [Landing §2](/en/platform/ai-providers) |
+| 6 | Permission gates (`ai_provider.*`; writes need backstage-wide grant; default roles) | — | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/ai-providers) |
+
+
 ### 16. Tenant Migrations — `en/platform/tenant-migrations/data-model.md`
 
 | # | Sub-process | DM | UI | PERM | Status | Doc link |
@@ -411,6 +495,22 @@ following an August notification redesign.
 | 6 | Non-bypassable backend gate (super-admin or deploy-token; not RBAC) | — | — | ✅ | ✅ Done | [Landing §4.2](/en/platform/tenant-migrations) |
 | 7 | Resolve a stuck migration from the fleet table and the per-BU card (PR #297 — `TenantMigrationResolveDialog`, name pre-filled from Prisma's error text, `rolled-back` default); closes the "no frontend caller" gap recorded 2026-09-06 | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2a](/en/platform/tenant-migrations), [DM §6](/en/platform/tenant-migrations/data-model) |
 | 8 | Schema + pool column (PR #296); client-side sortable Status / Last checked (PR #292) | — | ✅ | — | ✅ Done | [Landing §3.1, §3.2b](/en/platform/tenant-migrations) |
+| 9 | Apply dashboard views — fleet-table row action after Prisma deploy (`POST …/views/apply`, micro-data views step; 409 when already running; needs `tenant_migration.apply`) — new 2026-10-06 | ✅ | ✅ | ✅ | ✅ Done | [Landing §3.2c](/en/platform/tenant-migrations) |
+
+### 27. Tenant Seed — `en/platform/tenant-seed/{lifecycle,ui-screens}.md`
+
+New 2026-10-27 (Organization group, next to Tenant Migrations). Numbered 27 as an append-only ID; see the note under section 25.
+
+| # | Sub-process | DM | UI | PERM | Status | Doc link |
+|---|-------------|----|----|------|--------|----------|
+| 1 | Fleet summary card `SeedFleetSummary` (seeded / checkable counter, three-segment bar) | — | ✅ | — | ✅ Done | [UI §2.1](/en/platform/tenant-seed/ui-screens) |
+| 2 | BU table with per-row **Check** / **Seed**, row statuses (Seeded / N missing / Not checked / No DB / Error), Missing-sets chips | ✅ | ✅ | ✅ | ✅ Done | [UI §2.3](/en/platform/tenant-seed/ui-screens), [Landing §3.1](/en/platform/tenant-seed) |
+| 3 | Seed-set picker `SeedSetPickerDialog` (single-BU vs fleet mode; the eight ordered seed sets) | ✅ | ✅ | — | ✅ Done | [UI §2.5](/en/platform/tenant-seed/ui-screens), [Landing §1](/en/platform/tenant-seed) |
+| 4 | **Seed all missing** — SPA-side sequential batch (no server-side all-BU endpoint), batch progress strip, **Check all** (4 in parallel) | — | ✅ | ✅ | ✅ Done | [UI §2.2, §2.4](/en/platform/tenant-seed/ui-screens), [Landing §3.3](/en/platform/tenant-seed) |
+| 5 | CSV export (`tenant-seeds-YYYY-MM-DD.csv`) | — | ✅ | — | ✅ Done | [UI §2.2](/en/platform/tenant-seed/ui-screens) |
+| 6 | Status check + seed stream lifecycle (connection resolution, NDJSON stream, idempotence, error handling, honest cancellation limits) | ✅ | — | — | ✅ Done | [Lifecycle §2–6](/en/platform/tenant-seed/lifecycle), [Landing §3.2](/en/platform/tenant-seed) |
+| 7 | Gating — `TENANT_MIGRATION_API_ENABLED` kill switch, `x-deploy-token` CI path, `tenant_seed.read` / `.apply` (backstage-wide only), audit line | — | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/tenant-seed) |
+
 
 ### 17. Tenant Imports — `en/platform/tenant-imports/ui-screens.md`
 
@@ -459,8 +559,10 @@ following an August notification redesign.
 | 6 | Where failures surface (list icon, edit page gap, SigNoz) | ✅ | ✅ | — | ✅ Done | [DM §5](/en/platform/cronjobs/data-model) |
 | 7 | Foreign-owned banner / ownership check (now dead code on the gateway) | ✅ | ✅ | — | ✅ Done | [DM §6](/en/platform/cronjobs/data-model) |
 | 8 | Permission gate (`cronjob.read`/`.manage`) | — | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/cronjobs) |
+| 9 | Worker-only job types `gl_run_due` and `pos_simphony_pull` (executed by `micro-cronjobs`, unknown to the console and gateway DTO) | ✅ | — | — | ✅ Done | [DM §3.7](/en/platform/cronjobs/data-model) |
+| 10 | Skipped-run handling — `SkippedError` (micro-report `403 REPORT_TEMPLATE_UNAVAILABLE`) is logged and not retried | ✅ | — | — | ✅ Done | [DM §4.3](/en/platform/cronjobs/data-model) |
 
-**Table A subtotal: 167 sub-processes, 167 Done, 0 Partial, 0 Not yet.**
+**Table A subtotal: 219 sub-processes, 219 Done, 0 Partial, 0 Not yet** (2026-10-27; was 175 on 2026-09-22 — the stale "167" here pre-dated that update).
 
 ## Table B — Landing-only modules (no sub-page folder)
 
@@ -470,7 +572,7 @@ following an August notification redesign.
 |---|-------------|----|----|------|--------|----------|
 | 1 | Status/Deploy card (`prisma migrate deploy` against the platform DB) | ✅ | ✅ | ✅ | ✅ Done | [§1, §3.3](/en/platform/platform-migrations) |
 | 2 | Resolve-a-stuck-migration card | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
-| 3 | Seed data catalog (9 seed operations since 2026-09-07 — `seed-application-api` added; safety-to-rerun stated per op) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
+| 3 | Seed data catalog (8 seed operations: `seed-application-api` added 2026-09-07, `seed-report-template-upload` dropped 2026-10-26 (`ad7499d87`); safety-to-rerun stated per op) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
 | 4 | Drift check catalog (6 read-only incl. `check-application-api` + 1 hidden, writing check) | ✅ | ✅ | ✅ | ✅ Done | [§3.3](/en/platform/platform-migrations) |
 | 5 | Multi-BU picker for `seed-role-permission` (tenant app-roles, not platform RBAC) | ✅ | ✅ | — | ✅ Done | [§3.4](/en/platform/platform-migrations) |
 | 6 | Two-authority gate (deploy-token or super-admin) behind `platform_migration.api_enabled` | — | — | ✅ | ✅ Done | [§3.1, §4](/en/platform/platform-migrations) |
@@ -497,6 +599,7 @@ following an August notification redesign.
 | 4 | `superAdminOnly` gate — no RBAC permission key anywhere in the module | — | — | ✅ | ✅ Done | [§1, §4](/en/platform/super-admins) |
 | 5 | `tb_platform_super_admin` entity, incl. audit-trail gap (no `created_by_id`) | ✅ | — | — | ✅ Done | [§5](/en/platform/super-admins) |
 | 6 | Effect on an already-open session (stale `isSuperAdmin` cache is cosmetic only) | — | — | ✅ | ✅ Done | [§5.4](/en/platform/super-admins) |
+| 7 | Current-BU persistence — `current_business_unit_id` on `tb_backstage_super_admin` (`setDefaultTenant`; added 2026-10-26, `5d7bab295`) | ✅ | — | — | ✅ Done | [§5.1](/en/platform/super-admins) |
 
 ### 24. Usage Analytics — `en/platform/usage-analytics.md`
 
@@ -510,7 +613,7 @@ following an August notification redesign.
 | 6 | Permission seam (`activity_event.read` vs `.detail`) + cluster scoping | — | — | ✅ | ✅ Done | [§4](/en/platform/usage-analytics) |
 | 7 | Empty-state vs. error-state distinction | — | ✅ | — | ✅ Done | [§3.7](/en/platform/usage-analytics) |
 
-**Table B subtotal: 26 sub-processes, 26 Done, 0 Partial, 0 Not yet.**
+**Table B subtotal: 27 sub-processes, 27 Done, 0 Partial, 0 Not yet** (2026-10-27; was 26).
 
 ## Table C — Standalone pages (not modules)
 
@@ -522,12 +625,15 @@ following an August notification redesign.
 | Dashboard | Activity stream | ✅ | ✅ | ✅ Done | [Dashboard §2](/en/platform/dashboard) |
 | Dashboard | Counts rail | ✅ | ✅ | ✅ Done | [Dashboard §3](/en/platform/dashboard) |
 | Dashboard | What's not on the dashboard (scope boundary) | ✅ | ✅ | ✅ Done | [Dashboard §4](/en/platform/dashboard) |
+| Dashboard | Return-to-page after sign-in (`/login?next=` from `PrivateRoute`, since 2026-10-26) | ✅ | ✅ | ✅ Done | [Dashboard §5](/en/platform/dashboard) |
 | Landing | Page content + "Inside the Console" index | ✅ | ✅ | ✅ Done | [Landing §2–3](/en/platform/landing) |
 | Landing | Confirmed drift: index vs. real sidebar | ✅ | ✅ | ✅ Done | [Landing §4](/en/platform/landing) |
 | Landing | Roles/personas + gating (public route) | ✅ | ✅ | ✅ Done | [Landing §5](/en/platform/landing) |
 | Profile | View/edit own identity, mounted at two routes | ✅ | ✅ | ✅ Done | [Profile §1](/en/platform/profile) |
 | Profile | Change own password | ✅ | ✅ | ✅ Done | [Profile §3](/en/platform/profile) |
 | Profile | Gating (authenticated-only) | ✅ | ✅ | ✅ Done | [Profile §4](/en/platform/profile) |
+| Profile | Google sign-in return route `/login/callback` | ✅ | ✅ | ✅ Done | [Profile §3.1](/en/platform/profile) |
+| Profile | `/403` Forbidden page | ✅ | ✅ | ✅ Done | [Profile §3.1](/en/platform/profile) |
 | SQL Workbench | BU switcher + connection bar | ✅ | ✅ | ✅ Done | [§3](/en/platform/sql-workbench) |
 | SQL Workbench | DB object tree (tables/views/procedures/functions) | ✅ | ✅ | ✅ Done | [§3](/en/platform/sql-workbench) |
 | SQL Workbench | SQL editor + Run, destructive-statement confirmation | ✅ | ✅ | ✅ Done | [§3](/en/platform/sql-workbench) |
@@ -535,7 +641,7 @@ following an August notification redesign.
 | SQL Workbench | Result panel (virtual scroll, CSV export) | ✅ | ✅ | ✅ Done | [§3](/en/platform/sql-workbench) |
 | SQL Workbench | Permission gate — read/manage split; 2026-08-20 backend gap closed | ✅ | ✅ | ✅ Done | [§4](/en/platform/sql-workbench) |
 
-**Table C subtotal: 18 sub-processes, 18 Done, 0 Partial, 0 Not yet.**
+**Table C subtotal: 21 sub-processes, 21 Done, 0 Partial, 0 Not yet** (2026-10-27; was 18).
 
 ## Locale coverage (TH)
 
@@ -569,6 +675,12 @@ line count was treated as a stub and spot-read to confirm).
   not 9.
 - Expanding any of the 10 stubs is a known deferred task — do not start
   without user confirmation.
+- **2026-10-27: the three new modules are EN-only.** `th/platform` still holds
+  74 files; `ai-providers`, `dashboard-templates` and `tenant-seed` (landing +
+  7 sub-pages, 10 files) have no TH counterpart, so the earlier "file-for-file
+  identical" statement no longer holds. TH is deliberately deferred (see
+  `.specs/resync-2026-10-27-progress.md`); existing TH pages were not re-synced
+  to the backstage rename in this round.
 
 ## Maintenance notes
 
@@ -604,3 +716,16 @@ line count was treated as a stub and spot-read to confirm).
   `seed/check-application-api`, `interface_days`). Table A grew 167 → 175;
   total 211 → 219. The "19 of 74 files read in full" caveat from 2026-09-06
   still applies to every row this update did not touch.
+- **2026-10-27 incremental update** (`.specs/resync-2026-10-27-progress.md`):
+  not a re-enumeration — the delta between carmen-platform `f1c69f1` /
+  backend `ef4d6f08f` and carmen-backstage `8405788f` / backend `c9d788829` was
+  folded in, including the platform → backstage rename (backend `e0eaeff61`,
+  SPA `318949a3`). Table A grew 175 → 219 (3 new modules + 24 rows on existing
+  ones), B 26 → 27, C 18 → 21; total 219 → 267. Rule for next time: the new
+  section numbers 25–27 are append-only IDs, placed at their Backstage-SPA nav
+  position (Dashboard Templates after Report Templates, AI Providers after
+  Feature Flags, Tenant Seed after Tenant Migrations); never renumber 1–24.
+  Also refreshed the e2e column in "Source mapping" (the e2e suite now has
+  smoke specs for six modules; the ones for Platform Migrations, Email
+  Settings and Database Pools still use pre-rename `/platform/...` paths) — the
+  routes/keys elsewhere in that table remain pre-rename spellings.

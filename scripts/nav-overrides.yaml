@@ -101,7 +101,8 @@ books:
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
       # documented on en/platform.md (Task 29 rebuild), which in turn mirror
-      # `../carmen-backstage/src/components/nav/platformNav.ts` groupKey order.
+      # `../carmen-backstage/src/components/nav/backstageNav.ts` groupKey order
+      # (re-checked 2026-10-27: Platform group → Backstage, new AI group).
       # `sql-workbench` and `dashboard` are intentionally not nav-overrides
       # entries (pre-existing state, unchanged by this task).
       - label_en: "Organization"
@@ -116,6 +117,9 @@ books:
           - slug: tenant-migrations
             label_en: "Tenant Migrations"
             label_th: "Tenant Migrations"
+          - slug: tenant-seed
+            label_en: "Tenant Seeds"
+            label_th: "Tenant Seeds"
           - slug: tenant-imports
             label_en: "Tenant Imports"
             label_th: "Tenant Imports"
@@ -140,6 +144,9 @@ books:
           - slug: report-form-groups
             label_en: "Report Form Groups"
             label_th: "Report Form Groups"
+          - slug: dashboard-templates
+            label_en: "Dashboard Templates"
+            label_th: "Dashboard Templates"
           - slug: news
             label_en: "News"
             label_th: "News"
@@ -161,12 +168,12 @@ books:
           - slug: cronjobs
             label_en: "Cronjobs"
             label_th: "Cronjobs"
-      - label_en: "Platform"
-        label_th: "Platform"
+      - label_en: "Backstage"
+        label_th: "Backstage"
         modules:
           - slug: platform-config
-            label_en: "Platform Config"
-            label_th: "Platform Config"
+            label_en: "Backstage Config"
+            label_th: "Backstage Config"
           - slug: email-settings
             label_en: "Email Settings"
             label_th: "Email Settings"
@@ -174,23 +181,30 @@ books:
             label_en: "Applications"
             label_th: "Applications"
           - slug: rbac
-            label_en: "Platform RBAC"
-            label_th: "Platform RBAC"
+            label_en: "Backstage RBAC"
+            label_th: "Backstage RBAC"
           - slug: user-platform
-            label_en: "User Platform"
-            label_th: "User Platform"
+            label_en: "User Backstage"
+            label_th: "User Backstage"
           - slug: super-admins
             label_en: "Super Admins"
             label_th: "Super Admins"
           - slug: feature-flags
             label_en: "Feature Flags"
             label_th: "Feature Flags"
+      # Added 2026-10-27. EN page only — TH link 404s until th/platform/ai-providers.md exists.
+      - label_en: "AI"
+        label_th: "AI"
+        modules:
+          - slug: ai-providers
+            label_en: "AI Providers"
+            label_th: "AI Providers"
       - label_en: "Database"
         label_th: "Database"
         modules:
           - slug: platform-migrations
-            label_en: "Platform Migrations"
-            label_th: "Platform Migrations"
+            label_en: "Backstage Migrations"
+            label_th: "Backstage Migrations"
           - slug: database-pools
             label_en: "Database Pools"
             label_th: "Database Pools"

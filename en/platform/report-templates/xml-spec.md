@@ -1,6 +1,6 @@
 ---
 title: Report Template — XML Spec
-description: Dialog XML element catalogue (Label/Date/Lookup/Group, Cols and ColSpan, control Label attribute, From/To ranges, source_params binding), Content XML storage, Export XML (CSV column mapping), editor surface, validation categories, and a worked example pair.
+description: Dialog XML element catalogue (Label/Date/Lookup/Group, Cols/ColSpan, From/To ranges, source_params), Content XML storage, Export XML CSV mapping, validation categories, and a worked example.
 published: true
 date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, report-templates, xml

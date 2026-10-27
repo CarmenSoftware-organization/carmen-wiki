@@ -1,6 +1,6 @@
 ---
 title: Report Template — Data Model
-description: tb_report_template and tb_report_template_version entities — dialog/content/export XML payloads, EN/TH names, source binding, BU and costing-method scope, run/export switches, and the 2026-07-23 kind→template_type rename plus is_default/doc_version columns.
+description: tb_report_template and tb_report_template_version: dialog/content/export XML, EN/TH names, source binding, BU and costing-method scope, run/export switches, template_type, is_default and doc_version.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: book/platform, report-templates, data-model

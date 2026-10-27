@@ -1,6 +1,6 @@
 ---
 title: Report Template — UI Screens
-description: The report templates list (status/source/template-type/calculation-method filters, CSV export, JSON backup and import) and the two-pane edit form — EN/TH identity, source, BU and costing scope, a four-tab XML editor with a drag-and-drop Dialog layout editor, and a version-history sheet.
+description: Report templates list (filters, CSV export, JSON backup/import) and the two-pane edit form: EN/TH identity, source, scope, four-tab XML editor with a drag-and-drop Dialog layout editor, version history.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: book/platform, report-templates, ui
