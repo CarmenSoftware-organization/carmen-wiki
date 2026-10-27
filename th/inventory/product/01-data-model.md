@@ -2,7 +2,7 @@
 title: สินค้า (Product) — Data Model
 description: เอนทิตี ฟิลด์ ความสัมพันธ์ และ enum สำหรับโมดูลสินค้า
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: product, data-model, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T15:30:00.000Z
@@ -18,7 +18,7 @@ dateCreated: 2026-05-15T15:30:00.000Z
 
 > **แหล่งความจริง:** Prisma schema ของ backend อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` ใต้แต่ละแพ็กเกจเป็นสำเนาที่สร้างอัตโนมัติ ไม่ใช่ฉบับทางการ
 
@@ -60,7 +60,7 @@ graph LR
 | ----- | ----------- | -------- | ----------- |
 | `doc_version` | `Int` | No | default `0` counter optimistic-concurrency (เพิ่มเมื่อ 2026-06-12 ครอบคลุม 103 ตารางของ tenant ที่ยังไม่มีมาก่อน) ทุก `PATCH` ต้อง echo ค่าที่เก็บอยู่ปัจจุบัน ถ้าไม่ตรงจะได้ `409 Conflict` ตาม `PRD_AUTH_013` เพิ่มค่าเมื่ออัปเดตสำเร็จ |
 | `id` | `String @db.Uuid` | No | Primary key; `gen_random_uuid()` |
-| `code` | `String @db.VarChar` | No | code สินค้าที่มนุษย์อ่านได้ ใช้เป็น lookup key บน picker บนป้ายบาร์โค้ด (เมื่อไม่ได้ตั้ง `barcode` แยก) และบนทุกบรรทัดเอกสารปลายน้ำ ไม่ซ้ำภายใน `(code, name, deleted_at)` ตาม index `product_code_name_u` ตั้งแต่การเปลี่ยน frontend เมื่อ 2026-07-14 ฟอร์มสร้าง/แก้ไขไม่รับการพิมพ์ code เองแล้ว — ฟิลด์ถูก disable พร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ดังนั้นในทางปฏิบัติ code ทุกตัวที่มาจาก UI เป็นการสร้างโดย server (รูปแบบ running-number) ส่วน API เองยังรับ `code` ที่ client ระบุเองได้ (เช่นการนำเข้าเป็นชุด) |
+| `code` | `String @db.VarChar` | No | code สินค้าที่มนุษย์อ่านได้ ใช้เป็น lookup key บน picker บนป้ายบาร์โค้ด (เมื่อไม่ได้ตั้ง `barcode` แยก) และบนทุกบรรทัดเอกสารปลายน้ำ ไม่ซ้ำภายใน `(code, name, deleted_at)` ตาม index `product_code_name_u`; service ยังปฏิเสธ code ที่ product live **ตัวใดก็ตาม** ใน BU ใช้อยู่แล้วโดยไม่สนตัวพิมพ์ (create ที่ระบุ code และการเปลี่ยน code - `PRODUCT_ALREADY_EXISTS`, fix `57b34748d`, 2026-09) code ที่สร้างอัตโนมัติคือ `<item-group code><running number>` โดยเลขถัดไปอ่านจากทุก code live ที่ใช้ prefix เดียวกันภายใต้ advisory lock ต่อ prefix ตั้งแต่การเปลี่ยน frontend เมื่อ 2026-07-14 ฟอร์มสร้าง/แก้ไขไม่รับการพิมพ์ code เองแล้ว — ฟิลด์ถูก disable พร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ดังนั้นในทางปฏิบัติ code ทุกตัวที่มาจาก UI เป็นการสร้างโดย server (รูปแบบ running-number) ส่วน API เองยังรับ `code` ที่ client ระบุเองได้ (เช่นการนำเข้าเป็นชุด) |
 | `name` | `String @db.VarChar` | No | ชื่อแสดงผลภาษาอังกฤษ / หลัก มี index |
 | `local_name` | `String? @db.VarChar` | Yes | ชื่อท้องถิ่น (เช่นภาษาไทยสำหรับ property ในไทย) แสดงบนใบเสร็จและบน UI ภาษาท้องถิ่น |
 | `description` | `String? @db.VarChar` | Yes | คำอธิบายยาวอิสระ |
@@ -202,7 +202,7 @@ graph LR
 | `from_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` ปริมาณด้านต้นทางของการแปลง (เช่น `1` สำหรับ "1 CASE = 12 EACH") |
 | `to_unit_id` | `String? @db.Uuid` | Yes | FK ไปยัง `tb_unit.id` — หน่วยปลายทาง |
 | `to_unit_name` | `String @db.VarChar` | No | snapshot |
-| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` ปริมาณด้านปลายทาง (เช่น `12` สำหรับ "1 CASE = 12 EACH") conversion factor คือ `to_unit_qty / from_unit_qty` |
+| `to_unit_qty` | `Decimal? @db.Decimal(20, 5)` | Yes | default `0` ปริมาณด้านปลายทาง (เช่น `12` สำหรับ "1 CASE = 12 EACH") conversion factor คือ `to_unit_qty / from_unit_qty` `GET units/ingredient/product/:id` ตอนนี้ใช้อัตราส่วนนี้ (ก่อน `bff5956e6`, 2026-10 ใช้ `to_unit_qty` อย่างเดียว) ละเลยแถวที่ soft-delete เก็บเฉพาะแถวที่ `from_unit` เป็นหน่วย inventory ปัจจุบันของสินค้าและปริมาณเป็นบวก และเมื่อมีหลายแถวชี้หน่วยเดียวกันจะเลือก `is_default` ก่อน แล้วจึงแถวที่เก่าที่สุด (`pickIngredientConversions` ใช้ร่วมกับ `resolveConversion` ของ recipe costing) |
 | `decimal_place` | `Int` | No | default `2` precision การแสดงผล |
 | `is_default` | `Boolean?` | Yes | default `false` มาร์คการแปลงนี้เป็นหน่วยสั่งซื้อ default (หรือหน่วยวัตถุดิบ default) สำหรับสินค้า — แสดงก่อนบน picker |
 | `description` | `Json? @db.JsonB` | Yes | โน้ตอิสระ / โครงสร้าง default `{}` |
@@ -302,12 +302,12 @@ graph LR
 
 ### 2.11 tb_product_account_code_mapping
 
-ตาราง **การ map account code ของ GL** (เพิ่มเมื่อ 2026-06-22 ยืนยันผ่าน `git log -S` — หลังจากหน้านี้ sync ครั้งก่อน) map `product_id`, `product_item_group_id`, `product_sub_category_id` หรือ `product_category_id` ไปยังคู่ `account_code` / `account_name` ตาม `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`) backend resolve หนึ่ง code **ที่มีผลบังคับใช้** ต่อ account type ตาม cascade แบบ nearest-first เดียวกับที่ใช้อยู่แล้วสำหรับการสืบทอด tax-profile และค่าความคลาดเคลื่อน (`PRD_CALC_002` / `PRD_CALC_003`): แถวระดับ product ชนะก่อน แล้วตามด้วย item-group, sub-category, category
+ตาราง **การ map account code ของ GL** (เพิ่มเมื่อ 2026-06-22 ยืนยันผ่าน `git log -S` — หลังจากหน้านี้ sync ครั้งก่อน) map `product_id`, `product_item_group_id`, `product_sub_category_id` หรือ `product_category_id` ไปยังคู่ `account_code` / `account_name` ตาม `enum_account_type` (`inventory`, `cogs`, `revenue`, `purchase`, `direct`) backend resolve หนึ่ง code **ที่มีผลบังคับใช้** ต่อ account type ตาม cascade แบบ nearest-first เดียวกับที่ใช้อยู่แล้วสำหรับการสืบทอด tax-profile และค่าความคลาดเคลื่อน (`PRD_CALC_002` / `PRD_CALC_003`): แถวระดับ product ชนะก่อน แล้วตามด้วย item-group, sub-category, category
 
 | ฟิลด์ | Prisma Type | คำอธิบาย |
 | ----- | ----------- | ----------- |
 | `id` | `String @db.Uuid` | Primary key |
-| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase` |
+| `account_type` | `enum_account_type` | `inventory` \| `cogs` \| `revenue` \| `purchase` \| `direct` (`direct` เพิ่มโดย `20261014100000_account_type_direct`) UI เขียนและ account mapping อ่านเฉพาะ `inventory` และ `direct` |
 | `account_code` | `String @db.VarChar` | code ของ GL |
 | `account_name` | `String? @db.VarChar` | ชื่อแสดงผล (optional) |
 | `product_id` / `product_item_group_id` / `product_sub_category_id` / `product_category_id` | `String? @db.Uuid` | มีเพียงหนึ่งฟิลด์ที่ populate ต่อแถว — "เจ้าของ" ของ mapping |
@@ -315,7 +315,7 @@ graph LR
 
 **Constraints:** หนึ่ง `@@unique` ต่อคอลัมน์เจ้าของ แต่ละอันกำหนดขอบเขตด้วย `(owner_id, account_type, deleted_at)` — มี mapping ที่ active ได้อย่างมากหนึ่งรายการต่อ account type ต่อระดับเจ้าของ
 
-**ยืนยัน API surface จริง แต่ไม่พบ frontend UI:** block `account_codes: { add[], update[], remove[] }` เป็นฟิลด์จริงที่ document ไว้บน Bruno request สำหรับ create/update ของ `config/products`, `config/product-category`, `config/product-sub-category`, และ `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` ใน `apps/micro-business/src/common/account-code/account-code.helper.ts`) และฝั่ง read คืนค่า `account_codes` บน response รายละเอียดสินค้า — แต่การค้นหาทั่ว repo ของ `carmen-frontend` ไม่พบ component หรือ hook ที่อ้างอิง `account_codes` / `accountCodeMapping` ที่ใดเลย ถือว่าเป็นฟีเจอร์ backend/API-only จนกว่าจะพบ UI surface
+**ตอนนี้มี frontend UI บน category tree เท่านั้น** (แก้ "ไม่พบ frontend UI" ของ 2026-09-22): dialog Category / Sub-category / Item-group มี picker **Inventory account** และ **Direct account** (`category-form.tsx`, `buildAccountCodesPayload` ใน `category-form-schema.ts`) และ dialog ยืนยัน cascade ไปยัง descendant - ดู [category](/th/inventory/product/category) § 2 **ฟอร์มสินค้ายังไม่มีฟิลด์บัญชี** แถวเหล่านี้ถูกอ่านโดย [chart-of-account-mapping](/th/inventory/master-data/chart-of-account-mapping) (item group → sub-category → category; ไม่ดูแถวระดับสินค้า) API surface: block `account_codes: { add[], update[], remove[] }` เป็นฟิลด์จริงที่ document ไว้บน Bruno request สำหรับ create/update ของ `config/products`, `config/product-category`, `config/product-sub-category`, และ `config/product-item-group` (`applyAccountCodesWrite` / `resolveEffectiveAccountCodes` ใน `apps/micro-business/src/common/account-code/account-code.helper.ts`) และฝั่ง read คืนค่า `account_codes` บน response รายละเอียดสินค้า — แต่มีเพียง dialog ของ category-tree สามตัวที่เขียนมัน; list endpoint ทั้งสามไม่คืน `account_codes` (เฉพาะ GET ระเบียนเดียว) `cascadeAccountCodes` (`common/account-code/account-code-cascade.helper.ts`) คัดลอกหรือล้างแถว `inventory` / `direct` ของโหนดไปยัง descendant และสินค้าทั้งหมดเมื่อส่ง `cascade_account_codes`
 
 ### 2.12 ตาราง Comment (tb_product_comment, tb_product_category_comment, tb_product_sub_category_comment, tb_product_item_group_comment, tb_unit_comment)
 
@@ -385,7 +385,7 @@ tb_product ถูกอ้างถึง BY ทุกตารางธุร�
 - **Soft-delete ใช้ทั่วโลก** ทุกเอนทิตีในโมดูลนี้มี `deleted_at` / `deleted_by_id` constraint unique รวม `deleted_at` (เช่น `product_code_name_u = (code, name, deleted_at)`) ดังนั้น code ของสินค้าที่ลบสามารถนำกลับมาใช้ได้ แถวที่ live guard ความไม่ซ้ำเฉพาะกับแถว live อื่น
 - **การประกาศ FK `@relation` ที่ชัดเจนทั้งหมดใช้ `onDelete: NoAction, onUpdate: NoAction`** — referential integrity ถูกรักษาโดย soft-delete ระดับ application **ไม่มี** in-use guard ตอนลบสินค้า (ดู § 1); ต้นไม้การจำแนกมี guard (แต่ละระดับปฏิเสธการลบขณะที่ยังมีลูกโดยตรงที่ใช้งาน — `PRODUCT_CATEGORY_HAS_SUB_CATEGORY`, `PRODUCT_SUB_CATEGORY_HAS_ITEM_GROUP`, `PRODUCT_ITEM_GROUP_HAS_PRODUCTS`)
 - **รูปร่าง API (2026-09-17)** `GET /config/:bu_code/products` และ `/:id` ตอนนี้คืน foreign key เป็น nested object — `inventory_unit`, `tax_profile`, `product_category` / `product_sub_category` / `product_item_group`, `locations[].location`, `locations[].shelf`, `order_units[].from_unit` / `to_unit` (`types/product.ts`, backend `bb0ae46e1` / `ce2e1d473`) payload ตอนเขียนยังแบนอยู่ (`inventory_unit_id`, `locations.add[].location_id` / `shelf_id`, …) การเรียง list เริ่มต้นคือ `code:asc, id:asc` (`products.service.ts`, 2026-09-13)
-- **ตัวเลขต่อ location ที่ derive** `on_hand_qty` (ไม่เคยเป็นคอลัมน์) และ `re_order_qty` ถูกรวมจาก `tb_inventory_transaction_cost_layer` โดย `products.replenishment.ts` (`computeReplenishmentByLocation`) และแนบกับ `locations[]` ตามคำขอ; แหล่งเดียวกันป้อน `GET /:bu_code/products/:id/on-hand` และ `/on-order` ซึ่งนับจาก 2026-09-22 มี `last_price` ด้วย (`09f2e8d36`)
+- **ตัวเลขต่อ location ที่ derive** `on_hand_qty` (ไม่เคยเป็นคอลัมน์) และ `re_order_qty` ถูกรวมจาก `tb_inventory_transaction_cost_layer` โดย `products.replenishment.ts` (`computeReplenishmentByLocation`) และแนบกับ `locations[]` ตามคำขอ; การอ่าน layer ตอนนี้ถูกจำกัดที่ **งวด inventory ที่ active** บวกสิ่งที่ยกมาในงวดนั้น (`buildOnHandPeriodWhere`, เงื่อนไขเท่ากับ `at_period`; สต๊อกที่ค้างในงวดก่อนหน้าที่ไม่เคยปิดจะไม่ถูกนับ และเมื่อไม่มีงวด active ตัวกรองจะว่าง) `on-hand` ยังรับ `at_date` ที่ restate ยอดคงเหลือของแต่ละ location ณ สิ้นวันที่เอกสาร (`as_of_date` ใน response) แหล่งเดียวกันป้อน `GET /:bu_code/products/:id/on-hand` และ `/on-order` ซึ่งนับจาก 2026-09-22 มี `last_price` ด้วย (`09f2e8d36`)
 
 ## 4. Enum
 
@@ -398,11 +398,11 @@ tb_product ถูกอ้างถึง BY ทุกตารางธุร�
   - `ingredient_unit` — การแปลงใช้โดย recipe / consumption (เช่น `1 TBSP = 15 ML`) ขับเคลื่อนการแปลง qty วัตถุดิบของสูตรกลับเป็นหน่วยฐานในเวลา explosion ของ theoretical-consumption
 - **`enum_comment_type`**: classifier ของ comment บนทุก `*_comment.type` default `user` ค่า: `user` (ข้อความอิสระของมนุษย์), `system` (annotation event อัตโนมัติ)
 
-- **`enum_account_type`**: ขอบเขตบน `tb_product_account_code_mapping.account_type` (§2.11 เพิ่มเมื่อ 2026-06-22) สี่ค่า: `inventory`, `cogs`, `revenue`, `purchase` ไม่มี default จำเป็นบนทุกแถว
+- **`enum_account_type`**: ขอบเขตบน `tb_product_account_code_mapping.account_type` (§2.11 เพิ่มเมื่อ 2026-06-22) ห้าค่า: `inventory`, `cogs`, `revenue`, `purchase`, `direct` ไม่มี default จำเป็นบนทุกแถว
 
 Schema ยังพึ่งพา **enum ต้นน้ำที่บริโภคโดยโมดูล product แต่ไม่ได้เป็นเจ้าของ**:
 
-- `enum_calculation_method` (บน `tb_business_unit.calculation_method`, platform schema): `average`, `fifo` ตัวเลือกวิธีการคิดต้นทุน — **ไม่ได้อยู่บน product** ดู [costing/01-data-model](/th/inventory/costing/01-data-model) § 2.4
+- `enum_calculation_method` (บน `tb_business_unit.calculation_method`, backstage schema): `average`, `fifo`, `average_per_location` ตัวเลือกวิธีการคิดต้นทุน — **ไม่ได้อยู่บน product** ดู [costing/01-data-model](/th/inventory/costing/01-data-model) § 2.4
 - `enum_physical_count_costing_method` (บนเอกสาร count): `standard`, `last`, `average`, `last_receiving` เลือกแหล่งต้นทุนที่ป้อนการ post variance ของ count `standard` อ่าน `tb_product.standard_cost` ดู [costing/01-data-model](/th/inventory/costing/01-data-model) § 2.6
 
 ## 5. ความแตกต่างจาก carmen/docs
@@ -432,7 +432,7 @@ product-management PRD ของ carmen/docs (`PROD-PRD.md`) และ product-m
 - **Migrations นับจาก 2026-07-29:** `20260814150000_add_location_shelf`, `20260820120000_rename_location_shelf_to_shelf`, `20260904131500_rename_shelf_and_user_location`, `20260904133000_rename_eco_label_and_certificate`, `20260916141000_rename_tb_period_to_tb_inventory_period`
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/products/products.service.ts` (delete `:2661`, ตรวจสอบ shelf `:2035` / `:2244`), `products.replenishment.ts`, `master/shelf/shelf.helper.ts`; gateway `apps/backend-gateway/src/config/config_products/` (`@ExpandRefs` / `@Serialize`), `common/dto/product/product.serializer.ts`
 - **Frontend:** `../carmen-frontend/types/product.ts`, `routes/product-management/product/` (แท็บ: `pd-tab-general.tsx`, `pd-tab-unit-conversion.tsx`, `pd-tab-locations.tsx`, `pd-tab-eco.tsx`), `routes/product-management/eco/`
-- **Bruno:** `config/products/*` (13 request), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost) platform schema `prisma-shared-schema-platform/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
+- **Bruno:** `config/products/*` (13 request), `config/product-location/`, `config/location-product/`, `config/products-location-workflow/` (3), `master-data/products/*` (on-hand, on-order, last-purchase, inventory-movement, cost) backstage schema `prisma-shared-schema-backstage/prisma/schema.prisma` มี `tb_business_unit.calculation_method` และ `enum_calculation_method` อ้างจากมุมมอง costing
 - **รอง (cross-check แนวคิด):**
   - `../carmen/docs/product-management/PROD-PRD.md` — PRD หลักอธิบายชุดฟีเจอร์ product-management ความแตกต่างใน Section 5 (รายการ 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14)
   - `../carmen/docs/product-management/product-master-prd.md` — product-master PRD อธิบายโครงสร้าง UI (List page, Detail page พร้อม tab, Latest Purchase tab) และข้อกำหนดเชิงฟังก์ชัน ความแตกต่างใน Section 5 (รายการ 1, 6, 12)

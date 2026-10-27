@@ -1,8 +1,8 @@
 ---
 title: หมวดหมู่สินค้า (Product Category)
-description: taxonomy สินค้าสามระดับ (หมวดหมู่ > หมวดหมู่ย่อย > กลุ่มสินค้า) ขับเคลื่อนการนำทางแคตตาล็อก การสืบทอดคุณสมบัติ ค่าความคลาดเคลื่อน และ permission filter ตามหมวดหมู่
+description: taxonomy สินค้าสามระดับ (หมวดหมู่ > หมวดหมู่ย่อย > กลุ่มสินค้า) ขับเคลื่อนการนำทาง การสืบทอดค่า ค่าความคลาดเคลื่อน ค่าเริ่มต้นบัญชี GL แบบ Inventory / Direct และ flow เขียนทับ descendant
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: product, category, taxonomy, master-data, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # หมวดหมู่สินค้า (Product Category)
 
 > **At a Glance**
-> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (**3 ระดับคงที่** ไม่ใช่ self-referential) &nbsp;·&nbsp; **Trigger:** การดูแล taxonomy &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / recipe / รายงาน / การกำหนดสิทธิ์ &nbsp;·&nbsp; **สรุป 1 บรรทัด:** ชั้นการจำแนกประเภทที่ขับเคลื่อนการนำทาง ค่า default ที่สืบทอดมา และค่าความคลาดเคลื่อน
+> **เจ้าของ:** Product Admin &nbsp;·&nbsp; **ตาราง:** `tb_product_category` → `tb_product_sub_category` → `tb_product_item_group` (**3 ระดับคงที่** ไม่ใช่ self-referential) &nbsp;·&nbsp; **Trigger:** การดูแล taxonomy &nbsp;·&nbsp; **ใช้โดย:** PR / PO / GRN / recipe / รายงาน / การกำหนดสิทธิ์ &nbsp;·&nbsp; **สรุป 1 บรรทัด:** ชั้นการจำแนกประเภทที่ขับเคลื่อนการนำทาง ค่า default ที่สืบทอดมา ค่าความคลาดเคลื่อน และค่าเริ่มต้นของบัญชี GL
 
 ![หมวดหมู่สินค้า (Product Category) screen](/screenshots/product/category.png)
 
@@ -30,12 +30,15 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| เพิ่มหมวดหมู่ระดับบนสุด | Product Management → Category → **Add Category** | `code` เป็นการ **สร้างอัตโนมัติโดย server** (running-number) — แก้ไขในรอบนี้ (เปลี่ยน frontend เมื่อ 2026-07-13): ฟิลด์ Code ใน dialog ถูก disable เสมอพร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ส่วน API เองยังรับ code ที่ client ระบุเองได้ (เช่น การนำเข้าเป็นชุด) |
+| เพิ่มหมวดหมู่ระดับบนสุด | Product Management → Category → **Add Category** | ต้นไม้แสดงจำนวนสินค้าแบบ live บนแต่ละโหนด (`product_count`; item group ส่งมากับ list payload) `code` เป็นการ **สร้างอัตโนมัติโดย server** (running-number) — แก้ไขในรอบนี้ (เปลี่ยน frontend เมื่อ 2026-07-13): ฟิลด์ Code ใน dialog ถูก disable เสมอพร้อม placeholder "auto-generated" และถูกตัดออกจาก payload ตอนสร้าง ส่วน API เองยังรับ code ที่ client ระบุเองได้ (เช่น การนำเข้าเป็นชุด) |
 | เพิ่มหมวดหมู่ย่อย | hover แถวหมวดหมู่ parent → คลิกไอคอน **Add child** (+) ที่ปรากฏขึ้น | ตั้ง FK `product_category_id` เป็น parent; ลูกสืบทอด tax profile / ค่าความคลาดเคลื่อน default ของ parent ไม่มีปุ่ม "Add sub-category" แยกต่างหาก — ใช้ action hover "Add child" เดียวกันทุกระดับที่ไม่ใช่ใบไม้ |
 | เพิ่มกลุ่มสินค้า (ใบไม้) | hover แถวหมวดหมู่ย่อย → คลิก **Add child** (+) | ตั้ง FK `product_subcategory_id` เป็น parent กลุ่มสินค้าเป็นระดับใบไม้และไม่มี action "Add child" ของตัวเอง |
-| ตั้งค่าความคลาดเคลื่อนของราคา | แก้ระดับใดก็ได้ → `price_deviation_limit` | 0–100 % dialog ยังมี toggle **Cascade deviation** (`cascade_deviation`, default เปิด — `category-form-schema.ts:18-33`) ที่เติมค่าลูกใหม่ล่วงหน้าจากขีดจำกัดของ parent; ไม่มีคอลัมน์ `cascade_deviation` ใน schema จึงเป็นตัวช่วยตอนกรอกฟอร์ม ไม่ใช่กติกาที่เก็บไว้ **สิ่งที่อ่านขีดจำกัดจริง:** การ save GRN เช็ค `tb_product.price_deviation_limit` *ระดับสินค้า* เทียบกับราคาที่สั่ง (`good-received-note.deviation.ts:149`) — ค่าในต้นไม้ไปถึง GRN ก็ต่อเมื่อถูกคัดลอกลงบนสินค้าแล้วเท่านั้น |
+| ตั้งค่าความคลาดเคลื่อนของราคา | แก้ระดับใดก็ได้ → `price_deviation_limit` | 0–100 % **แก้ไขข้อความ 2026-09-22 ที่เรียก `cascade_deviation` ว่าตัวช่วยตอนกรอกฟอร์มที่ไม่มีผลที่เก็บไว้ — ข้อนั้นผิด** update API รับ `cascade_deviation` (DTO ของ gateway และ micro-business, `z.boolean().default(true).optional()`): เมื่อเป็น true และมี limit ใน payload ค่าใหม่จะ**ถูกเขียนลงบนทุก descendant ที่ live รวมทุกสินค้าใต้โหนด** (`updateMany` ใน transaction เดียวกับการอัปเดตโหนด) frontend ของ 2026-10 แทนที่ toggle เดิมด้วย dialog ยืนยัน (ด้านล่าง) และส่ง `cascade_deviation` อย่างชัดเจนเสมอ **สิ่งที่อ่าน limit:** การ save GRN เช็ค `tb_product.price_deviation_limit` *ระดับสินค้า* เทียบกับราคาที่สั่ง (`good-received-note.deviation.ts:149`) — ดังนั้นการแก้ที่ต้นไม้ไปถึง GRN ได้ผ่าน cascade นี้หรือการ save สินค้าใหม่เท่านั้น |
 | ตั้งค่าความคลาดเคลื่อนของปริมาณ | แก้ระดับใดก็ได้ → `qty_deviation_limit` | กลไกเดียวกัน; บังคับใช้ตอน save GRN ผ่าน `tb_product.qty_deviation_limit` (ปริมาณฐานที่รับเทียบกับที่สั่ง เฉพาะรับเกินเท่านั้น) |
-| Override tax profile | แก้ระดับใดก็ได้ → `tax_profile_id` / `tax_rate` | กระทบสินค้าใหม่เท่านั้น — สินค้าเดิมเก็บการตั้งค่าที่ snapshot แล้ว |
+| Override tax profile | แก้ระดับใดก็ได้ → `tax_profile_id` / `tax_rate` | โดยค่าเริ่มต้นกระทบสินค้าใหม่เท่านั้น — สินค้าเดิมเก็บการตั้งค่าที่ snapshot แล้ว เมื่อเลือก **cascade** API (`cascade_tax: true`, default ปิด) จะคัดลอก `tax_profile_id` / ชื่อ / อัตราของโหนดที่บันทึกไปยังทุก descendant ที่ live **และสินค้า** |
+| ตั้งบัญชี GL แบบ Inventory / Direct | แก้ระดับใดก็ได้ → **Inventory account** / **Direct account** (account picker; ว่าง = สืบทอดจากระดับบน แสดงเป็น placeholder) | เขียนแถว `tb_product_account_code_mapping` (`account_type` `inventory` / `direct`) ผ่าน `account_codes: { add[], update[], remove[] }` นี่คือค่าเริ่มต้นที่ [chart-of-account-mapping](/th/inventory/master-data/chart-of-account-mapping) resolve (item group → sub-category → category) list endpoint ไม่คืน `account_codes`; dialog โหลดจาก GET ระเบียนเดียว |
+| ดันค่าที่แก้ไปยัง descendant | บันทึกการแก้ที่เปลี่ยน deviation, บัญชีใดบัญชีหนึ่ง หรือ tax profile บนโหนดที่มีลูก → **dialog ยืนยัน** (`cascade-confirm-dialog.tsx`) | สองตัวเลือก: *cascade* (เขียนทับ descendant) หรือ *self only* dialog แสดงค่าที่เปลี่ยนตรงๆ และจำนวน sub-category / item group ที่ได้รับผล การเลือก cascade ส่ง `cascade_deviation` (เฉพาะเมื่อ limit เปลี่ยน และเฉพาะ limit ที่เปลี่ยน), `cascade_account_codes` (ประเภทที่เปลี่ยน; บัญชีที่ **ล้างว่าง** จะล้างบน descendant ทั้งหมด) และ `cascade_tax` การเลือก self ส่ง `cascade_deviation: false` และไม่ส่งอย่างอื่น จะมีการยืนยันแยกอีกอันเมื่อ `is_used_in_recipe` / `is_sold_directly` เปลี่ยน |
+| พิมพ์ / export ต้นไม้ category | ปุ่ม **Print** / **Export** → dialog ช่วง (รหัส Category / Sub Category / Item Group *จาก–ถึง*, `ALL` = ไม่จำกัด) | "Product Category Report": Print เปิด report viewer, Export ดาวน์โหลด CSV แบบแบนจาก `/reports/export`; `REPORT_TEMPLATE_UNAVAILABLE` หมายถึงเทมเพลตไม่ได้ติดตั้งหรือถูกปิดสำหรับ BU
 | toggle `is_used_in_recipe` / `is_sold_directly` | ฟิลด์ flag บนระดับใดก็ได้ | ใช้โดย recipe builder และ POS picker |
 | inactivate ใบไม้ | แก้กลุ่มสินค้า → `is_active = false` | ซ่อนจาก picker สินค้าใหม่ สินค้าในประวัติยังแสดง |
 | Soft-delete ระดับใดก็ได้ | action **Delete** | **guard ที่ยืนยันแล้ว เฉพาะหนึ่งระดับถัดลงไป:** หมวดหมู่ → `409 PRODUCT_CATEGORY_HAS_SUB_CATEGORY` ขณะที่ยังมีหมวดหมู่ย่อยที่ใช้งาน; หมวดหมู่ย่อย → `PRODUCT_SUB_CATEGORY_HAS_ITEM_GROUP`; กลุ่มสินค้า → `PRODUCT_ITEM_GROUP_HAS_PRODUCTS` ขณะที่ยังมีสินค้าที่ใช้งานอ้างอิง (`product-category.service.ts`, `product-sub-category.service.ts`, `product-item-group.service.ts` `delete()`) |
@@ -44,10 +47,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การแก้ไข |
 |---|---|---|
-| "Code already exists" บนหมวดหมู่ | `tb_product_category.code` ไม่ซ้ำในแถวที่ไม่ถูกลบ | กติกาฝั่ง server ยังบังคับใช้อยู่ — แต่เนื่องจาก UI ไม่รับ code ที่พิมพ์เองแล้ว (แก้ไขในรอบนี้) เส้นทาง error นี้เข้าถึงได้เฉพาะผ่านการนำเข้าเป็นชุดหรือ direct API ไม่ใช่ dialog Add-Category ที่ใช้งานจริง |
+| `409 PRODUCT_SUB_CATEGORY_ALREADY_EXISTS` / `PRODUCT_ITEM_GROUP_ALREADY_EXISTS` / "Code already exists" | **เปลี่ยน 2026-09 (`57b34748d`):** `code` ของ sub-category และ item-group (และ code สินค้า) ต้องไม่ซ้ำ**ทั้ง business unit** โดยไม่สนตัวพิมพ์ — ไม่ใช่แค่ภายใน parent — ตอน create ที่ระบุ code และตอนเปลี่ยน code ชื่อต้องไม่ซ้ำภายใน parent `code` ของ category ไม่ซ้ำในแถวที่ไม่ถูกลบ | กติกาฝั่ง server ยังบังคับใช้อยู่ — แต่เนื่องจาก UI ไม่รับ code ที่พิมพ์เองแล้ว (แก้ไขในรอบนี้) เส้นทาง error นี้เข้าถึงได้เฉพาะผ่านการนำเข้าเป็นชุดหรือ direct API ไม่ใช่ dialog Add-Category ที่ใช้งานจริง |
 | "Cannot delete — products still reference this" (`PRODUCT_ITEM_GROUP_HAS_PRODUCTS`) / "has sub-categories" / "has item groups" | มีลูกที่ใช้งานอยู่หนึ่งระดับถัดลงไป | ย้ายหรือลบลูกก่อน แล้วลองใหม่ |
 | "Cannot re-parent sub-category" | FK บน `product_subcategory_id` เป็น `NoAction` สินค้าอ้างอิงกลุ่มสินค้าของมัน | ต้อง migrate ข้อมูลด้วยมือ — ไม่ใช่ action ของ UI |
-| การเปลี่ยนภาษีไม่สะท้อนบนสินค้าเดิม | tax profile snapshot ตอน save สินค้า | save สินค้าใหม่เพื่อรับค่า default ใหม่ |
+| การเปลี่ยนภาษีไม่สะท้อนบนสินค้าเดิม | tax profile snapshot ตอน save สินค้า | save สินค้าใหม่ หรือเลือก *cascade* ใน dialog ยืนยัน (`cascade_tax`) |
 | `price_deviation_limit = 0` ไม่บล็อก 0% deviation | `0` หมายถึง "ไม่ได้ตั้งค่าความคลาดเคลื่อน" — fallback ไปที่ค่า default ของ app | ตั้ง `%` บวกเพื่อบังคับ cap จริง |
 | ความตั้งใจของลำดับชั้น vs schema | carmen/docs อธิบาย "ลึกได้ถึง 5 ระดับ" schema บังคับ 3 | schema เป็นแหล่งความจริง — 3 ระดับคงที่ (Inferred) |
 
@@ -56,8 +59,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - **3 ระดับคงที่ ไม่ใช่ self-referential** แต่ละระดับมีตารางของตัวเองพร้อม FK ชี้ไปยัง parent — **ไม่มีคอลัมน์ `parent_id` แบบ recursive** เครื่องมือที่สันนิษฐานว่าเป็นต้นไม้ self-referential จะใช้ไม่ได้
 - **การสืบทอดคือ `item_group ?? sub_category ?? category ?? app default`** — ระดับที่ละเอียดที่สุดชนะ คำนวณตอน save สินค้า
 - **บล็อกการ re-parent** เมื่อสินค้าอ้างอิงกลุ่มสินค้าแล้ว ไม่สามารถย้ายหมวดหมู่ย่อยไปยังหมวดหมู่อื่นได้ — FK `NoAction`
-- **Tax profile snapshot** การเปลี่ยน `tax_profile_id` บนหมวดหมู่กระทบเฉพาะสินค้าใหม่ สินค้าเดิมเก็บการตั้งค่าที่ snapshot แล้วจนกว่าจะ save ใหม่
-- **ขอบเขตของ code** code ของหมวดหมู่ย่อยและกลุ่มสินค้าไม่ซ้ำภายใน parent (composite `(code, name, deleted_at)`) ไม่ใช่ทั่วโลก
+- **Tax profile snapshot** การเปลี่ยน `tax_profile_id` บนหมวดหมู่กระทบเฉพาะสินค้าใหม่ เว้นแต่ผู้ใช้ยืนยัน cascade (`cascade_tax`) ซึ่งทุก descendant และสินค้าจะถูกเขียนทับ รวมถึงรายการที่ override ในระดับล่างโดยตั้งใจ
+- **Cascade เป็นการทำลายและเงียบต่อแถว** การเขียนทับแทนที่ override ที่ระดับล่าง; การล้างบัญชีที่โหนดหนึ่งจะ soft-delete แถว mapping ประเภทเดียวกันบนทุก descendant (`cascadeAccountCodes`) ไม่มี diff ต่อแถวและไม่มี undo และ cascade ทั้งหมดรันใน transaction เดียว (`timeout: 30000`) ต้นไม้ขนาดใหญ่มากจึงอาจล้มเหลวทั้งก้อน
+- **ค่าเริ่มต้นของบัญชีข้ามสินค้า** resolver ของ mapping อ่านเฉพาะ item group → sub-category → category; แถว `tb_product_account_code_mapping` ระดับสินค้ามีอยู่ในตารางแต่ account mapping **ไม่ดู**
+- **ขอบเขตของ code** index ใน DB เป็น composite (`(code, name, deleted_at)`) แต่ตั้งแต่ 2026-09 service ยังบังคับ uniqueness ทั้ง BU ของ `code` ของ sub-category, item-group และสินค้า (ไม่สนตัวพิมพ์) — เพราะ code ที่สร้างอัตโนมัติของลูกคือ `<parent code><running number>` พ่อแม่สองตัวที่ใช้ code เดียวกันเคยแจก code ลูกซ้ำกัน ลำดับ code ถัดไปอ่านจากทุก code live ที่มี prefix เดียวกันภายใต้ advisory lock ต่อ prefix (`generateSubCategoryCode`, `generateItemGroupCode`, `generateProductCode`)
 - **ค่าความคลาดเคลื่อน `0`** หมายถึง "ไม่ได้ตั้งค่า" — `checkPriceDeviation` / `checkQtyDeviation` return ทันทีเมื่อขีดจำกัดของสินค้า `≤ 0` จึงไม่มีการเช็ค
 - **แถวของต้นไม้กลับมาเป็น nested object (2026-09-17)** แถวหมวดหมู่ย่อยมี `product_category: { id, name }` และทุกระดับมี `tax_profile: { id, name }` แทนคู่ `*_id` / `*_name` แบบแบน (frontend fix `f8d4026c`); การเรียง list เริ่มต้นคือ `code:asc` ทั้งสามระดับ (`withDefaultSort`, 2026-09-13)
 
@@ -85,6 +90,10 @@ dateCreated: 2026-05-16T15:00:00.000Z
 | Audit columns | — | Yes | `created_*`, `updated_*`, `deleted_*` |
 
 **Constraints:** `@@unique([code, deleted_at])`, `@@unique([code, name, deleted_at])` reverse relation ไปยัง `tb_product_sub_category`, `tb_product_category_comment`, `tb_tax_profile`
+
+### 5.1a ค่าเริ่มต้นของบัญชีบนต้นไม้
+
+แต่ละระดับเป็นเจ้าของแถว live ใน `tb_product_account_code_mapping` ได้สูงสุดสองแถว (หนึ่งแถวต่อ `account_type` ใน `inventory`, `direct`; unique ต่อ owner column + type + `deleted_at`) Owner column: `product_category_id`, `product_sub_category_id`, `product_item_group_id` (และ `product_id` ซึ่ง account mapping ไม่ใช้) ดู [01-data-model](/th/inventory/product/01-data-model) § 2.11
 
 ### 5.2 `tb_product_sub_category` (ระดับ 2)
 
@@ -140,12 +149,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 - [recipe](/th/inventory/recipe) — filter `is_used_in_recipe`
 - [access-control/permission](/th/inventory/access-control/permission) — filter ตามหมวดหมู่สำหรับ Purchaser / Store Keeper
 - [master-data/tax-profile](/th/inventory/master-data/tax-profile) — การ cascade `tax_profile_id`
+- [master-data/chart-of-account-mapping](/th/inventory/master-data/chart-of-account-mapping) — consume ค่าเริ่มต้นบัญชี Inventory / Direct ที่ตั้งที่นี่
 
 ## 8. แหล่งอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_product_category` (line ~1801), `tb_product_sub_category` (~1952), `tb_product_item_group` (~1876), `tb_product_category_comment` (~1841)
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/product-category/`, `product-sub-category/`, `product-item-group/` (delete guard); ผู้บริโภค deviation `apps/micro-business/src/inventory/good-received-note/good-received-note.deviation.ts`
-- **Frontend:** `../carmen-frontend/routes/product-management/category/` (`category-form-schema.ts`, `use-category-tree.ts`)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/product-category/`, `product-sub-category/`, `product-item-group/` (delete guard; บล็อก cascade ใน `update()` สำหรับ deviation / tax / account codes), `common/account-code/account-code-cascade.helper.ts`; ผู้บริโภค deviation `apps/micro-business/src/inventory/good-received-note/good-received-note.deviation.ts`
+- **Frontend:** `../carmen-frontend/routes/product-management/category/` (`category-form-schema.ts`, `cascade-changes.ts`, `cascade-confirm-dialog.tsx`, `category-report-dialog.tsx`, `use-category-report.ts`, `use-node-account-codes.ts`, `use-category-tree.ts`)
 - **E2E:** `../carmen-frontend-e2e/tests/101-product-category.spec.ts` (23 กรณี) + `docs/test-cases/gaps/101-product-category-gap.md` (39 กรณีที่ยังไม่ครอบคลุม)
 - **carmen/docs:** `../carmen/docs/product-management/PROD-API-Endpoints-Categories.md`; `../carmen/docs/product-management/PROD-Overview.md`
 - **Module landing:** [product](/th/inventory/product) § 3 (แนวคิดสำคัญ Product Category)

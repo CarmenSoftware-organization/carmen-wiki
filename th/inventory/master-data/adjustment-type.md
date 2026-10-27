@@ -2,7 +2,7 @@
 title: ประเภทการปรับสต๊อก (Adjustment Type)
 description: รหัสเหตุผลสำหรับการปรับสต๊อก stock-in / stock-out — ใช้โดยการ posting แบบ manual ของโมดูล inventory-adjustment เท่านั้น; physical count และ spot check ไม่ได้ตั้งค่านี้
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, adjustment-type, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -36,7 +36,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | อาการ / ข้อความ | สาเหตุ | การจัดการ |
 |---|---|---|
-| "Code already in use" | `code` ซ้ำบนแถว non-deleted | เลือก code อื่นหรือ reactivate แถวที่มี |
+| `ADJUSTMENT_TYPE_ALREADY_EXISTS` (catalog; dialog แสดงใต้ **Code**) | `code` ซ้ำบนแถว non-deleted | เลือก code อื่นหรือ reactivate แถวที่มี |
 | "Type required" | Form ส่งโดยไม่มี `stock_in` / `stock_out` | เลือกทิศทาง — UI filter ตามมัน |
 | **ยังไม่ยืนยัน** — ไม่พบ guard สำหรับการลบหรือการเปลี่ยน type | อ่านโค้ด `adjustment-type.service.ts`'s `delete()` และ `update()` โดยตรงในรอบนี้ พบว่า**ไม่มี**การเช็ค stock-in/out ที่อ้างอิงอยู่ก่อน soft-delete และ**ไม่มี**การเช็คที่กัน `type` ไม่ให้เปลี่ยนตอน `update()` — `...data` ถูก spread ตรงเข้า Prisma update โดยมีแค่การเช็ค code-uniqueness เท่านั้น | ถือว่า "cannot delete — referenced by postings" และ "type cannot be changed" **ยังไม่ถูกบังคับใช้** จนกว่าจะตรวจสอบซ้ำ — การ inactivate หรือเปลี่ยนทิศทางของเหตุผลที่ใช้อยู่แล้วจะสำเร็จในปัจจุบัน |
 
@@ -44,6 +44,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 - **การพลิกทิศทางหลังใช้ทำได้ในปัจจุบัน** ไม่มีโค้ดใดบล็อกไว้ — `update()` ยอมรับ `type` ใหม่บนแถวที่ถูกอ้างอิงอยู่แล้ว การทำเช่นนี้จะทำลายรายงานที่อิงทิศทางของ posting เดิม; ถือว่าข้ออ้างเดิม "ระบบปฏิเสธ" ยังไม่ยืนยัน
 - **การลบเหตุผลที่ถูกอ้างอิงสำเร็จในปัจจุบัน** `delete()` เป็น soft-delete แบบไม่มีเงื่อนไข (`is_active: false` + `deleted_at`) โดยไม่มีการเช็ค FK — แถวประวัติยัง resolve ชื่อผ่าน FK (ที่ soft-deleted) ได้เหมือนเดิม
+- **บัญชี GL ต่อ adjustment type อยู่ที่อื่น** บัญชีที่การปรับสต๊อกไป post กำหนดต่อ location x item group x adjustment type ใน [chart-of-account-mapping](/th/inventory/master-data/chart-of-account-mapping) (แท็บ GL, `movement = adjustment`) ไม่ได้อยู่บนระเบียนนี้
 - **การ filter ทิศทาง** อยู่ที่ picker — หน้า stock-in ไม่เห็นแถว `stock_out` และในทางกลับกัน
 
 ---
@@ -61,6 +62,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 | `name` | `String @db.VarChar` | No | ชื่อแสดงผล |
 | `type` | `enum_adjustment_type` | No | `stock_in` หรือ `stock_out` |
 | `description` | `String? @db.VarChar` | Yes | Free text |
+| `chart_of_accounts_id` | `String? @db.Uuid` | Yes | hint บัญชีฝั่งตรงข้ามที่เพิ่มโดย `20261016140000_account_mapping_contra_defaults`; **ไม่มี FK** รับตอน create/update และ validate ว่าเป็นแถว [chart-of-accounts](/th/inventory/master-data/chart-of-accounts) ที่ active และ postable (มิฉะนั้น `422 GL_ACCOUNT_NOT_POSTABLE`) **ไม่มีอะไรอ่านมัน:** resolver ของ account-mapping ตัด fallback ตาม adjustment-type ออก (commit `db3544c76`) และ frontend ถอด picker ออกอีกครั้ง (`bd572120`, "nothing reads it") ถือว่าเป็นซาก
 | `is_active` | `Boolean?` | Yes | Active flag |
 | `note`, `info`, `dimension` | — | Yes | Metadata มาตรฐาน |
 | `doc_version` | `Int` | No | เวอร์ชัน optimistic-lock (default `0`) |
@@ -83,6 +85,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 - [inventory-adjustment](/th/inventory/inventory-adjustment) — ทุกบรรทัด Stock-In / Stock-Out แบบ manual บรรจุ FK ของ adjustment type; เป็นโมดูลเดียวที่ตั้งค่านี้จริง
 - [physical-count](/th/inventory/physical-count) — variance rollup ของมันสร้างแถว `tb_stock_in`/`tb_stock_out` โดยตรง แต่**ไม่**ตั้ง `adjustment_type_id` (ยืนยันว่าเป็น `null` ทุกแถวที่มันสร้าง) — ไม่มีรหัสเหตุผล ไม่มีการเชื่อมกลับมาที่ตารางนี้
+- [chart-of-account-mapping](/th/inventory/master-data/chart-of-account-mapping) — หนึ่งแถว GL mapping ต่อ adjustment type ที่ active
 - [spot-check](/th/inventory/spot-check) — `submit()` ของมันไม่สร้างแถว `tb_stock_in`/`tb_stock_out` เลย จึงไม่เคยอ้างอิงตารางนี้
 
 ## 8. แหล่งอ้างอิง

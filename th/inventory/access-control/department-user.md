@@ -2,7 +2,7 @@
 title: ผู้ใช้ระดับแผนก (Department User)
 description: Pivot การเป็นสมาชิกของผู้ใช้กับแผนก — ผู้ใช้คนใดอยู่ในแผนกใด และ Head of Department (HOD) ที่ขับเคลื่อน approval routing ของ PR/SR ตั้งแต่ 2026-09-04 แก้ไขแผนกของผู้ใช้จากหน้าจอ user ได้ด้วย
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: access-control, department-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-06-04T00:00:00.000Z
@@ -15,12 +15,13 @@ dateCreated: 2026-06-04T00:00:00.000Z
 
 ![ผู้ใช้ระดับแผนก (Department User) screen](/screenshots/access-control/department-user.png)
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
 
-- **แก้ไขจากฝั่ง user ทำได้จริงอีกครั้ง** ส่วน Departments ของหน้าจอ User Assign เป็นแบบอ่านอย่างเดียวที่ baseline; ตั้งแต่ BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` รับ `department_id` ค่าเดียว และหน้าจอแสดงเป็น `LookupDepartment` (`user-assigned-departments.tsx:38-40`, FE `39ae1bba`, 2026-09-07) endpoint ของ user คืน `department: { id, name } | null` — ค่าเดียว สอดคล้องกับกฎ membership ที่ในทางปฏิบัติเป็นแผนกเดียวด้านล่าง Error: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (ผู้ใช้เป็น HOD ของแผนกใดแผนกหนึ่ง; การย้ายถูกปฏิเสธเพื่อไม่ให้ขั้น HOD ว่างเปล่าโดยเงียบ ๆ — `catalog.ts:351-358`) flag HOD เองยังตั้งได้จากหน้าจอ Department เท่านั้น (บล็อก HOD ของหน้าจอ user ถูกถอดออก, `5684f93e`)
+- **แก้ไขจากฝั่ง user ทำได้จริงอีกครั้ง** ส่วน Departments ของหน้าจอ User Assign เป็นแบบอ่านอย่างเดียวที่ baseline; ตั้งแต่ BE `9a91d7f32` (2026-09-04) `PATCH /api/config/:bu_code/users/:user_id` รับ `department_id` ค่าเดียว และหน้าจอแสดงเป็น `LookupDepartment` (`user-assigned-departments.tsx:36-44`, FE `39ae1bba`, 2026-09-07) endpoint ของ user คืน `department: { id, name } | null` — ค่าเดียว สอดคล้องกับกฎ membership ที่ในทางปฏิบัติเป็นแผนกเดียวด้านล่าง Error: `USER_ACCESS_DEPARTMENT_NOT_FOUND`, `USER_ACCESS_DEPARTMENT_ALREADY_HOD` (ผู้ใช้เป็น HOD ของแผนกใดแผนกหนึ่ง; การย้ายถูกปฏิเสธเพื่อไม่ให้ขั้น HOD ว่างเปล่าโดยเงียบ ๆ — `catalog.ts:396-409`: `…_NOT_FOUND` เป็น HTTP 404, `…_ALREADY_HOD` เป็น 409; `USER_ACCESS_DEPARTMENT_WRITE_FAILED` ที่อยู่ใกล้กันเป็น 500) flag HOD เองยังตั้งได้จากหน้าจอ Department เท่านั้น (บล็อก HOD ของหน้าจอ user ถูกถอดออก, `5684f93e`)
+- **หน้าจอ Department โหลดทะเบียนผู้ใช้แบบ lazy (FE `29570cf8`, `0bac08d4`)** ในโหมด **view** จะดึงเฉพาะอีเมลของสมาชิกและ HOD ตาม id (`useEntitiesByIds` เหนือ `useUser`, `idFilterKey: "user_id"`); รายชื่อผู้ใช้ทั้ง BU สำหรับ Transfer widget สองตัวจะถูกขอเฉพาะในโหมด **edit/create** (`useUserAll`, `enabled: !isView`) แหล่งของ Transfer ไม่เปลี่ยน: Members เสนอผู้ใช้ที่ไม่มีแผนก (หรืออยู่ในแผนกนี้แล้ว), HOD เสนอผู้ใช้ทั้งหมด รหัสแผนกซ้ำตอนนี้แสดงเป็น field error บน **Code** (`serverFieldErrors: { DEPARTMENT_ALREADY_EXISTS: "code" }`)
 - **การอ้างอิง user แบบ nested (BE `5d64f5dfd`, 2026-09-17)** `department_users[]` และ `hod_users[]` ของ detail แผนกตอนนี้มี `user: { id }` แทน `user_id` แบบ flat (ไม่มี name คู่กัน); ฟอร์มแผนกถูกแก้ให้อ่าน object (`b55294b3`) `DepartmentUserResponseDto` บน `api/config/:bu_code/department-users` ไม่เปลี่ยน (`id`, `department_id`, `user_id`, `is_active`, `doc_version`, `audit`)
 - **ผลกระทบต่อ workflow** `GET api/config/:bu_code/workflows/assignees/:target_user_id` (2026-09-03) list ขั้นที่ผู้ใช้ถืออยู่ — เรียกก่อนลบผู้ใช้ออกจากแผนก; ขั้นที่ดึง actor จาก HOD ของแผนกหรือจากทั้งแผนกถูกยกเว้น เพราะการเสียสมาชิกหนึ่งคนไม่ทำให้ขั้นว่าง ดู [system-config/workflow](/th/inventory/system-config/workflow)
-- `findByUserId` ยังใช้ `findFirst` (`department-user.service.ts:85`) — แผนก "สมาชิก" หนึ่งแผนกต่อผู้ใช้; ข้อค้นพบเรื่อง HOD / HOD เดียวด้านล่างตรวจสอบซ้ำแล้วและไม่เปลี่ยน
+- `findByUserId` ยังใช้ `findFirst` (`department-user.service.ts:85`; การ lookup HOD `hasHodInDepartment`/`getHodInDepartment` ก็ใช้ `findFirst` ที่ `:40`) — แผนก "สมาชิก" หนึ่งแผนกต่อผู้ใช้; ข้อค้นพบเรื่อง HOD / HOD เดียวด้านล่างตรวจสอบซ้ำแล้วและไม่เปลี่ยน
 
 ## 1. คืออะไรและใครใช้
 
@@ -70,7 +71,7 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | --- | --- | --- | --- |
 | `id` | `String @db.Uuid` | No | Primary key |
-| `user_id` | `String @db.Uuid` | No | อ้างอิง platform `tb_user.id`; **ไม่ใช่** Prisma FK บน model นี้ (cross-schema, pattern เดียวกับ [access-control/user-location](/th/inventory/access-control/user-location)) — มีแค่ `department_id` ที่ประกาศ `@relation` |
+| `user_id` | `String @db.Uuid` | No | อ้างอิง backstage `tb_user.id`; **ไม่ใช่** Prisma FK บน model นี้ (cross-schema, pattern เดียวกับ [access-control/user-location](/th/inventory/access-control/user-location)) — มีแค่ `department_id` ที่ประกาศ `@relation` |
 | `department_id` | `String @db.Uuid` | No | FK ไปยัง `tb_department` |
 | `is_hod` | `Boolean?` | Yes | Default `false` `true` = Head of Department สำหรับการมอบหมายนี้ |
 | `note` | `String? @db.VarChar` | Yes | Annotation แบบ free-text |
@@ -100,8 +101,8 @@ Flag HOD ขับเคลื่อน logic workflow ปลายน้ำ: �
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (บรรทัด 4771)
-- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove ตอน update แผนก); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :id`, `GET`, `POST`, `PUT :id`, `DELETE :id`); `.../apps/backend-gateway/src/config/config_users/` (PATCH `department_id` ฝั่ง user); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_department_user` (บรรทัด 5544)
+- **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/master/department-user/department-user.service.ts` (`findByUserId`, `hasHodInDepartment`, `getHodInDepartment`); `.../apps/micro-business/src/master/departments/departments.service.ts` (Members/HOD add-remove ตอน update แผนก); `.../apps/backend-gateway/src/config/config_department-users/config_department-users.controller.ts` (`GET user/:user_id` `:71`, `GET :department_user_id` `:131`, `GET` `:189`, `POST` `:250`, `PUT :department_user_id` `:322`, `DELETE :department_user_id` `:401`); `.../apps/backend-gateway/src/config/config_users/` (PATCH `department_id` ฝั่ง user); serializer `apps/backend-gateway/src/common/dto/department/department.serializer.ts`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/department-user/`, `config/users/PATCH-patch-access-config-users.bru`
 - **Docs:** `../carmen/docs/app/system-administration/user-management/DD-user-management.md` — รายละเอียด entity `tb_department_user` และ definition ของ HOD index (frozen 2026-04-27)
 - **Docs:** `../carmen/docs/app/system-administration/user-management/BR-user-management.md` — BR-002: กฎทางธุรกิจ HOD Designation (design intent; ไม่ถูกบังคับใน code ปัจจุบัน — ดูกรณีพิเศษ)

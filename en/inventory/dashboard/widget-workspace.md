@@ -70,7 +70,7 @@ Datasets that declare `params[]` (only the `dashboard-lab` catalog endpoint retu
 | Aspect | Behaviour |
 |---|---|
 | Who sees it | Everyone in the BU, same set (rows live in the BU's tenant schema, no `user_id`) |
-| Who edits | `useCan(PERMISSIONS.dashboard.bu_widget.{create,update,delete})` = `dashboard.bu_widget:create|update|delete`; without them the cards are read-only (no handle, gear, delete). Backend enforces the same keys with `@Permission` on `POST`, `PATCH reorder`, `PATCH :id`, `DELETE :id` (`dashboard-bu-widgets.controller.ts:139,171,203,236`); the two `GET`s have none |
+| Who edits | `useCan(PERMISSIONS.dashboard.bu_widget.{create,update,delete})` = `dashboard.bu_widget:create/update/delete`; without them the cards are read-only (no handle, gear, delete). Backend enforces the same keys with `@Permission` on `POST`, `PATCH reorder`, `PATCH :id`, `DELETE :id` (`dashboard-bu-widgets.controller.ts:139,171,203,236`); the two `GET`s have none |
 | Visibility | Hidden entirely when the list call fails with no cached data (backend not deployed), or when the BU has no widgets and the viewer cannot create |
 | Ordering | `order_index` ascending; drag-reorder sends `PATCH …/dashboard-widgets/bu/reorder` (bulk, micro-data `POST /api/dashboard/bu-widgets/reorder`); new rows get `last + 10` |
 | Data | One lazy `GET …/dashboard-lab/widgets/{id}/data?scope=bu` per card, through the same concurrency queue (`runWidgetDataTask`) as personal widgets |

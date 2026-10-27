@@ -2,7 +2,7 @@
 title: ชั้นวาง (Shelf)
 description: ข้อมูลหลักชั้นวางระดับ BU (ลำดับการเดินนับ) กำหนดต่อแถว product-location — เพิ่มเมื่อ 2026-08 และแยกออกจาก location เมื่อ 2026-08-20
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: master-data, shelf, location, configuration, carmen-software
 editor: markdown
 dateCreated: '2026-09-22T18:00:00.000Z'
@@ -38,7 +38,7 @@ dateCreated: '2026-09-22T18:00:00.000Z'
 | แบบเดียวกัน จากฝั่ง location | API เท่านั้น — `PATCH /locations/:id` `products.add[] / update[].shelf_id` | transfer list สินค้าบนฟอร์ม location ไม่มี shelf picker |
 | ล้างการกำหนดชั้นวาง | ส่ง `shelf_id: null` บนแถว product-location | ไม่ส่งฟิลด์นี้เพื่อคงค่าเดิม |
 | ดูว่าอะไรอยู่บนชั้นวาง | `GET /api/config/:bu_code/shelves/:id` | detail เพิ่ม `product_count` + `products[]` (`product_code`, `product_name`, `product_local_name`, `product_sku`, `location_code`, `location_name`) เรียงตามรหัสสินค้า (`shelf.helper.ts:16-70`); endpoint แบบ list ไม่มีรายการสินค้า |
-| ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก lookup ของฟอร์มสินค้า (`lookup-shelf.tsx:41` filter `is_active`); การกำหนดที่มีอยู่ยังเก็บ snapshot ไว้ |
+| ยกเลิกการใช้งาน | Toggle `is_active` | ซ่อนจาก lookup ของฟอร์มสินค้า (`components/lookup/lookup-shelf.tsx` ตอนนี้เรียก Lookup API, `useLookupResource("location_shelf")`; ตาม doc comment ของมัน endpoint filter แถวที่ active เอง และข้าม filter นั้นเฉพาะ `?ids=` ที่เลือกไว้แล้ว); การกำหนดที่มีอยู่ยังเก็บ snapshot ไว้ |
 | ลบ | action **Delete** | **ถูกบล็อก** ขณะที่ยังมีแถว `tb_product_location` ที่ยังใช้งานอ้างอิงชั้นวางนี้ — เป็นหนึ่งใน delete guard ของข้อมูลหลักไม่กี่ตัวที่มีอยู่จริง |
 
 ## 3. การตรวจสอบและข้อผิดพลาด

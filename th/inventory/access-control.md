@@ -1,8 +1,8 @@
 ---
 title: สิทธิ์การเข้าถึง (Access Control)
-description: ผู้ใช้ บทบาท สิทธิ์ และการเข้าถึงหน่วยธุรกิจหลายหน่วย ตรวจสอบซ้ำ 2026-09-22 — tb_location_user (เปลี่ยนชื่อ), tb_user_invitation แทน tb_temp_bu_user, แก้ไขสิทธิ์ผู้ใช้ผ่าน PATCH /api/config/:bu_code/users/:user_id
+description: ผู้ใช้ บทบาท สิทธิ์ และการเข้าถึงหน่วยธุรกิจหลายหน่วย ตรวจสอบซ้ำ 2026-10-27 — tb_location_user, tb_user_invitation แทน tb_temp_bu_user, แก้สิทธิ์ผู้ใช้ผ่าน PATCH /api/config/:bu_code/users/:user_id
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: access-control, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -11,9 +11,19 @@ dateCreated: 2026-05-16T08:00:00.000Z
 # สิทธิ์การเข้าถึง (Access Control)
 
 > **At a Glance**
-> **วัตถุประสงค์โมดูล:** Resolve "ผู้ใช้ X สามารถทำ action Y บน resource Z" สำหรับทุก request ธุรกรรม &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_invitation` (+ `_business_unit`), `tb_department_user`, `tb_location_user` (เปลี่ยนชื่อจาก `tb_user_location` เมื่อ 2026-09-04) &nbsp;·&nbsp; **หน้าย่อย:** 6 &nbsp;·&nbsp; **ตรวจสอบซ้ำ 2026-09-22**
+> **วัตถุประสงค์โมดูล:** Resolve "ผู้ใช้ X สามารถทำ action Y บน resource Z" สำหรับทุก request ธุรกรรม &nbsp;·&nbsp; **กลุ่มเป้าหมาย:** Sysadmin, Security Officer, BU Admin &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_user`, `tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_invitation` (+ `_business_unit`), `tb_department_user`, `tb_location_user` (เปลี่ยนชื่อจาก `tb_user_location` เมื่อ 2026-09-04) &nbsp;·&nbsp; **หน้าย่อย:** 6 &nbsp;·&nbsp; **ตรวจสอบซ้ำ 2026-10-27**
 
-## การเปลี่ยนแปลงตั้งแต่ 2026-07-29 (ตรวจสอบแล้ว 2026-09-22)
+## การเปลี่ยนแปลงตั้งแต่ 2026-09-22 (ตรวจสอบแล้ว 2026-10-27)
+
+| การเปลี่ยนแปลง | แหล่งที่มา | หน้า wiki |
+|---|---|---|
+| Google sign-in บนหน้า login และหน้าคำเชิญ (`/api/auth/google/{status,authorize,callback}`, FE `/login/callback`); app-status code บน login | BE `67afc785f`, `c2ec7cbfe`; FE `4b215378`, `beb45f89` | [user](/th/inventory/access-control/user) |
+| รายละเอียด role ทำเครื่องหมาย grant ด้วย `is_granted`; ฟอร์มเลือกเฉพาะสิทธิ์ที่ grant แล้ว; field error กรณีชื่อซ้ำ | FE `93785c34`, `b71f86ea` | [application-role](/th/inventory/access-control/application-role) |
+| permission resource ใหม่: `system_admin.bu_api_key`, `configuration.customer`, `configuration.chart_of_account_mapping`, `dashboard.bu_widget`; `@Permission` อยู่บน 88 route | BE `346649667`, `30612605e` | [permission](/th/inventory/access-control/permission) |
+| **ข้อค้นพบที่ตรวจซ้ำแล้ว ยังไม่ปิด:** controller ของ role, user-role และ permission มีเพียง `KeycloakGuard` (ไม่มี `AppIdGuard` / `@Permission`) | `config_application-roles.controller.ts:59`, `config_permissions.controller.ts:33` | [application-role](/th/inventory/access-control/application-role) |
+| เปลี่ยนชื่อ: `prisma-shared-schema-platform` → `-backstage`, `tb_platform_*` → `tb_backstage_*`, gateway `src/platform/` → `src/backstage/` | BE `c820b5064`, `cb78788a6` | ทุกหน้า |
+
+### ก่อนหน้านี้: การเปลี่ยนแปลงตั้งแต่ 2026-07-29 (ตรวจสอบแล้ว 2026-09-22)
 
 | การเปลี่ยนแปลง | วันที่ | แหล่งที่มา | หน้า wiki |
 |---|---|---|---|
@@ -70,9 +80,9 @@ Sysadmin เป็นเจ้าของการตั้งค่าตั�
 
 ## 5. แหล่งข้อมูลอ้างอิง
 
-- **Prisma platform:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_invitation`, `tb_user_invitation_business_unit` และ enum สนับสนุน `enum_token_type`, `enum_user_business_unit_role`, `enum_user_invitation_status` `tb_temp_bu_user` ถูก drop เมื่อ 2026-08-05 (`20260805100000_drop_temp_bu_user`) ไม่มี `enum_platform_role` แล้ว — ถูกลบไป 2026-06-10 แทนที่ด้วยระบบ relational `tb_platform_role` (ขอบเขตของ Carmen Blue Backstage admin — ดู [access-control/user](/th/inventory/access-control/user) หัวข้อ Edge Cases)
+- **Prisma platform:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_user`, `tb_user_profile`, `tb_user_login_session`, `tb_application_role`, `tb_application_role_tb_permission`, `tb_user_tb_application_role`, `tb_permission`, `tb_user_tb_business_unit`, `tb_user_invitation`, `tb_user_invitation_business_unit` และ enum สนับสนุน `enum_token_type`, `enum_user_business_unit_role`, `enum_user_invitation_status` `tb_temp_bu_user` ถูก drop เมื่อ 2026-08-05 (`20260805100000_drop_temp_bu_user`) ไม่มี `enum_platform_role` แล้ว — ถูกลบไป 2026-06-10 แทนที่ด้วยระบบ relational `tb_backstage_role` (ขอบเขตของ Carmen Blue Backstage admin — ดู [access-control/user](/th/inventory/access-control/user) หัวข้อ Edge Cases)
 - **Prisma tenant:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_location_user`, `tb_department_user`
-- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/{config_users,config_user-application-roles,config_application-roles,config_permissions,config_department-users,config_locations-users,config_user-locations}/`, `apps/backend-gateway/src/application/{user,user-business-units,user-locations,invitations}/`, `apps/backend-gateway/src/platform/platform_cluster-invitations/`
+- **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/{config_users,config_user-application-roles,config_application-roles,config_permissions,config_department-users,config_locations-users,config_user-locations}/`, `apps/backend-gateway/src/application/{user,user-business-units,user-locations,invitations}/`, `apps/backend-gateway/src/backstage/backstage_cluster-invitations/`
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/{users,user-application-roles,application-roles,permissions,department-user,locations-user,user-location}/`, `user-management/user/`
 - **carmen/docs:** `../carmen/docs/workflow-permissions-system.md` — อธิบายว่า role-type ของ workflow-stage (requester / purchaser / approver / reviewer) ซ้อนบน application-role permission grant ที่ documented ที่นี่อย่างไร Frozen 2026-04-27; `enum_stage_role` จริงคือ `create / approve / purchase / issue / view_only` (ดู [system-config/workflow](/th/inventory/system-config/workflow))
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`
