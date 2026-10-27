@@ -1,8 +1,8 @@
 ---
 title: Notification Template
-description: Reusable in-app message templates (tb_notification_template) picked per workflow stage/action/recipient. Since 2026-09-16 the screen is app-channel only with eight real {{variables}}, insert chips and a preview.
+description: Reusable in-app message templates (tb_notification_template) picked per workflow stage/action/recipient. Since 2026-09-16 the screen is app-channel only with nine real {{variables}}, insert chips and a preview.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, notification-template, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:45:00.000Z
@@ -11,17 +11,25 @@ dateCreated: 2026-07-29T10:45:00.000Z
 # Notification Template
 
 > **At a Glance**
-> **Routes:** `/system-admin/notification-template` (+ `/new`, `/:id`) — nav entry now lives under the **Workflows** group (FE `00f2196d`, 2026-09-16) &nbsp;·&nbsp; **Table:** `tb_notification_template` (tenant schema; the platform-schema `tb_message_format` this page used to contrast with was **dropped** from `prisma-shared-schema-platform` since baseline) &nbsp;·&nbsp; **Endpoint:** `api/config/{bu_code}/notification-templates` &nbsp;·&nbsp; **Permission / licence:** `configuration.notification_template` &nbsp;·&nbsp; **Consumed by:** [system-config/workflow](/en/inventory/system-config/workflow)'s per-stage notification config, dispatched by `WorkflowNotificationDispatcher` &nbsp;·&nbsp; **Channel:** `app` only — since 2026-09-16 (FE `541690f5`) the list is filtered `type:app`, the create form has no Channel or Subject control, and the workflow editor's `WfChannel` is `"app"` alone; the dispatcher never delivered anything else. `enum_notification_channel` still has four values and ~60 legacy `email`/`line`/`sms` rows survive in seeded tenants.
+> **Routes:** `/system-admin/notification-template` (+ `/new`, `/:id`) — nav entry now lives under the **Workflows** group (FE `00f2196d`, 2026-09-16) &nbsp;·&nbsp; **Table:** `tb_notification_template` (tenant schema; the platform-schema `tb_message_format` this page used to contrast with was **dropped** from `prisma-shared-schema-backstage` since baseline) &nbsp;·&nbsp; **Endpoint:** `api/config/{bu_code}/notification-templates` &nbsp;·&nbsp; **Permission / licence:** `configuration.notification_template` &nbsp;·&nbsp; **Consumed by:** [system-config/workflow](/en/inventory/system-config/workflow)'s per-stage notification config, dispatched by `WorkflowNotificationDispatcher` &nbsp;·&nbsp; **Channel:** `app` only — since 2026-09-16 (FE `541690f5`) the list is filtered `type:app`, the create form has no Channel or Subject control, and the workflow editor's `WfChannel` is `"app"` alone; the dispatcher never delivered anything else. `enum_notification_channel` still has four values and ~60 legacy `email`/`line`/`sms` rows survive in seeded tenants.
 
-## Implementation status (re-verified 2026-09-22)
+## Implementation status (re-verified 2026-10-27)
+
+- **Nine system templates with stable codes.** `tb_notification_template` gained a nullable `code` column with a partial unique index `notificationtemplate_code_live_u` on `(code) WHERE deleted_at IS NULL AND code IS NOT NULL` (SQL only; BE `d2c8903e4`, `schema.prisma:4286-4304`). The tenant seed set `notification-templates` creates nine in-app (`type = 'app'`) templates, Thai + English text: `wf.submit.requestor`, `wf.submit.next_step`, `wf.approve.requestor`, `wf.approve.next_step`, `wf.reject.requestor`, `wf.reject.previous_step`, `wf.sendback.requestor`, `wf.sendback.next_step`, `wf.complete.requestor` (`packages/prisma-shared-schema-tenant/src/seed-data/workflow-notification-templates.ts`). The companion `notification-templates-legacy` seed set has three steps: `retire-legacy` (soft-deletes the old 4-channel rows that nobody edited — edited ones are kept), `move-reject-previous` (moves the reject "previous approver" recipient from `current_approve` to `previous_step`) and `fill-workflows` (points empty workflow slots at the coded templates) (BE `15385fd93`, `f32fc97c6`; CLI supports dry-run / `--apply`, `8914725af`). The older "20 seeded app templates" figure below describes the pre-retirement list.
+- **"System default" badge** (FE `fb1545c3`): the list shows a badge beside any row that has a `code` (`use-noti-tmpl-table.tsx`).
+- **Ninth variable `docType`** (FE `fb1545c3`): the chip list now offers `docType` (renders "PR" / "PO" / "SR" label via `NOTIFICATION_DOC_TYPE_LABEL`). The dispatcher context is exactly `recipientName`, `docType`, `docNo`, `department`, `totalAmount`, `actorName`, `currentStage`, `reason`, `url` (`workflow-notification-dispatcher.service.ts:429-441`). The seeded templates deliberately use only `docType`, `docNo`, `actorName`, `currentStage` because no caller fills `reason`/`url`/`totalAmount` for workflow dispatches today.
+- **Dispatcher behaviour changes** (BE `d1db62509`, `50aeff813`): a final approval sends the requestor the seeded `wf.complete.requestor` template (looked up by `code`, `type 'app'`, active) even if the slot has no template configured — the slot and channel `is_active` flags still apply; and the `current_approve` slot is **never delivered** (it would notify the actor who just clicked). Line cites: `channel_not_supported` `:210`, final-approval template `:233`, `render()` `:446-448`.
+- **List page** moved into `ListPageShell` (FE `7e71ee51`), no behaviour change.
+
+### Earlier status (re-verified 2026-09-22)
 
 The 2026-07-29 finding ("only `app` is dispatched, `email` is pickable but ignored") was resolved on the **UI side**, not by adding delivery: the screen and the workflow editor now only offer `app`. What changed (FE `541690f5`):
 
 - **List** requests `filter=type:app` unconditionally, so the 20 seeded app templates show instead of the 80-row 20-events × 4-channels matrix; the Channel column is gone.
 - **Form** (`noti-tmpl-form.tsx`, `noti-tmpl-edit-content.tsx`) creates with `type: "app"` fixed (`noti-tmpl-form-schema.ts:25`) and has no Subject field (subject was an email concept). The Zod `type` enum still accepts all four values (`:12`) and `mapToPayload` echoes the loaded `type`/`subject` back, so a legacy `email`/`line`/`sms` row opened by direct URL still validates and saves without being silently converted.
-- **Variables are real now.** `noti-tmpl-variables.ts` declares the eight placeholders the dispatcher fills — `docNo`, `actorName`, `recipientName`, `url`, `currentStage`, `department`, `totalAmount`, `reason` — ordered by how often the seeded templates use them; the form renders them as insert-at-cursor chips (`noti-tmpl-variable-chips.tsx`) and a live notification-card preview (`noti-tmpl-preview.tsx`) that substitutes sample values and **highlights unknown `{{tokens}}`** (`splitTemplate` / `unknownVariables`). Sample values are never sent.
+- **Variables are real now.** `noti-tmpl-variables.ts` declares the placeholders the dispatcher fills (eight on 2026-09-22; `docType` added since) — `docNo`, `actorName`, `recipientName`, `url`, `currentStage`, `department`, `totalAmount`, `reason` — ordered by how often the seeded templates use them; the form renders them as insert-at-cursor chips (`noti-tmpl-variable-chips.tsx`) and a live notification-card preview (`noti-tmpl-preview.tsx`) that substitutes sample values and **highlights unknown `{{tokens}}`** (`splitTemplate` / `unknownVariables`). Sample values are never sent.
 - **Workflow editor** `WfChannel = "app"` (`wf-stage-notifications.tsx:11`); the `email` slot still exists in the persisted `notification_channel` shape (`wf-form-schema.ts:66-82`) for old rows.
-- **Backend** unchanged in substance: `WorkflowNotificationDispatcher.dispatch()` still skips every channel except `"app"` (`channel_not_supported`, `workflow-notification-dispatcher.service.ts:197`) and `render()` is still the flat `{{var}}` substitution (`:402-404`); the only commits since baseline are RPC refactors and an enum-label fix (`5cc7fd712`).
+- **Backend** unchanged in substance: `WorkflowNotificationDispatcher.dispatch()` still skips every channel except `"app"` (`channel_not_supported`, `workflow-notification-dispatcher.service.ts:210`) and `render()` is still the flat `{{var}}` substitution (`:446-448`); the only commits since baseline are RPC refactors and an enum-label fix (`5cc7fd712`).
 
 ![Notification Template list](/screenshots/notification-template/index.png)
 
@@ -41,7 +49,7 @@ Templates are not free-standing content — they exist to be **picked by a workf
 
 | Task | Where | Notes |
 |---|---|---|
-| Create a template | Notification Template → **Add** → Name, Body (insert variables via chips, check the preview), Description, Active | `type` is sent as `app`; `name` + `type` must be unique together — duplicate rejected server-side (`ALREADY_EXISTS`); a `{{token}}` outside the eight known variables is flagged in the preview and would reach recipients literally |
+| Create a template | Notification Template → **Add** → Name, Body (insert variables via chips, check the preview), Description, Active | `type` is sent as `app`; `name` + `type` must be unique together — duplicate rejected server-side (`ALREADY_EXISTS`); a `{{token}}` outside the nine known variables is flagged in the preview and would reach recipients literally |
 | Edit a template | Template detail → **Edit** | `PUT`, `doc_version`-guarded (optimistic lock) |
 | Deactivate without deleting | Detail → **Edit** → toggle **Active** off | `is_active = false`; inactive templates simply disappear from the workflow editor's picker (`filter: tpl.is_active && tpl.type === channelType`) — they are not deleted |
 | Delete a template | Detail → **Edit** mode → **Delete** | Soft delete (`deleted_at` + forces `is_active = false`) — **no check for whether a workflow still references this template's id** (see §4) |

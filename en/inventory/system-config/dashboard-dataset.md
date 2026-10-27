@@ -132,7 +132,7 @@ The dataset catalog is code-registered in the **micro-data** service (Go): handl
 - **Nav / permission:** `../carmen-frontend/constant/module-list.ts:736-742` — `PERMISSIONS.dashboard.dataset.view`, `licenseFeature: "dashboard.dataset"`.
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1112-dashboard-dataset.md` — catalog only.
 - **Swagger response DTOs:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/dashboard-datasets/swagger/response.ts` — `DatasetMetaDto`, `DatasetListResponseDto`, `DatasetResponseDto`.
-- **Platform enum:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `enum_dataset_shape` (line ~815).
+- **Platform enum:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `enum_dataset_shape` (line ~815).
 - **Frontend route:** `../carmen-frontend/routes/system-admin/dashboard-dataset/dashboard-dataset.route.tsx` + `dashboard-dataset-component.tsx`.
 - **Frontend hook:** `../carmen-frontend/hooks/use-dashboard-dataset.ts` — `useDashboardDatasets()`, `useDashboardDatasetDetail(id)`.
 - **Frontend type:** `../carmen-frontend/types/dashboard-dataset.ts` — `DashboardDataset`, `DashboardDatasetShape`, `DashboardDatasetCategory`.
