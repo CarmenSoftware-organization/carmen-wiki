@@ -2,7 +2,7 @@
 title: Database Pools — Data Model
 description: The full tb_database_pool field table — encrypted password, note vs. description, is_active semantics — plus how it reconciles with what Business Units and Tenant Migrations already document about resolving a tenant connection.
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: book/platform, database-pools, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,13 +11,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Database Pools — Data Model
 
 > **Source of truth:** read these before updating this page.
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1713-1742` — `model tb_database_pool`
 > - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (read in full)
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — the one-off `db_connection` → pool backfill (read in full)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrate.database-pool.ts` — the one-off `db_connection` → pool backfill (read in full)
 > - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
 > - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
 >
-> Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04) and `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06).
+> Verified against `carmen-backstage` HEAD `8405788f` and `carmen-turborepo-backend` HEAD `c9d788829` (both origin/main, 2026-10-27).
 
 ## 1. Overview
 
@@ -36,7 +36,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `username` | `String @db.VarChar` | No | Connection username — a raw database login, not validated as an email (the shared `validateField('username')` case, written for the Users module, is deliberately not reused here). |
 | `password` | `String @db.VarChar` | No | Ciphertext from `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`). See §4 for the full lifecycle — **its plaintext value never appears in any API response, in this page, or in this wiki.** |
 | `is_active` | `Boolean @default(true) @db.Boolean` | No | See §3 for its effect on the Business Units picker and on connection resolution. |
-| `note` | `String?` | Yes | Distinct column from `description` (`schema.prisma:1398`). Set automatically by the legacy backfill script to the fixed, Thai-language value `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ("auto-created from `tb_business_unit.db_connection`") on every pool it created from an old BU's connection blob (`migrate.database-pool.ts:412`) — a flag that the record was not hand-configured, not a general-purpose comment field, though the create/edit form does let an operator set or change it freely afterward. |
+| `note` | `String?` | Yes | Distinct column from `description` (`schema.prisma:1729`). Set automatically by the legacy backfill script to the fixed, Thai-language value `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ("auto-created from `tb_business_unit.db_connection`") on every pool it created from an old BU's connection blob (`migrate.database-pool.ts:427`) — a flag that the record was not hand-configured, not a general-purpose comment field, though the create/edit form does let an operator set or change it freely afterward. |
 | `doc_version` | `Int @default(0) @db.Integer` | No | Optimistic-lock counter. **Required, not optional, on every `PUT`** — `DatabasePoolUpdateDto` has no default and the backend rejects an update where `data.doc_version` is not a number (`COMMON_DOC_VERSION_REQUIRED`), unlike some sibling entities where an absent token is read as "skip the conflict check." |
 | `created_at` / `created_by_id` / `updated_at` / `updated_by_id` / `deleted_at` / `deleted_by_id` | `DateTime?` / `String? @db.Uuid` | Yes | Standard audit/soft-delete columns, rendered through the shared `auditColumns()`/`normalizeAudit()` helpers on the list and edit pages. |
 
@@ -78,28 +78,28 @@ Both sibling pages already describe this table, each to the depth their own read
 
 | Scenario | What actually happens | Source |
 |---|---|---|
-| A pool with live business units attached is deleted | Refused (409 `DATABASE_POOL_IN_USE`), naming up to 10 blocking BUs by `code` | `database-pool.service.ts:247-272` |
+| A pool with live business units attached is deleted | Refused (409 `DATABASE_POOL_IN_USE`), naming up to 10 blocking BUs by `code` | `database-pool.service.ts:260-286` |
 | A pool is deactivated (`is_active: false`) while BUs still point at it | Not blocked — deactivation is not the in-use check. Every dependent BU's tenant connection resolution then fails with "is inactive" the next time [Tenant Migrations](/en/platform/tenant-migrations/data-model) §3 tries to resolve it | `tenant.service.ts` (per that page); `database-pool.service.ts` (no active-check on update) |
-| Two business units' legacy `db_connection` values agreed on host/port/database/username but disagreed on password | The backfill script refuses to guess and stops the entire run with an error naming both business unit codes — a data conflict it treats as requiring a human fix, not something to silently pick one side of | `migrate.database-pool.ts:338-345` |
-| A legacy `db_connection` had no `schema` value | That business unit is skipped by the backfill (counted and reported, not silently dropped) rather than migrated with a guessed schema | `migrate.database-pool.ts:316-319` |
-| `SECRET_ENCRYPTION_KEY` differs between `micro-cluster` (which encrypts on write) and `micro-business` (which decrypts to resolve a connection) | Every affected pool fails to decrypt at connection-resolution time with "Failed to decrypt the database pool password (check `SECRET_ENCRYPTION_KEY`...)" — the mismatch surfaces as a tenant-migration/connection failure, not as a config-validation error at either service's startup | `crypto.util.ts` (per-service key, no cross-service check); `tenant-url.ts:58-68` |
-| A `database_pool.read`-only session opens `/platform/database-pools/new` | Sees and can fill in every field of the create form; cannot submit it through the Save button (not rendered) or through Enter/`Ctrl+S` (`handleSubmit` itself checks `hasPermission('database_pool.manage')` and returns early) — see [landing page](/en/platform/database-pools) §4 | `DatabasePoolEdit.tsx:260`, `App.tsx:517` |
+| Two business units' legacy `db_connection` values agreed on host/port/database/username but disagreed on password | The backfill script refuses to guess and stops the entire run with an error naming both business unit codes — a data conflict it treats as requiring a human fix, not something to silently pick one side of | `migrate.database-pool.ts:351-358` |
+| A legacy `db_connection` had no `schema` value | That business unit is skipped by the backfill (counted and reported, not silently dropped) rather than migrated with a guessed schema | `migrate.database-pool.ts:329-332` |
+| `SECRET_ENCRYPTION_KEY` differs between `micro-cluster` (which encrypts on write) and `micro-business` (which decrypts to resolve a connection) | Every affected pool fails to decrypt at connection-resolution time with "Failed to decrypt the database pool password (check `SECRET_ENCRYPTION_KEY`...)" — the mismatch surfaces as a tenant-migration/connection failure, not as a config-validation error at either service's startup | `crypto.util.ts` (per-service key, no cross-service check); `tenant-url.ts:54-69` |
+| A `database_pool.read`-only session opens `/backstage/database-pools/new` | Sees and can fill in every field of the create form; cannot submit it through the Save button (not rendered) or through Enter/`Ctrl+S` (`handleSubmit` itself checks `hasPermission('database_pool.manage')` and returns early) — see [landing page](/en/platform/database-pools) §4 | `DatabasePoolEdit.tsx:260`, `App.tsx:517` |
 
 ## 7. Recommendations
 
 - **Add a `@@unique` constraint on `name`** (scoped to non-deleted rows, matching the pattern used elsewhere in this schema, e.g. `business_unit_code_global_u`) so the uniqueness this module already enforces at the application layer is also guaranteed at the database layer against a second write path this module does not control (a future backend service, a script, a manual `psql` insert).
-- **Consider gating `/platform/database-pools/new` and `/:id/edit` on `database_pool.manage` at the route level**, matching how [Business Units](/en/platform/business-units) gates its own `/new` and `/:id/edit` routes on the create/update permission rather than the read one — the current `database_pool.read`-on-every-route setup (§4, landing page) is not exploitable given the in-form checks, but it is also not the pattern this book's other CRUD modules follow.
+- **Consider gating `/backstage/database-pools/new` and `/:id/edit` on `database_pool.manage` at the route level**, matching how [Business Units](/en/platform/business-units) gates its own `/new` and `/:id/edit` routes on the create/update permission rather than the read one — the current `database_pool.read`-on-every-route setup (§4, landing page) is not exploitable given the in-form checks, but it is also not the pattern this book's other CRUD modules follow.
 - **Run `migrate.database-pool.ts --verify` on a schedule**, not only immediately before the `db_connection`-drop migration it was written for — a `SECRET_ENCRYPTION_KEY` rotation performed without re-encrypting existing pools would otherwise only be discovered the next time someone tries to resolve a tenant connection.
 
 ## 8. References
 
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1713-1742` — `model tb_database_pool`.
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — read in full.
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handlers, read in full.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy from the gateway.
-- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:515-517`.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) and `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`).
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — read in full.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_database-pools/backstage_database-pools.service.ts` — RPC proxy from the gateway.
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:3562-3581`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) and `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrate.database-pool.ts` — read in full.
 - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`.
 - `../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`.
 - [Business Units — Data Model](/en/platform/business-units/data-model) §2.4; [Tenant Migrations — Data Model](/en/platform/tenant-migrations/data-model) §3 — cross-checked in §5 above.

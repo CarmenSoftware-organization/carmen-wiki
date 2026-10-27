@@ -2,7 +2,7 @@
 title: Tenant Migrations — Data Model
 description: There is no persisted migration-status entity — every state is derived live from tb_business_unit.db_schema and the linked tb_database_pool row.
 published: true
-date: '2026-09-22T17:30:00.000Z'
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, tenant-migrations, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,15 +11,15 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Tenant Migrations — Data Model
 
 > **At a Glance**
-> **No dedicated table.** Nothing in `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` tracks migration status, runs, or history — every state this module shows is computed on demand by running the Prisma CLI against the target tenant database and parsing its text output (§2) &nbsp;·&nbsp; **Connection resolution** reads two existing tables, not a migration-specific one: `tb_business_unit.db_schema` + the linked `tb_database_pool` row's host/port/database/username/decrypted-password (§3) &nbsp;·&nbsp; **Bookkeeping of what has/hasn't applied lives in Prisma's own `_prisma_migrations` table, inside each tenant schema** — not in the platform database this wiki otherwise documents, and not queried directly by this codebase outside of the `prisma migrate` CLI itself &nbsp;·&nbsp; **No optimistic lock, no persisted run history** — concurrency is enforced only by in-memory `Set`/boolean flags that reset on every process restart (§5)
+> **No dedicated table.** Nothing in `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` tracks migration status, runs, or history — every state this module shows is computed on demand by running the Prisma CLI against the target tenant database and parsing its text output (§2) &nbsp;·&nbsp; **Connection resolution** reads two existing tables, not a migration-specific one: `tb_business_unit.db_schema` + the linked `tb_database_pool` row's host/port/database/username/decrypted-password (§3) &nbsp;·&nbsp; **Bookkeeping of what has/hasn't applied lives in Prisma's own `_prisma_migrations` table, inside each tenant schema** — not in the platform database this wiki otherwise documents, and not queried directly by this codebase outside of the `prisma migrate` CLI itself &nbsp;·&nbsp; **No optimistic lock, no persisted run history** — concurrency is enforced only by in-memory `Set`/boolean flags that reset on every process restart (§5)
 
 > **Source of truth:** read these before updating this page.
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (line 176), `tb_database_pool` (line 1382)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_business_unit` (line 213), `tb_database_pool` (line 1713)
 > - `../carmen-turborepo-backend/apps/micro-business/src/authen/tenant_migration/tenant_migration.service.ts` — `resolveConnection()`, `status()`, `deployResolved()`, `runBuStream()`, `deployAllStream()`, `resolve()`
 > - `../carmen-turborepo-backend/apps/micro-business/src/tenant/tenant.service.ts` — `resolveConnectionForBusinessUnit()`
 > - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `resolveTenantUrl()`, `buildTenantUrl()`
 >
-> Verified against `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) and `carmen-backstage` HEAD `157a65e` (2026-09-04).
+> Verified against `carmen-turborepo-backend` origin/main `c9d788829` and `carmen-backstage` origin/main `8405788ff` (2026-10-27). The dashboard-views state shown beside the Prisma state (landing page §3.2c) is likewise derived live from micro-data's `/migrations/tenant` API and is not stored in the platform schema either.
 
 ## 1. Overview
 
@@ -50,7 +50,7 @@ None of this is written anywhere — the next `status` call recomputes it from s
 | The joined `tb_database_pool.is_active` is false | `Database pool '{name}' used by business unit {code} is inactive` |
 | `tb_database_pool.password` fails to decrypt (`decryptSecret()`, `@repo/secret-crypto`) | `Failed to decrypt the database pool password (check SECRET_ENCRYPTION_KEY...)` |
 
-Relevant fields, `tb_business_unit` (`schema.prisma:176`):
+Relevant fields, `tb_business_unit` (`schema.prisma:213`):
 
 | Field | Prisma Type | Nullable | Role here |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Relevant fields, `tb_business_unit` (`schema.prisma:176`):
 | `db_schema` | `String? @db.VarChar` | **Yes** | The tenant's own Postgres schema name inside that pool's database |
 | `tb_database_pool` (relation) | `tb_database_pool?` | — | `onDelete: NoAction` — the pool row is never cascade-deleted; a pool with dependents can still be soft-deleted, which is exactly the "has been deleted" case above |
 
-Relevant fields, `tb_database_pool` (`schema.prisma:1382`) — the shared, platform-managed connection target multiple BUs can point at:
+Relevant fields, `tb_database_pool` (`schema.prisma:1713`) — the shared, platform-managed connection target multiple BUs can point at:
 
 | Field | Prisma Type | Nullable | Role here |
 |---|---|---|---|
@@ -81,23 +81,23 @@ The resulting URL (`buildTenantUrl()`, `@repo/db-connection-utils`): `postgresql
 |---|---|---|
 | A BU has no `database_pool_id` or `db_schema` set yet | `resolveConnection` throws "not linked to a database pool" / "has no database schema configured"; on the fleet table this surfaces as a per-row error on Check (no pre-check, unlike the per-BU card's `hasDbConnection` gate) | `tenant.service.ts` |
 | A BU's linked pool is soft-deleted or `is_active: false` | Same error path, "has been deleted" / "is inactive" — a pool being retired silently breaks migrations for every BU still pointing at it until they are repointed | `tenant.service.ts` |
-| `prisma migrate deploy` fails partway through a batch (`/deploy/all/stream`) | The failing BU is reported via `bu-complete` with `error`; the loop continues to the next BU — a genuinely stuck migration in that tenant's `_prisma_migrations` table is left exactly as Prisma's own CLI leaves it. Since PR #297 the operator can clear it from the row's Resolve wrench (or the per-BU card) without leaving the app ([landing page](/en/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:560-586` |
+| `prisma migrate deploy` fails partway through a batch (`/deploy/all/stream`) | The failing BU is reported via `bu-complete` with `error`; the loop continues to the next BU — a genuinely stuck migration in that tenant's `_prisma_migrations` table is left exactly as Prisma's own CLI leaves it. Since PR #297 the operator can clear it from the row's Resolve wrench (or the per-BU card) without leaving the app ([landing page](/en/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:559-587` |
 | A resolve-connection failure reaches `/deploy/stream` | Falls through the gateway's stale message-pattern mapping to HTTP 500 instead of the documented 422 — the message text is still correct, only the status code is wrong (verified stale since commit `af2437074`, [landing page](/en/platform/tenant-migrations) §4.4) | `tenant-migrations.controller.ts` |
-| `TENANT_MIGRATION_API_ENABLED` unset | Every endpoint 403s, including `status` — indistinguishable in the UI from a permissions problem beyond the literal message text | `config.env.ts:222` |
+| `TENANT_MIGRATION_API_ENABLED` unset | Every endpoint 403s, including `status` — indistinguishable in the UI from a permissions problem beyond the literal message text | `config.env.ts:209` |
 
 ## 6. Recommendations
 
 - **Fix `resolvePreStreamErrorStatus()`'s regex** (or, better, have `deployStream`/`_streamDeploy` carry the originating `ErrorCode` through to the stream's pre-start error instead of re-deriving a status from message text a second time) so a connection-resolution failure on the stream path returns the same 422 the non-streaming `/deploy` endpoint already does.
 - **Update the stale `db_connection` comment** in `../carmen-backstage/src/services/tenantMigrationService.ts` to describe the pool/schema mechanism, so the next person reading it does not go looking for a column that was removed months earlier.
-- ~~**Wire `resolve()` into the UI**~~ — **done in `../carmen-backstage` PR #297 (2026-09-16)**, in exactly the shape this recommendation asked for: a super-admin-only wrench on rows already in an error state, plus the same dialog on the per-BU card. What remains worth testing is the one hazard the dialog cannot prevent — choosing `applied` for a migration whose SQL never ran, which leaves the tenant schema silently behind forever.
+- ~~**Wire `resolve()` into the UI**~~ — **done in `../carmen-backstage` PR #297 (2026-09-16)**, in exactly the shape this recommendation asked for: a wrench on rows already in an error state (now gated on `tenant_migration.apply` rather than super-admin), plus the same dialog on the per-BU card. What remains worth testing is the one hazard the dialog cannot prevent — choosing `applied` for a migration whose SQL never ran, which leaves the tenant schema silently behind forever.
 - **Consider a persisted last-run record** (BU id, migration name, outcome, timestamp) if this screen is ever expected to answer "what happened to BU X's last deploy attempt" after the fact — today that answer only exists in application logs and the tenant's own `_prisma_migrations` table.
 
 ## 7. References
 
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:176` (`tb_business_unit`), `:1382` (`tb_database_pool`).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:213` (`tb_business_unit`), `:1713` (`tb_database_pool`).
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/tenant_migration/tenant_migration.service.ts` — `resolveConnection`, `status`, `deploy`, `deployResolved`, `deployStream`, `runBuStream`, `deployAllStream`, `resolve`, `listActiveConnectionsWithSkips`.
 - `../carmen-turborepo-backend/apps/micro-business/src/tenant/tenant.service.ts` — `resolveConnectionForBusinessUnit`, `BusinessUnitConnectionSource`.
 - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`, `resolveTenantUrl`.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/tenant-migrations/tenant-migrations.controller.ts` — `resolvePreStreamErrorStatus()`.
-- `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:222` — `TENANT_MIGRATION_API_ENABLED`, `TENANT_DEPLOY_TOKEN`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/tenant-migrations/tenant-migrations.controller.ts` — `resolvePreStreamErrorStatus()`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209-210` — `TENANT_MIGRATION_API_ENABLED`, `TENANT_DEPLOY_TOKEN`.
 - [Tenant Migrations](/en/platform/tenant-migrations) — the module landing page this data model supports.

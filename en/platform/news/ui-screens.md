@@ -2,7 +2,7 @@
 title: News — UI Screens
 description: The NewsroomSummary masthead, NewsManagement list (filters, CSV export, bulk actions), and the masthead-based NewsEdit form with its Publish rail.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -86,7 +86,7 @@ An empty result renders a filter-aware `ListEmptyState` (`Newspaper` icon): when
 | `filters_news` | JSON string array | Status filter selections |
 | `tagfilters_news` | JSON string array | Tag filter selections |
 | `page_news` | number string | Current page |
-| `perpage_news` | number string | Page size |
+| `perpage_news` | number string | Page size — read back only if it is a whole number from 1 to 100 (`readStoredPerpage()`, since `caf5b2dd`, 2026-10-06); anything else falls back to the default of 10, because backend v4.0.0 answers `400` to any other `perpage` |
 | `sort_news` | string | Sort (`column:dir`, default `published_at:desc`) |
 
 The edit page persists no UI state.

@@ -37,6 +37,20 @@ owner's step**. Coverage checklists updated in the same PR.
 
 (groups and results recorded below as they land)
 
+| Group | Commit | Headline |
+|---|---|---|
+| New modules | 012dcbe | AI Providers, Dashboard Templates, Tenant Seed (10 pages) |
+| Users/RBAC/config rename + content | 58faa40, 117aefb | platform→backstage keys/tables/labels; RBAC redesign; Google sign-in; Backstage Config cards; /login/callback + /403 |
+| Clusters/BU/licenses | d73ed82 | Cluster + BU notes; cluster seats; BU form tabs; licenses deleted view + retired numbers; catalog 112/13/105/7 |
+| Report templates/cronjobs/SQL/email/pools | 154ba06 | Export XML, dialog layout editor, versions, backup/import; SQL workbench role claim fixed; `POST /v1/emails` notification flow; worker job types |
+| Read-through of rename-only pages | fea6150 | Application status/bypass/secret; tenant migrations permission gate + dashboard views; ~360 cites re-verified |
+
+Nav (`scripts/nav-overrides.yaml`): Tenant Seeds, Dashboard Templates, new AI group; "Platform" group and labels → "Backstage". Inventory nav unchanged (new pages are sub-pages).
+Checklist: 219 → 267 rows, 100%.
+Wiki.js pushes: 15 pages had `description` > 255 chars (DB varchar(255)) and failed to push; shortened.
+
+Code findings worth tickets: seat release/restore UI shown to `cluster.update` holders but backend refuses non-cluster-admins; `interface.pos.micros` seed replaced with no migration; `gl_run_due`/`pos_simphony_pull` missing from SPA CronJobType + DTO enum; skipped cron runs counted as retries; `GET report-templates/forms` no permission decorator; TenantSeed "Showing N of M" never shows; system-widget cache per-instance; `doc_version` optional on AI provider / dashboard template updates; e2e smoke specs still use `/platform/...` paths.
+
 ## Inventory book — branch `docs/resync-inventory-2026-10-27` (worktree `../carmen-wiki-inventory-2026-10-27`)
 
 10 implementer agents (one per module group) + 1 follow-up for system-config leftovers; coordinator verified headline claims against source before each commit.

@@ -2,7 +2,7 @@
 title: News — Data Model
 description: The tb_news field table (business_unit_ids, tags, doc_version), enum_news_status, the image_file_token → presigned image_url pipeline, the doc_version optimistic lock, and divergences against the SPA News type.
 published: true
-date: 2026-09-05T00:00:00.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, news, data-model
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -11,10 +11,10 @@ dateCreated: 2026-06-10T13:00:00.000Z
 # News — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_news` — single table, **no FK relations, no unique constraints beyond the PK** &nbsp;·&nbsp; **Enums:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **Targeting:** `business_unit_ids Json @default("[]")` — a JSONB UUID array, not a join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — a JSONB string array, lowercased/deduped/capped server-side &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — required on every `PUT`, enforces optimistic locking &nbsp;·&nbsp; **Image:** stored as `image_file_token` (MinIO); API responses replace it with a presigned `image_url` (1-hour expiry) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD) + `/api/news/tags` + `/api/news/summary` (added 2026-08-24) + `/api/public/news` (anonymous) — `/api`, **not** `/api-system` &nbsp;·&nbsp; **Enforcement:** the three write routes check the caller's own `news.*` permission server-side (`PlatformPermissionGuard`, added 2026-08-20); all four `GET` routes check only `x-app-id` — no user-permission check, by design (§6)
+> **Tables:** `tb_news` — single table, **no FK relations, no unique constraints beyond the PK** &nbsp;·&nbsp; **Enums:** `enum_news_status` (draft · published · archived) &nbsp;·&nbsp; **Targeting:** `business_unit_ids Json @default("[]")` — a JSONB UUID array, not a join table; `[]` = global &nbsp;·&nbsp; **Tags:** `tags Json @default("[]")` — a JSONB string array, lowercased/deduped/capped server-side &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` — required on every `PUT`, enforces optimistic locking &nbsp;·&nbsp; **Image:** stored as `image_file_token` (MinIO); API responses replace it with a presigned `image_url` (1-hour expiry) &nbsp;·&nbsp; **Endpoints:** `/api/news` (authenticated CRUD) + `/api/news/tags` + `/api/news/summary` (added 2026-08-24) + `/api/public/news` (anonymous) — `/api`, **not** `/api-system` &nbsp;·&nbsp; **Enforcement:** the three write routes check the caller's own `news.*` permission server-side (`BackstagePermissionGuard`, added 2026-08-20); all four `GET` routes check only `x-app-id` — no user-permission check, by design (§6)
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative.
 
@@ -28,7 +28,7 @@ The persistence path is gateway → TCP → micro-cluster (`PRISMA_SYSTEM` clien
 
 ### 2.1 `tb_news`
 
-One announcement/article. Schema line 884.
+One announcement/article. Schema line 1141.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |
@@ -120,7 +120,7 @@ via Prisma's `update({ where: { id, doc_version } })`. If another write changed 
 
 ## 4. Enums
 
-### `enum_news_status` (schema line 798)
+### `enum_news_status` (schema line 1019)
 
 | Value | Meaning |
 |---|---|
@@ -156,24 +156,24 @@ REST surface (backend-gateway). **Note the prefix: `/api/news`, not `/api-system
 | `GET /api/news/tags` | Bearer + `x-app-id` (`news.findAll`) — **no platform-permission check** | Distinct tags | `SELECT DISTINCT jsonb_array_elements_text(tags) ... WHERE deleted_at IS NULL`, alphabetical — feeds the list's Tags filter and the edit page's autocomplete |
 | `GET /api/news/summary` | Bearer + `x-app-id` (`news.findAll`, reused — see §6 notes) — **no platform-permission check** | Newsroom aggregate | Added 2026-08-24 alongside the same fix on Applications; unfiltered (`where: {}`) — status-pipeline counts (draft/published/archived), a fleet-wide `deleted` count, and the lead (most recently published) story; feeds `NewsroomSummary` |
 | `GET /api/news/:news_id` | Bearer + `x-app-id` (`news.findOne`) — **no platform-permission check** | Detail | UUID v4 param; 404 when soft-deleted; audit nested; `image_url` presigned |
-| `POST /api/news` | Bearer + `x-app-id` (`news.create`) **+ platform permission `news.create`** (`PlatformPermissionGuard`, added 2026-08-20 — see §6 notes) | Create | `multipart/form-data` (binary `image` field; `business_unit_ids`/`tags` as JSON-encoded strings) **or** plain JSON without an image. Returns 201 `{ id, doc_version }`. Failed create rolls the uploaded file back |
-| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) **+ platform permission `news.update`** (`PlatformPermissionGuard`, added 2026-08-20) | Update | Same multipart/JSON fork; **requires `doc_version`** (400 if missing, 409 on a stale value); a new image replaces and deletes the old file; JSON-only updates leave the image unchanged. Returns `{ id, doc_version }` only |
-| `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) **+ platform permission `news.delete`** (`PlatformPermissionGuard`, added 2026-08-20) | Soft delete | Sets `deleted_at`/`deleted_by_id`; best-effort deletes the MinIO file |
-| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query; published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), `published_at DESC` |
+| `POST /api/news` | Bearer + `x-app-id` (`news.create`) **+ platform permission `news.create`** (`BackstagePermissionGuard`, added 2026-08-20 — see §6 notes) | Create | `multipart/form-data` (binary `image` field; `business_unit_ids`/`tags` as JSON-encoded strings) **or** plain JSON without an image. Returns 201 `{ id, doc_version }`. Failed create rolls the uploaded file back |
+| `PUT /api/news/:news_id` | Bearer + `x-app-id` (`news.update`) **+ platform permission `news.update`** (`BackstagePermissionGuard`, added 2026-08-20) | Update | Same multipart/JSON fork; **requires `doc_version`** (400 if missing, 409 on a stale value); a new image replaces and deletes the old file; JSON-only updates leave the image unchanged. Returns `{ id, doc_version }` only |
+| `DELETE /api/news/:news_id` | Bearer + `x-app-id` (`news.delete`) **+ platform permission `news.delete`** (`BackstagePermissionGuard`, added 2026-08-20) | Soft delete | Sets `deleted_at`/`deleted_by_id`; best-effort deletes the MinIO file |
+| `GET /api/public/news` | **None (anonymous)** | Public feed | `bu_id`/`page`/`perpage` query (`perpage` 1–100, default 20 — `public-news.controller.ts` answers `400 INVALID_PERPAGE` for anything else since `fe80fc14b`, 2026-09-30); published + `published_at <= now()` + not deleted; no `bu_id` → global only; with `bu_id` → global + targeted; lean projection (`id`,`title`,`contents`,`url`,`image_url`,`tags`,`published_at`), `published_at DESC` |
 | `GET /api/public/news/:news_id` | **None (anonymous)** | Public detail | 404 for draft/archived/deleted/future-dated/unknown alike |
 
-**Server-side permission enforcement is asymmetric, and deliberately so.** Before 2026-08-20, `news.controller.ts` carried zero `@RequirePlatformPermission` decorators at all — only `KeycloakGuard` (must be logged in) and `AppIdGuard` (the calling application must hold the key in its allowlist). A fix that same day added `PlatformPermissionGuard` + `@RequirePlatformPermission` to the three write routes only. The four `GET` routes were left as-is on purpose: the DEV database shows the `mobile-app` application (`allow_all: false`) holds `news.findAll`/`news.findOne` in its allowlist and serves tenant-level users who hold no platform role whatsoever — requiring `news.read` there would lock every mobile user out of news. Reading `/api/news` therefore stays authenticated-but-unauthorized-by-role; `news.read` remains purely a client-side "show the admin menu item" key. Unauthenticated public reads have their own separate, unguarded controller (`PublicNewsController` at `/api/public/news`).
+**Server-side permission enforcement is asymmetric, and deliberately so.** Before 2026-08-20, `news.controller.ts` carried zero `@RequireBackstagePermission` decorators at all — only `KeycloakGuard` (must be logged in) and `AppIdGuard` (the calling application must hold the key in its allowlist). A fix that same day added `BackstagePermissionGuard` + `@RequireBackstagePermission` to the three write routes only. The four `GET` routes were left as-is on purpose: the DEV database shows the `mobile-app` application (`allow_all: false`) holds `news.findAll`/`news.findOne` in its allowlist and serves tenant-level users who hold no platform role whatsoever — requiring `news.read` there would lock every mobile user out of news. Reading `/api/news` therefore stays authenticated-but-unauthorized-by-role; `news.read` remains purely a client-side "show the admin menu item" key. Unauthenticated public reads have their own separate, unguarded controller (`PublicNewsController` at `/api/public/news`).
 
 Multipart format details (create/update): field `image` carries the binary; the gateway's `validateImageUpload` enforces MIME `image/jpeg`/`png`/`webp`, ≤5 MB, and ≤2048×2048 px (parse failure → 400 `BAD_DIMENSIONS`). Text fields arrive as strings; `business_unit_ids` and `tags` are JSON-decoded.
 
 **Primary (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_news` (line 884), `enum_news_status` (line 798).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_news` (line 1141), `enum_news_status` (line 1019).
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` — BU validation, tag normalization, `published_at` stamping, the `doc_version` optimistic lock, soft-delete filtering, public filters, the `updated_at` sort override.
 
 **Secondary (gateway + consumer shape):**
-- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`PlatformPermissionGuard` on the three write routes only — see §6 above), `news.service.ts` (upload/rollback/cleanup; RPC proxy to `micro-cluster`, not direct Prisma access), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/` — `news.controller.ts` (`BackstagePermissionGuard` on the three write routes only — see §6 above), `news.service.ts` (upload/rollback/cleanup; RPC proxy to `micro-cluster`, not direct Prisma access), `news-image.helper.ts`, `news-body.parser.ts`, `public-news.controller.ts`.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/common/helpers/image-upload.validator.ts` — server-side image limits.
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/src/index.ts` — `OptimisticLockError` (`DOC_VERSION_CONFLICT`).
 - `../carmen-backstage/src/types/index.ts` — `News`, `NewsStatus`, `Audit`, `AuditEntry`; `src/services/newsService.ts` — multipart builder, `getTags`, envelope walking; `src/utils/docVersion.ts` — conflict helpers.
 - `../carmen-turborepo-backend-bruno/collections/carmen-inventory/master-data/news/` — executable contracts including the `public/` pair and `GET-find-tags-master-data-news.bru`.
 

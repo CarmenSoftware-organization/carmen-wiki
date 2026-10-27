@@ -2,7 +2,7 @@
 title: Cronjobs — UI Screens
 description: CronJobManagement's list, filters, and summary stats; CronJobEdit's basics/schedule/execution/type-config cards; and CronScheduleField's six-mode schedule builder.
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: 2026-10-27T00:00:00.000Z
 tags: book/platform, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,7 +10,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # Cronjobs — UI Screens
 
-> **Screens:** `CronJobManagement` (list, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — one component for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — four stacked cards on the edit form &nbsp;·&nbsp; **Sub-component:** `CronScheduleField`, a six-mode cron builder, plus six per-job-type config field components (`jobConfig/`) &nbsp;·&nbsp; **Dialogs:** Delete-job confirm (ownership-aware message) &nbsp;·&nbsp; **Persisted UI state:** one `localStorage` key (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, sent only when the GET that loaded the form returned one &nbsp;·&nbsp; **Screenshots:** deferred per plan — no screenshot assets exist for this module
+> **Screens:** `CronJobManagement` (list, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — one component for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — four stacked cards on the edit form &nbsp;·&nbsp; **Sub-component:** `CronScheduleField`, a six-mode cron builder, plus six per-job-type config field components (`jobConfig/`) &nbsp;·&nbsp; **Dialogs:** Delete-job confirm (ownership-aware message) &nbsp;·&nbsp; **Persisted UI state:** one `localStorage` key (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, sent only when the GET that loaded the form returned one &nbsp;·&nbsp; **Screenshots:** `assets/screenshots/platform/cronjobs/` (`index.png`, `ui-screens.png`)
 
 ![Cronjobs — UI Screens screen](/screenshots/platform/cronjobs/ui-screens.png)
 
@@ -39,7 +39,7 @@ The caption below the band exists specifically because four of the six numbers a
 
 - **Search** is a debounced (300ms), server-side free-text match against `name`, `description`, `job_type`, `cron_expression`, and `source_service` (`cronjobService.ts`'s `defaultSearchFields`).
 - **Filters** open a side sheet (`CronJobFilterSheet`) with exactly two fixed Selects: **Job Type** (all six types plus "All") and **Status** (Running / Stopped / "All"). There is no free-text/advanced filter grammar.
-- An **Owner** filter ("All" vs. "Platform-owned only") existed at one point and was removed. The reason is a backend limitation, not a design change: the gateway's shared query-string parser (`parseFilterString`, `apps/backend-gateway/src/shared-dto/paginate.dto.ts`) drops any `key:value` pair whose value is an empty string before `platform_cronjobs.service.ts` ever sees it — so a "Platform-owned only" filter, which would need to send `source_service:` (empty), silently matched everything instead of excluding foreign-owned jobs. The component's own comment states the conclusion plainly: "A select that cannot filter is worse than an absent one."
+- An **Owner** filter ("All" vs. "Backstage-owned only") existed at one point and was removed. The reason is a backend limitation, not a design change: the gateway's shared query-string parser (`parseFilterString`, `apps/backend-gateway/src/shared-dto/paginate.dto.ts`) drops any `key:value` pair whose value is an empty string before `backstage_cronjobs.service.ts` ever sees it — so a "Backstage-owned only" filter, which would need to send `source_service:` (empty), silently matched everything instead of excluding foreign-owned jobs. The component's own comment states the conclusion plainly: "A select that cannot filter is worse than an absent one."
 
 ### 2.3 Columns
 
@@ -50,7 +50,7 @@ The caption below the band exists specifically because four of the six numbers a
 | Business Unit | No (value lives inside `job_config` JSON, not a sortable server column) | Populated only for `report`/`dashboard_refresh` (the two BU-scoped types); shows the first two `bu_codes` plus a `+N` overflow, "All" for an empty `dashboard_refresh` list, or a dash for every other type / an empty `report` list (empty `bu_codes` on a `report` job is a config error, not "all business units" — the column deliberately does not conflate the two) |
 | Schedule | No | Raw cron expression plus a plain-language description (`describeCron`) underneath |
 | Status | Yes | Running / Stopped badge from `is_active` |
-| Owner | No | `source_service` badge, or "Platform" when unset |
+| Owner | No | `source_service` badge, or "Backstage" when unset (`cronjob.owner.backstage`; the label read "Platform" before the 2026-10 rename) |
 | Last Run | Yes | Relative time; warning-triangle icon with the raw error tooltip when `last_error` is set — see [Data Model](/en/platform/cronjobs/data-model) §5.2 |
 | Next Run | Yes | Absolute timestamp |
 | Runs | Yes | `run_count`, right-aligned tabular figure |
@@ -69,7 +69,7 @@ All four icons in the actions column are disabled (not hidden) for the specific 
 
 ### 2.5 CSV export
 
-Exports the **currently loaded page only** — the component's own comment notes that `perpage: -1` is not honoured by this endpoint (it silently returns 10 rows regardless), so this is never a full-table export. Ten columns: name, description, type label, business-unit label, cron expression, status label, owner label, last run, next run, run count.
+Exports the **currently loaded page only** — the component's own comment notes that `perpage: -1` is not honoured by this endpoint (it silently returns 10 rows regardless, and the gateway now rejects any client `perpage` outside the integer range 1 to 100 with `INVALID_PERPAGE`), so this is never a full-table export. Ten columns: name, description, type label, business-unit label, cron expression, status label, owner label, last run, next run, run count.
 
 ### 2.6 Dev-only debug panel
 
@@ -96,12 +96,12 @@ Two number inputs: **Max Retries** (default 0) and **Timeout (seconds)** (defaul
 
 ### 3.4 Type Config
 
-Renders one of six components (`jobConfig/`) selected by `job_type`, each backing the fields in [Data Model](/en/platform/cronjobs/data-model) §3:
+Renders one of six components (`jobConfig/`) selected by `job_type` (the console has none for `gl_run_due` or `pos_simphony_pull`; see [landing page](/en/platform/cronjobs) §3.1), each backing the fields in [Data Model](/en/platform/cronjobs/data-model) §3:
 
 | `job_type` | Component | Notable UI behavior |
 |---|---|---|
-| `report` | `ReportConfigFields` | Loads report templates and users live for two pickers (template dropdown, a searchable multi-select of recipient users by name/email — not a free-text field); a **Delivery Type** select (`file`/`viewer_url`); **no field for `viewer_url`'s endpoint at all**, by deliberate design (see [Data Model](/en/platform/cronjobs/data-model) §3.1's SSRF note) |
-| `notification` | `NotificationConfigFields` | Same searchable multi-select pattern for `user_ids`; a hint states the field is required, correcting an earlier hint copied from `dashboard_refresh` that wrongly implied empty meant "everyone" |
+| `report` | `ReportConfigFields` | Loads report templates and users live for two pickers (template dropdown, a searchable multi-select of recipient users by name/email — not a free-text field). Both lists are now fetched with `fetchAllPages` (page size 100, at most 10 pages; users sorted `username:asc`) instead of a single `perpage: 200` request that silently dropped everything past the 200th row — beyond 1,000 rows the loader stops and logs a dev warning; a **Delivery Type** select (`file`/`viewer_url`); **no field for `viewer_url`'s endpoint at all**, by deliberate design (see [Data Model](/en/platform/cronjobs/data-model) §3.1's SSRF note) |
+| `notification` | `NotificationConfigFields` | Same searchable multi-select pattern for `user_ids` (same `fetchAllPages` user loader); a hint states the field is required, correcting an earlier hint copied from `dashboard_refresh` that wrongly implied empty meant "everyone" |
 | `cleanup` | `CleanupConfigFields` | Three free-text inputs (`action`, `type`, `older_than`) with no validation — matching the backend, which also validates nothing here |
 | `dashboard_refresh` | `DashboardRefreshConfigFields` | A business-unit multi-select (empty genuinely means "every active BU" — the one type where that hint is accurate) and a Tier select (`operational`/`breakdown`/`matrix`/"All") |
 | `activity_rollup` | `ActivityRollupConfigFields` | One number input, `days_back` (default 2) |
@@ -138,12 +138,12 @@ A single component shared by create and edit, built around one rule: **the cron 
 
 Two message variants, chosen by whether the target job has a `source_service`:
 
-- **Platform-owned:** a plain "delete this job?" naming the job.
+- **Backstage-owned:** a plain "delete this job?" naming the job.
 - **Foreign-owned:** names both the job and the owning service, framed as removing that business unit's schedule permanently, since it cannot be recreated from this screen.
 
 ## 6. Persisted UI State
 
-One `localStorage` key: `perpage_cronjob`, the list page's rows-per-page choice. Search, filters, sort, and page number are not persisted across visits.
+One `localStorage` key: `perpage_cronjob`, the list page's rows-per-page choice, read through `readStoredPerpage('perpage_cronjob', 10)` (integers 1 to 100 only, otherwise the default of 10). Search, filters, sort, and page number are not persisted across visits.
 
 ## 7. References
 
