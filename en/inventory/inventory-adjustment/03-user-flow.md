@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow
 description: Document lifecycle (draft → commit → completed, void) and persona-specific flow files for manual stock-in / stock-out adjustments.
 published: true
-date: '2026-09-28T12:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -44,9 +44,9 @@ stateDiagram-v2
 | --------- | -------- | ------------ | ------ |
 | **Save** (new form) | `POST /{bu}/stock-ins` \| `/stock-outs` | Zod form valid; `si_date`/`so_date` inside an open period (SI) / the current period (SO) — checked server-side too | Header + lines created at `draft`; `si_no`/`so_no` allocated from the document date; the app stays on the document (`/{id}?type=stock-in|stock-out`) in view mode |
 | **Save** (existing draft) | `PATCH /{id}/save` | `doc_status = draft`; `doc_version` matches | Header fields and line add/update/remove applied; `doc_version` incremented. Sending any `doc_status` other than `draft` is rejected (`STOCK_IN_STATUS_CHANGE_NOT_ALLOWED`: "doc_status cannot be changed on save — use the commit or void endpoint") |
-| **Commit** | (`POST` first if never saved) then `PATCH /{id}/commit` with `{ doc_version }` | Form valid (validated before the confirm dialog opens); `doc_status = draft` (`STOCK_IN_ONLY_DRAFT_COMMITTABLE`); location + ≥ 1 line; date inside the period; stock-out: on-hand ≥ requested per product | Per line `executeAdjustmentIn` / `executeAdjustmentOut` writes the ledger rows and stamps `inventory_transaction_id`; header → `completed`, `doc_version + 1`; navigates back to the list |
+| **Commit** | (`POST` first if never saved) then `PATCH /{id}/commit` with `{ doc_version }` | Form valid (validated before the confirm dialog opens); `doc_status = draft` (`STOCK_IN_ONLY_DRAFT_COMMITTABLE`); location + ≥ 1 line; date present and inside the period; FIFO stock-in not dated before the latest posted receipt; stock-out: drawable qty as of the document date ≥ requested per product | Per line `executeAdjustmentIn` / `executeAdjustmentOut` writes the ledger rows and stamps `inventory_transaction_id` (stock-out lines also get the posted cost; an average-BU stock-in dated in a later period is held and posted by the period close); header → `completed`, `doc_version + 1`; navigates back to the list |
 | **Delete** | `DELETE /{id}` | `doc_status = draft` (view mode is enough — no Edit needed, `ed37e6b0`) | Soft-delete; completed documents answer `STOCK_IN_COMPLETED_NO_DELETE` ("Cannot delete a completed Stock In — inventory has already been adjusted") |
-| **Void** | `DELETE /{id}/void` with a reason | Document opened in **Edit** mode (`canVoid = isEdit && !isReadOnly`) — so effectively a `draft`; a posted document can be voided through the API | Posted lines are reversed with the opposite adjustment leg at current cost (stock-in void first checks on-hand can absorb the reversal); header → `voided`, `deleted_at` set, `info.void_reason` stored. The row then disappears from list/detail queries (`deleted_at: null` filter) |
+| **Void** | `DELETE /{id}/void` with a reason | Document opened in **Edit** mode (`canVoid = isEdit && !isReadOnly`) — so effectively a `draft`; a posted document can be voided through the API | Posted lines are reversed with the opposite adjustment leg at current cost (stock-in void first checks the stock drawable from the document date can absorb the reversal; Sales-Consumption stock-outs refuse void with 409 `STOCK_OUT_VOID_VIA_SALES_CONSUMPTION` — void from [Sales Consumption](/en/inventory/recipe/sales-consumption)); header → `voided`, `deleted_at` set, `info.void_reason` stored. The row then disappears from list/detail queries (`deleted_at: null` filter) |
 
 ### 2.2 Posting fan-out (fires at commit, per line)
 
@@ -90,7 +90,7 @@ The code does not implement distinct roles for this module — there is one crea
 
 ## 4. Cross-Module Notes
 
-- [physical-count](/en/inventory/physical-count) — `PhysicalCountService.submit()` writes `tb_stock_in`/`tb_stock_out` rows directly at `completed`, with no reason code, as the audit record of a count's variance lines — and **does not** call `executeAdjustmentIn/Out` (confirmed 2026-09-22: no `inventoryTransactionService` reference in `physical-count/*.ts`). Those rows show in this module's list as completed documents that never moved stock.
+- [physical-count](/en/inventory/physical-count) — `PhysicalCountService.submit()` writes `tb_stock_in`/`tb_stock_out` rows directly at `completed` with the BU's `eop_in` / `eop_out` type, dated the counted period's end, and **posts them** via `executeAdjustmentIn/Out` (re-verified 2026-10-27; reverses the 2026-09-22 finding). Those rows show in this module's list labelled `eop_in` / `eop_out`, with stock movements.
 - [inventory-adjustment/wastage-reporting](/en/inventory/inventory-adjustment/wastage-reporting) — `POST /wastage-reporting` creates one `tb_stock_out` per location and commits it in the same call (draft → `executeAdjustmentOut` → `completed`).
 - [inventory/period-end](/en/inventory/inventory/period-end) — a `draft` stock-in / stock-out dated in the period blocks **Start Period Close**; the close gate only counts `in_progress` SI/SO (never produced here).
 - [inventory](/en/inventory/inventory) — every commit calls the same `InventoryTransactionService` that GRN, SR, and period-end also call.

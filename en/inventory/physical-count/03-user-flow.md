@@ -2,7 +2,7 @@
 title: Physical Count — User Flow
 description: Document lifecycle and persona-specific flow files for physical counts.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: physical-count, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -12,12 +12,12 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 > **At a Glance**
 > **Module:** [physical-count](/en/inventory/physical-count) &nbsp;·&nbsp; **Persona:** one undifferentiated role, gated by a single permission (`inventory_management.physical_count`) — the two files linked below split its journey by screen (list vs. entry/review), not by a real role difference
-> **Workflow lifecycle:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` is made by **Start Period Close** on `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` by the period close). Per-document (`enum_physical_count_status`): created directly at `in_progress → completed` — `pending` is not reachable through the confirmed create path. Final Submit fires the variance rollup directly into `tb_stock_in`/`tb_stock_out` (see [02-business-rules](/en/inventory/physical-count/02-business-rules) § 5).
+> **Workflow lifecycle:** Period (`enum_physical_count_period_status`): `draft → counting → completed` (`draft → counting` is made by **Start Period Close** on `/inventory-management/period-end`, `POST /period-ends/start-counting`; `counting → completed` by the period close). Per-document (`enum_physical_count_status`): created directly at `in_progress → completed` — `pending` is not reachable through the confirmed create path. Final Submit fires the variance rollup: EOP-typed `tb_stock_in`/`tb_stock_out` created at `completed` and posted to the ledger (see [02-business-rules](/en/inventory/physical-count/02-business-rules) § 5).
 > **Real screens:** `physical-count` (list) → `physical-count/:id/entry` (line entry) → `physical-count/:id/review` (variance review + final submit)
 
 ## 1. Overview
 
-This page is the **overview entry point** for the user-flow set of the `physical-count` module. The real implementation is a single continuous journey with no hand-off between different people: one permission-gated user opens the location list for the current fiscal period (`physical-count`), starts or resumes a count for one location (creating a `tb_physical_count` directly at `in_progress`, or resuming an existing one), walks the entry screen (`physical-count/:id/entry`) entering `actual_qty` per product line, clicks **Submit for Review** once every line has a value, reviews the computed variance on `physical-count/:id/review`, and clicks the final **Submit** — the single action that both closes the count (`status = completed`) and creates the variance rollup documents.
+This page is the **overview entry point** for the user-flow set of the `physical-count` module. The real implementation is a single continuous journey with no hand-off between different people: one permission-gated user opens the location list for the current fiscal period (`physical-count`), starts or resumes a count for one location (creating a `tb_physical_count` directly at `in_progress`, or resuming an existing one), walks the entry screen (`physical-count/:id/entry`) entering `actual_qty` per product line, clicks **Submit for Review** once every line has a value, reviews the computed variance on `physical-count/:id/review`, and clicks the final **Submit** — the single action that both closes the count (`status = completed`) and creates and posts the variance rollup documents.
 
 Section 2 below describes the real document-lifecycle state machines for `tb_physical_count_period.status` and `tb_physical_count.status`. Section 3 links two files that describe the same real flow from two screen-based angles — the list screen (`03-user-flow-count-lead.md`) and the entry/review screens (`03-user-flow-counter.md`) — retained as separate pages for continuity with this wiki's page layout, not because a distinct "lead" and "counter" role exists in code. Section 4 is a correction note pointing at `03-user-flow-audit-config.md`, which documents the confirmed absence of any Approver/Auditor/Sysadmin surface for this module.
 
@@ -74,19 +74,19 @@ stateDiagram-v2
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | Create (`POST /physical-counts`) | `in_progress` | Any user with `inventory_management.physical_count` | Period is `counting` (`PHC_VAL_001`); location exists (`PHC_VAL_002`). Product lines seeded from the union of `tb_product_location` assignments and any product with non-zero stock at the location. |
 | `in_progress` | Save (`PATCH .../save`) | `in_progress` | Same user | Any subset of lines; stamps `counted_at`/`counted_by_id` on the lines submitted. |
-| `in_progress` | Submit for Review (`PATCH .../review`) | `in_progress` (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; navigates to `/review`. |
-| `in_progress` | Submit (`PATCH .../submit`, from `/review`) | `completed` | Same user | Every line has `counted_at != null` (`PHC_VAL_004`); fires the variance rollup (`PHC_POST_001`–`004`). |
+| `in_progress` | Submit for Review (`PATCH .../review`) | `in_progress` (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` for every line from the counted period's cost-layer balance (`PHC_CALC_002`); stamps `counted_at` on first-time lines; navigates to `/review`. |
+| `in_progress` | Submit (`PATCH .../submit`, from `/review`) | `completed` | Same user | Every line has `counted_at != null` (`PHC_VAL_004`); the BU has an active `eop_in` / `eop_out` type for the signs present; fires the variance rollup and posts it to the ledger (`PHC_POST_001`–`004`) — any posting failure (e.g. insufficient stock for a shortfall) rolls the submit back. |
 | `completed` | view only | `completed` | Any user with the module permission (read) | Terminal; blocked from further Save/Review/Submit/Delete (`PHC_VAL_006`). There is no route that opens a `completed` document's detail from the list screen — see § 3 note in [03-user-flow-count-lead.md](/en/inventory/physical-count/03-user-flow-count-lead). |
 
 ### 2.3 Variance-rollup fan-out
 
 The final Submit is the **rollup event**. Per `PHC_POST_001`–`003`:
 
-- Lines with `diff_qty > 0` group into **one** new `tb_stock_in`, inserted directly at `doc_status = completed`.
-- Lines with `diff_qty < 0` group into **one** new `tb_stock_out`, inserted directly at `doc_status = completed`.
+- Lines with `diff_qty > 0` group into **one** new `tb_stock_in` (adjustment type `eop_in`), inserted directly at `doc_status = completed`, dated the counted period's end, priced by the BU's *Default price for added items* (`si.cost-from`).
+- Lines with `diff_qty < 0` group into **one** new `tb_stock_out` (adjustment type `eop_out`), inserted directly at `doc_status = completed`; the cost is whatever the ledger posts (FIFO lots / average), written back onto the line.
 - Lines with `diff_qty = 0` produce no rollup row.
 - Neither created header nor any detail row is linked back to the source count by any structured field — only a shared description string.
-- **No `tb_inventory_transaction` row is written by this action** — the rollup documents are records only; they do not themselves move the on-hand balance.
+- **Each line is posted to the ledger** inside the same transaction (`executeAdjustmentIn` / `executeAdjustmentOut`) — the rollup documents move the on-hand balance, and `inventory_transaction_id` is stamped on every detail row. *(Corrected 2026-10-27: the previous revision stated the opposite.)*
 
 ## 3. Persona Files
 
@@ -103,5 +103,5 @@ An earlier draft of this wiki module described a third persona group — Approve
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`).
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts`, `.../physical-count-period/physical-count-period.service.ts`.
-- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md` (41 cases, re-verified 2026-09-20).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no dedicated `750-physical-count` spec exists, but counting is exercised through the real screens by the opt-in period-close specs `921-period-close-count.spec.ts` and `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: count every location, EOP-IN / EOP-OUT compensation documents dated on the period's last day, their cost vs the BU's `si.cost-from`, system quantity = balance at the end of the counted period); run with `bun run test:period-close` (see [inventory/period-end](/en/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (41 cases, re-verified 2026-09-20).
 - Related flow pages: [inventory-adjustment/03-user-flow](/en/inventory/inventory-adjustment/03-user-flow) (the module the rollup writes into), [spot-check](/en/inventory/spot-check) (partial-count cousin flow).

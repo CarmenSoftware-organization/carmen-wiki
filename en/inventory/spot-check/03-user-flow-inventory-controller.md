@@ -2,7 +2,7 @@
 title: Spot Check — User Flow — List & Create Screens
 description: The location-list and create screens where a spot check is started, scoped, and sampled.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: spot-check, user-flow, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -33,12 +33,12 @@ graph LR
 
 ### What the list screen shows
 
-- **Locations / History toggle** — **Locations** view (`GET /spot-check/current`) buckets every eligible location into **Resume** (has a `pending`/`in_progress` spot check) or **Not Started** (none); **History** view (`GET /spot-checks`, paginated) lists every spot check ever created, any status, with location/status/method filters.
-- **KPI tiles** (Locations view only) — All / Resume / Not Started counts, each clickable as a filter.
+- **Locations / History toggle** (`ScViewToggle`) — two links, not client state: **Locations** is `/inventory-management/spot-check` (`GET /spot-check/current`, buckets every eligible location into **Resume** — has a `pending`/`in_progress` spot check — or **Not Started**), **History** is its own route `/inventory-management/spot-check/history` (`GET /spot-checks`) — a data-grid of every spot check ever created, any status. Filtering, search and sorting happen **on the server** and pages load one at a time (the earlier version fetched the whole set). Filters (`sc-history-filter-fields.ts`): status (`pending` / `in_progress` / `completed` / `void` only — `voided`/`cancelled` exist in the FE type but a request carrying them is rejected 400), method (random / high_value / manual), location (includes inactive locations), start-date range. Back from a spot check returns to whichever of the two paths opened it.
+- **Status strip** (Locations view only) — All / Resume / Not Started counts, each clickable as a filter, plus an items-counted metric (Σ `counted` / Σ `size` over the Resume locations).
 - **"Include Not Count" checkbox** — toggles `include_not_count` on the `/current` call; unchecked (default), only locations with `physical_count_type = yes` appear (the same per-location flag [physical-count](/en/inventory/physical-count) uses for its own period-end gate — spot check itself is not a period-end gate); checked, locations flagged `no` are added too.
-- **Search bar** — filters visible location/history cards by name/code (Locations) or spot-check number/location (History), client-side.
-- **Location cards** (`ScLocationCard`) — one per location; "Not Started" locations show a **Start** button; locations with an in-flight spot check show a resume-info panel (spot-check number, method badge, counted/total progress, status badge) plus **Resume** and **Reset** buttons.
-- **History cards** (`ScHistoryCard`) — one per historical spot check, clickable to open it (routes to the same entry screen documented in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter), regardless of the spot check's status).
+- **Search bar** — filters the visible location rows by name/code client-side (Locations view); in History the search is part of the server query.
+- **Location rows** (`ScLocationRow`, replacing `ScLocationCard`) — one per location; "Not Started" locations show a **Start** button; locations with an in-flight spot check show a resume-info panel (spot-check number, method badge, counted/total progress, status badge) plus **Resume** and **Reset** buttons.
+- **History rows** (`use-sc-history-table.tsx` data-grid, replacing `ScHistoryCard`) — one per historical spot check, clickable to open it (routes to the same entry screen documented in [03-user-flow-counter.md](/en/inventory/spot-check/03-user-flow-counter), regardless of the spot check's status).
 
 ### What the create screen shows (`sc-form.tsx`, create-only since 2026-09-04 — its dead view/edit branches were removed in `0647b32e`)
 
@@ -82,7 +82,7 @@ graph LR
 
 ## 6. References
 
-- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-card.tsx`, `sc-history-card.tsx`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`.
+- **Frontend:** `../carmen-frontend/routes/inventory-management/spot-check/sc-component.tsx`, `sc-form.tsx`, `sc-location-row.tsx`, `sc-history-component.tsx`, `use-sc-history-table.tsx`, `sc-history-filter-fields.ts`, `sc-view-toggle.tsx`, `sc-paths.ts`, `sc-method-picker.tsx`, `sc-reset-dialog.tsx`.
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/spot-check/spot-check.service.ts` (`create`, `reset`, `findCurrentByLocation`), `spot-check.logic.ts` (sampling).
 - **E2E:** `../carmen-frontend-e2e/tests/` — no spot-check spec currently exists; manual test-case catalog `docs/test-cases/760-spot-check.md` (44 cases; `TC-SPC-01*` list, `TC-SPC-03*` create).
 - Related: [spot-check/03-user-flow](/en/inventory/spot-check/03-user-flow) (overview), [spot-check/02-business-rules](/en/inventory/spot-check/02-business-rules) (`SPC_VAL_001`–`004`, `SPC_VAL_006`, `SPC_AUTH_001`), [spot-check/03-user-flow-counter](/en/inventory/spot-check/03-user-flow-counter) (the same role's entry/review journey).

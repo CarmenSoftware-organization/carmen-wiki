@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Finance
 description: Correction notice — no Finance persona, GL posting, or threshold-based approval exists for this module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, user-flow, finance, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-05-15T13:00:00.000Z
 ## What was checked
 
 - A repo-wide search of `carmen-turborepo-backend` and `carmen-frontend` for `journal`, `ledger`, and GL-posting code in the stock-in/stock-out module found no hits (re-run 2026-09-22). A GL core (`tb_gl_jv*`, `apps/micro-business/src/gl/`, manual journal vouchers) arrived in 2026-09, but nothing in `stock-in/` / `stock-out/` references it.
-- `tb_adjustment_type` has no GL-account field, no document-required flag, no quality-check flag — only `code`, `name`, `type`, `description`, `is_active`, `note`.
+- `tb_adjustment_type` has a nullable `chart_of_accounts_id` (contra GL account, added 2026-10) but nothing in stock-in/stock-out code reads it, and no document-required or quality-check flag exists — otherwise only `code`, `name`, `type`, `description`, `is_active`, `note`.
 - `enum_stage_role` (the platform's workflow-role enum) is `{create, approve, purchase, issue, view_only}` — it has no `finance` member, and this module's `create()`/`update()`/`void*()` methods never call a workflow orchestrator at all.
 - A repo-wide search for `threshold` scoped to the inventory/stock-in/stock-out modules found zero relevant hits.
 - The nav entry and every route under `/inventory-management/inventory-adjustment` gate on the single generic `inventory_management.view` permission — there is no distinct Finance-scoped permission or route guard.

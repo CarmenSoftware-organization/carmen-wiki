@@ -2,7 +2,7 @@
 title: Inventory — User Flow — Inventory Controller
 description: Inventory Controller's flow within the inventory module — running the period-end review and close.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory, user-flow, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -29,7 +29,7 @@ The **Inventory Controller** persona owns balance accuracy at period boundaries.
 3. **Work the document cards.** One card per module — PR, PO, GRN, CN, SR, SI, SO — each showing the period's document count and a Complete/Incomplete badge. Clicking a card opens a dialog listing the documents (linked to their source screens) so the Controller can chase owners. Complete means: PR `approved/completed/voided`; PO `completed/closed/voided`; SR `completed/cancelled/voided`; GRN `committed/voided`; CN `completed/cancelled/voided`; SI/SO `completed/cancelled/voided`. Only SR / GRN / CN / SI / SO feed the close gate — the PR and PO cards are informational.
 4. **Work the physical-count section.** One card per required location (`location_type ∈ {inventory, consignment}`, `physical_count_type = yes`, active) with counted/total progress; clicking a card opens that location's count — creating it (`POST /physical-counts`) if none exists yet — at `/inventory-management/physical-count/{id}/entry`. Cards stay disabled ("Counting has not started for this period yet.") until step 2 has run. Spot checks are **not** part of this gate.
 5. **Close.** When the review payload reports `can_close: true` the **Close Period** button (destructive style, confirm dialog) enables; clicking fires `POST /period-ends`.
-6. **The close executes atomically.** Inside one transaction: `FOR UPDATE` lock + re-validation; lot carry-over (`close` rows zeroing every lot whose period `end_at ≤` this period's, `open` rows re-creating them in the auto-provisioned next period under new `{location_code}{YYMM}{seq4}` lots; on average-method tenants also the `tb_inventory_period_snapshot` buckets); `tb_inventory_period.status = closed`; the period's `tb_physical_count_period` rows marked `completed`.
+6. **The close executes atomically.** Inside one transaction: `FOR UPDATE` lock + re-validation; lot carry-over (`close` rows zeroing every lot whose period `end_at ≤` this period's, `open` rows re-creating them in the auto-provisioned next period under new `{location_code}{YYMM}{seq4}` lots; on average-method tenants also the `tb_inventory_period_snapshot` buckets, and receipts held for the new period are posted); the screen shows a three-step rail (clear stock documents → count every location → close); `tb_inventory_period.status = closed`; the period's `tb_physical_count_period` rows marked `completed`.
 7. **Verify on the ledger.** Filter the Transaction Log for `inventory_doc_type IN ('close','open')` — the close itself is an auditable pair of ledger events.
 
 ## 3. Decision Branches

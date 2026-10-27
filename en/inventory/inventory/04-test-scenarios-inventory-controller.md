@@ -2,7 +2,7 @@
 title: Inventory — Test Scenarios — Inventory Controller
 description: Inventory Controller's test cases for the period-end review and close.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory, test-scenarios, inventory-controller, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -62,5 +62,5 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 - User flow: [03-user-flow-inventory-controller](/en/inventory/inventory/03-user-flow-inventory-controller); screen reference: [period-end](/en/inventory/inventory/period-end).
 - Business rules: [02-business-rules](/en/inventory/inventory/02-business-rules) — `INV_POST_009`/`INV_POST_010`, `INV_CALC_008`/`INV_CALC_009`, `INV_AUTH_008`.
-- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx runnable; TC-PE-02/03/04xxxx "Feature pending"); manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`.
+- E2E: `../carmen-frontend-e2e/tests/900-period-end.spec.ts` (TC-PE-01xxxx runnable; TC-PE-02/03/04xxxx "Feature pending"); manual gap catalog `docs/test-cases/gaps/900-period-end-gap.md`; user stories `docs/user-stories/900-period-end.md`. The opt-in `period-close` project (`bun run test:period-close`, specs `910`–`924`, TC-PE-4xxxxx–54xxxxx; irreversible phases gated by `E2E_ALLOW_IRREVERSIBLE=<BU>:<period>`) now exercises pre-step, blockers, start gate, held receipts, active-period rule, counting + compensation and the real close — see [period-end](/en/inventory/inventory/period-end) § 8.
 - Backend specs: `../carmen-turborepo-backend/apps/micro-business/src/inventory/period-end/*.spec.ts`.

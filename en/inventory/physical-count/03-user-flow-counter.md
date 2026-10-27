@@ -2,7 +2,7 @@
 title: Physical Count — User Flow — Entry & Review Screens
 description: The line-entry and variance-review screens where a physical count is actually performed and submitted.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: physical-count, user-flow, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -37,7 +37,7 @@ graph LR
 - **Search + status filter pills** — All / Counted / Uncounted, filtering the visible product cards client-side; search matches product name/code/SKU/local name.
 - **Refresh button** — calls `PATCH .../refresh`, which re-runs the same product-union query used at creation and appends any newly-qualifying product to the sheet.
 - **Import / Export** — Export writes an `.xlsx` of the current effective counts (id, product code/name/local name/SKU, unit, `actual_qty`); Import reads a spreadsheet back and matches rows by SKU, reporting matched/skipped counts.
-- **Product cards** (`EntryItemRow`, virtualized) — product name/code/local name/SKU, an `actual_qty` number input (committed on blur, clamped to `≥ 0` client-side), a calculator button (`CalculatorDialog`, for computing a total from case/unit quantities), a unit-of-measure label, and an "Add Notes" link opening a shared notes dialog (free text + photo attachments, backed by `tb_physical_count_detail_comment`). Book quantity (`on_hand_qty`) is **never shown** on this screen.
+- **Product rows** (`EntryItemRow`, virtualized; dense rows with aligned columns since the 2026-10 restyle — **Enter** in a count field moves focus to the next row, `use-entry-advance.ts`) — product name/code/local name/SKU, an `actual_qty` number input (committed on blur, clamped to `≥ 0` client-side), a calculator button (`CalculatorDialog`, for computing a total from case/unit quantities), a unit-of-measure label, and an "Add Notes" link opening a shared notes dialog (free text + photo attachments, backed by `tb_physical_count_detail_comment`). Book quantity (`on_hand_qty`) is **never shown** on this screen.
 - **"Set uncounted to zero"** — bulk-fills every still-blank line's local value to `0` (does not save by itself).
 - **Save vs. Submit for Review** — the footer shows **Save** whenever any line is still uncounted; once every line has a value (from local edits or a prior save), Save disappears and only **Submit for Review** remains.
 
@@ -59,8 +59,8 @@ graph LR
 | Enter/edit `actual_qty` on a line | Document `in_progress` | Local state only, until Save or Submit for Review | Value clamped to `≥ 0` client-side (`entry-item-row.tsx`); no server-side minimum was confirmed. |
 | Attach a note/photo to a line | Any time | `POST /physical-count-detail-comments/:detailId` (multipart: `message`, `type`, `files`) | Backed by `tb_physical_count_detail_comment`; the same shared notes-dialog component used by other entry-style screens in this codebase. |
 | Save | At least one line has a value; document not `completed` | `PATCH .../save` — stamps `counted_at`/`counted_by_id` and recomputes `diff_qty` on the submitted lines against whatever `on_hand_qty` is currently stored (usually still `0` pre-review); requires `doc_version` | Repeatable; does not change `tb_physical_count.status`. |
-| Submit for Review | Every line has an effective value (`uncountedCount === 0`) | `PATCH .../review` — recomputes `on_hand_qty`/`diff_qty` for **every** line from the live ledger balance; navigates to `/review` | Does not stamp `counted_at`; does not change `status`. Requires `doc_version`. See the counted_at caveat in [02-business-rules.md](/en/inventory/physical-count/02-business-rules) `PHC_VAL_004`. |
-| Submit (final, from `/review`) | Every line's `counted_at != null` | `PATCH .../submit` — `status → completed`; fires the variance rollup into `tb_stock_in`/`tb_stock_out` | Terminal; per `PHC_POST_001`–`004`. Requires `doc_version`. |
+| Submit for Review | Every line has an effective value (`uncountedCount === 0`) | `PATCH .../review` — recomputes `on_hand_qty`/`diff_qty` for **every** line from the counted period's cost-layer balance; navigates to `/review` | Stamps `counted_at` / `counted_by_id` on lines it receives for the first time (already-stamped lines keep their time); does not change `status`. Requires `doc_version`. See [02-business-rules.md](/en/inventory/physical-count/02-business-rules) `PHC_VAL_004`. |
+| Submit (final, from `/review`) | Every line's `counted_at != null` | `PATCH .../submit` — `status → completed`; fires the variance rollup into EOP-typed `tb_stock_in`/`tb_stock_out` **and posts it to the ledger** | Terminal; per `PHC_POST_001`–`004`. Refused (nothing written) if the BU has no active `eop_in` / `eop_out` adjustment type for a sign that occurs, or if the ledger rejects a shortfall line (insufficient stock). Requires `doc_version`. |
 | Refresh products | Document not `completed` | `PATCH .../refresh` — appends newly-qualifying products to the sheet | Does not remove or re-price existing lines. |
 
 ## 4. Decision Points
@@ -73,12 +73,12 @@ graph LR
 
 | Trigger | Handoff to | Artefact |
 | ------- | ---------- | -------- |
-| Submit (final) | System — variance rollup | `tb_physical_count.status = completed`; `tb_stock_in`/`tb_stock_out` created (see [02-business-rules.md](/en/inventory/physical-count/02-business-rules) § 5). |
+| Submit (final) | System — variance rollup | `tb_physical_count.status = completed`; `tb_stock_in`/`tb_stock_out` created and posted to the ledger (see [02-business-rules.md](/en/inventory/physical-count/02-business-rules) § 5). |
 | Navigate back | [List screen](/en/inventory/physical-count/03-user-flow-count-lead) | No state change. |
 
 ## 6. References
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`, `pc-entry-header.tsx`, `pc-entry-notes-dialog.tsx`; `routes/inventory-management/shared/entry-item-row.tsx`, `review-component.tsx`.
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`).
-- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md` (entry / review cases, re-verified 2026-09-20).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no dedicated `750-physical-count` spec exists, but counting is exercised through the real screens by the opt-in period-close specs `921-period-close-count.spec.ts` and `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: count every location, EOP-IN / EOP-OUT compensation documents dated on the period's last day, their cost vs the BU's `si.cost-from`, system quantity = balance at the end of the counted period); run with `bun run test:period-close` (see [inventory/period-end](/en/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md` (entry / review cases, re-verified 2026-09-20).
 - Related: [physical-count/03-user-flow](/en/inventory/physical-count/03-user-flow) (overview), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/03-user-flow-count-lead](/en/inventory/physical-count/03-user-flow-count-lead) (the same role's list-screen journey).

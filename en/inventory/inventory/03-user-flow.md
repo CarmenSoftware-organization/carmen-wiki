@@ -2,7 +2,7 @@
 title: Inventory — User Flow
 description: Movement lifecycle and persona-specific flow files for inventory.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory, user-flow, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:00:00.000Z
@@ -12,7 +12,7 @@ dateCreated: 2026-05-15T12:00:00.000Z
 
 > **At a Glance**
 > **Module:** [inventory](/en/inventory/inventory) &nbsp;·&nbsp; **Personas:** Store Keeper (ledger verification) &nbsp;·&nbsp; Inventory Controller (period-end close) &nbsp;·&nbsp; Finance + Audit / Config (correction pages — no such surfaces exist)
-> **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is written already-posted by its source module (no draft → committed on the movement). Per-period lifecycle on `tb_inventory_period.status`: `open` → (**Start Period Close** opens the counting round on `tb_physical_count_period`) → `closed` via **Close Period** here (`locked` is set elsewhere). Corrections are new transactions via new source documents; rows are never edited.
+> **Workflow lifecycle:** Movement-driven — each `tb_inventory_transaction` is written already-posted by its source module (no draft → committed on the movement). Per-period lifecycle on `tb_inventory_period.status`: `open` → (**Start Period Close** opens the counting round on `tb_physical_count_period`) → `closed` via **Close Period** here (`locked` is set elsewhere and still counts as the active period). Corrections are new transactions via new source documents; rows are never edited.
 
 ## 1. Overview
 
@@ -35,7 +35,7 @@ Section 2 describes the two state machines (movement-level, degenerate; period-l
 | ---------- | ------ | -------- | ----------- | -------------- |
 | `(none)` | period created | `open` | `ensureNextPeriod` during the previous close, or the period admin screen ([system-config/period](/en/inventory/system-config/period)) | One period per YYMM (`@@unique([fiscal_year, fiscal_month, deleted_at])`). |
 | `open` | accept movements | `open` | All transactional roles (via source modules) | Movements whose document date falls inside this period post into it; a document dated inside a `closed` period is rejected at create/commit (SI/SO/GRN date guards). |
-| `open` | **Start Period Close** on `/period-end` | `open` (period) + `counting` (its `tb_physical_count_period`) | Any user with `inventory_management.period_end.execute` | No GRN dated in the period outside `{committed, voided}`, no SI/SO outside `{completed, cancelled, voided}`, no numbered SR at `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO never block. Idempotent while the round is `counting`; 409 once it is `completed`. This is the only path that lets a physical count be opened. |
+| `open` | **Start Period Close** on `/period-end` | `open` (period) + `counting` (its `tb_physical_count_period`) | Any user with `inventory_management.period_end.execute` | No GRN dated in the period outside `{committed, voided}`, no SI/SO outside `{completed, cancelled, voided}`, no numbered SR at `draft`/`in_progress` (`listStartCountingBlockers`); PR/PO never block. Applies to the active (oldest `open`/`locked`) period; idempotent while the round is `counting`; 409 once it is `completed`. This is the only path that lets a physical count be opened. |
 | `open` (or `locked`) | **Close Period** on `/period-end/review` | `closed` | Any user with `inventory_management.period_end.execute` | All close gates clear (numbered SR not `in_progress`-mid-workflow; GRN in `{draft, committed, voided}`; CN in `{draft, completed, cancelled, voided}`; SI/SO not `in_progress`; all required locations counted — PR/PO no longer gate). Runs atomically under a `FOR UPDATE` lock with re-validation; sweeps only lots whose period `end_at ≤` this period's; writes lot carry-over (new `{location_code}{YYMM}{seq4}` lots) and — average-method tenants only — `tb_inventory_period_snapshot` rows; auto-provisions the next `open` period; marks `tb_physical_count_period` rows completed. |
 | `closed` | (no transition in this module) | — | — | No reopen endpoint exists here. |
 | any | lock / unlock | `locked` / — | The period service behind [system-config/period](/en/inventory/system-config/period) | Out of this module's scope; note `findCurrent` treats `locked` as a current period, so a locked period is displayable and closable here. |

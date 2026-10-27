@@ -2,7 +2,7 @@
 title: Physical Count — Test Scenarios — Entry & Review Screens
 description: Entry- and review-screen test cases for the physical-count module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: physical-count, test-scenarios, counter, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -30,7 +30,7 @@ The scenarios below exercise the actions catalogued in [physical-count/03-user-f
 | E-F-05 | Export the current counts | Any time. | An `.xlsx` file downloads with id, product code/name/local name/SKU, unit, and current effective `actual_qty` per row. |
 | E-F-06 | Import counts from a spreadsheet | A previously-exported (or externally-prepared) file with matching SKUs. | Matched rows populate their lines' local values; a toast reports matched/total/skipped counts. |
 | E-F-07 | Refresh products mid-count | A product newly qualifies for the location (assigned, or now has stock). | `PATCH .../refresh` appends the new line to the sheet; existing lines are unaffected. |
-| E-F-08 | Submit for Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the live ledger balance; navigates to `/review`. |
+| E-F-08 | Submit for Review once every line has a value | `uncountedCount === 0`. | `PATCH .../review` recomputes `on_hand_qty`/`diff_qty` for every line from the counted period's cost-layer balance; navigates to `/review`. |
 | E-F-09 | Review screen shows correct summary counts | Some lines match, some are overages, some are shortages. | Matches/variances/overages/shortages counts on the review screen agree with each line's `diff_qty`. |
 | E-F-10 | Final Submit with mixed variance | Every line's `counted_at != null`. | `PATCH .../submit` sets `status = completed`, creates one `tb_stock_in` (overage lines) and/or one `tb_stock_out` (shortage lines), both already `doc_status = completed`; navigates back to the list screen. |
 
@@ -55,7 +55,7 @@ The scenarios below exercise the actions catalogued in [physical-count/03-user-f
 | - | -------- | ---------------- |
 | E-E-01 | Every line is typed and immediately Submitted for Review, with no intervening Save | Since Save is the only action that stamps `counted_at`, and Submit for Review does not, the final Submit on the review screen may then reject with `"<N> products have not been counted yet"` even though every line visibly has a value — a direct reading of `save()` vs. `reviewItems()` in `physical-count.service.ts`; not independently confirmed by an automated test. |
 | E-E-02 | Zero on shelf | Counter enters `actual_qty = 0` explicitly (not left blank); counts as a real, complete entry — a full negative variance against whatever `on_hand_qty` the review step computes. |
-| E-E-03 | Set uncounted to zero, then Submit for Review | Every previously-blank line becomes `0` locally; Submit for Review is then available and recomputes real variance for those lines against the live ledger balance. |
+| E-E-03 | Set uncounted to zero, then Submit for Review | Every previously-blank line becomes `0` locally; Submit for Review is then available and recomputes real variance for those lines against the counted period's cost-layer balance. |
 | E-E-04 | Import partially matches | Some spreadsheet rows do not match any line's SKU. | Toast reports the skipped count; unmatched lines are left exactly as they were. |
 | E-E-05 | Mixed overage and shortage in the same submit | At least one positive- and one negative-`diff_qty` line. | Both a `tb_stock_in` and a `tb_stock_out` are created by the same final Submit call. |
 | E-E-06 | All lines reconcile to zero variance | Every `diff_qty = 0`. | Final Submit succeeds; no `tb_stock_in`/`tb_stock_out` is created at all. |
@@ -64,5 +64,5 @@ The scenarios below exercise the actions catalogued in [physical-count/03-user-f
 
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/pc-entry-component.tsx`, `pc-review-component.tsx`.
 - **Backend:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (`save`, `reviewItems`, `submit`, `refresh`, `delete`).
-- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists; manual catalog `docs/test-cases/750-physical-count.md`.
+- **E2E:** `../carmen-frontend-e2e/tests/` — no dedicated `750-physical-count` spec exists, but counting is exercised through the real screens by the opt-in period-close specs `921-period-close-count.spec.ts` and `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: count every location, EOP-IN / EOP-OUT compensation documents dated on the period's last day, their cost vs the BU's `si.cost-from`, system quantity = balance at the end of the counted period); run with `bun run test:period-close` (see [inventory/period-end](/en/inventory/inventory/period-end) § 8); manual catalog `docs/test-cases/750-physical-count.md`.
 - Related: [physical-count/03-user-flow-counter](/en/inventory/physical-count/03-user-flow-counter), [physical-count/02-business-rules](/en/inventory/physical-count/02-business-rules) (`PHC_VAL_004`–`007`, `PHC_POST_001`–`004`), [physical-count/04-test-scenarios](/en/inventory/physical-count/04-test-scenarios) (end-to-end scenarios).

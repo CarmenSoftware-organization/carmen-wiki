@@ -2,7 +2,7 @@
 title: Spot Check — Test Scenarios — List & Create Screens
 description: List- and create-screen test cases for the spot-check module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: spot-check, test-scenarios, inventory-controller, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -23,9 +23,9 @@ The scenarios below exercise the actions catalogued in [spot-check/03-user-flow-
 
 | # | Scenario | Pre-condition | Expected outcome |
 | - | -------- | ------------- | ---------------- |
-| L-F-01 | Load the list screen (Locations view) | Any user with the module permission. | KPI tiles (All/Resume/Not Started) and location cards render within a normal page-load window. Corresponds to `TC-SPC-010001`. |
-| L-F-02 | Switch to History view | On the list screen. | View toggles to a paginated list of every spot check ever created, any status. Corresponds to `TC-SPC-010002`. |
-| L-F-03 | Filter by KPI tile | Click "Resume" tile. | Only locations with a `pending`/`in_progress` spot check remain visible. Corresponds to `TC-SPC-010003`. |
+| L-F-01 | Load the list screen (Locations view) | Any user with the module permission. | Status strip (All/Resume/Not Started) and location rows render within a normal page-load window. Corresponds to `TC-SPC-010001`. |
+| L-F-02 | Switch to History view | On the list screen. | The URL changes to `/inventory-management/spot-check/history` and a server-paginated grid of every spot check ever created, any status, renders (filters/search/sort run server-side). Corresponds to `TC-SPC-010002`. |
+| L-F-03 | Filter by status-strip segment | Click the "Resume" segment. | Only locations with a `pending`/`in_progress` spot check remain visible. Corresponds to `TC-SPC-010003`. |
 | L-F-04 | Search by location name/code | Type a partial match. | List narrows client-side. Corresponds to `TC-SPC-010004`. |
 | L-F-05 | Include Not Count | Check "Include Not Count". | Locations flagged `physical_count_type = no` are added to the list. Corresponds to `TC-SPC-010006`. |
 | L-F-06 | Start a spot check — Random | Location has no in-flight spot check; `items ≥ 1`. | `POST /spot-checks` succeeds; document created at `pending` with `size` random detail rows; navigates to `/:id`. Corresponds to `TC-SPC-030002`. |

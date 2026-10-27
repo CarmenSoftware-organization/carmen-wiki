@@ -2,7 +2,7 @@
 title: Spot Check — User Flow
 description: Document lifecycle and persona-specific flow files for spot checks.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: spot-check, user-flow, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:30:00.000Z
@@ -59,7 +59,7 @@ stateDiagram-v2
 | `(none)` | Create (`POST /spot-checks`) for `(location, method, size or product_id[])` | `pending` | Any user with `inventory_management.spot_check` | Location exists (`SPC_VAL_001`); eligible product pool non-empty (`SPC_VAL_002`); `manual` requires a non-empty, pool-matching `product_id[]` (`SPC_VAL_003`); `high_value` requires an open/locked `tb_inventory_period` to exist (`SPC_VAL_004`). `on_hand_qty` snapshot captured per line at this moment. |
 | `pending` | Save (`PATCH .../save`) | `in_progress` | Same user | Non-empty `items[]` (`SPC_VAL_007`). Stamps `counted_at`/`counted_by_id`; recomputes `diff_qty` against the currently-stored `on_hand_qty`. |
 | `in_progress` | Save (repeat) | `in_progress` | Same user | Same as above; repeatable. |
-| `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` live for every line from the current ledger balance; stamps `counted_at`/`counted_by_id`; navigates to `/review`. Not blocked by an incomplete document. |
+| `pending` / `in_progress` | Submit for Review (`PATCH .../review`) | (no status change) | Same user | Recomputes `on_hand_qty`/`diff_qty` live for every line from the active period's cost-layer balance; stamps `counted_at`/`counted_by_id`; navigates to `/review`. Not blocked by an incomplete document. |
 | `pending` / `in_progress` | Submit (`PATCH .../submit`, from `/review`) | `completed` | Same user | No completeness check (`SPC_VAL_008`) — succeeds even with uncounted lines. Stamps `end_date`. Terminal; no other document or ledger effect. |
 | `pending` / `in_progress` | Reset (`POST .../reset`) | `void` | Same user, from the list screen's Resume section | Rejected if already `void` or `completed` (`SPC_VAL_006`). Does not clear detail rows. |
 | `completed` / `void` | view only | (unchanged) | Any user with the module permission (read) | Reachable from the list's History tab regardless of status; the entry screen renders identically, though Save is blocked by `SPC_VAL_007` and the terminal Submit is blocked by `SPC_VAL_008` — but Submit for Review is **not** blocked and will silently rewrite detail rows if triggered again (see [02-business-rules.md](/en/inventory/spot-check/02-business-rules) `SPC_POST_004`). |

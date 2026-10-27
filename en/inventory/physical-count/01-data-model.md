@@ -2,7 +2,7 @@
 title: Physical Count — Data Model
 description: Entities, fields, relationships, and enums for the physical-count module.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: physical-count, data-model, inventory, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T14:00:00.000Z
@@ -13,8 +13,8 @@ dateCreated: 2026-05-15T14:00:00.000Z
 > **At a Glance**
 > **Tables:** `tb_physical_count_period` &nbsp;·&nbsp; `tb_physical_count` &nbsp;·&nbsp; `tb_physical_count_detail` &nbsp;·&nbsp; per-level `_comment` tables (three)
 > **Audience:** Developer / Auditor (dev reference)
-> **Key FKs:** period `→ tb_inventory_period`; count `→ tb_location` and `→ tb_physical_count_period`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). The variance rollup into [inventory-adjustment](/en/inventory/inventory-adjustment) has **no FK and no JSON linkage field at all** — the created `tb_stock_in`/`tb_stock_out` rows carry only a shared, human-readable description string
-> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-level hierarchy (period → document → detail) — count itself does **not** write to the inventory ledger; the rollup at final submit creates already-`completed` stock-in/out documents that also do not write to the ledger (see § 3)
+> **Key FKs:** period `→ tb_inventory_period`; count `→ tb_location` and `→ tb_physical_count_period`; detail `→ tb_product` and `→ tb_unit` (`inventory_unit_id`). The variance rollup into [inventory-adjustment](/en/inventory/inventory-adjustment) has **no FK and no JSON linkage field at all** — the created `tb_stock_in`/`tb_stock_out` rows carry the EOP adjustment type and a shared, human-readable description string
+> **Audit pattern:** standard `created_*` / `updated_*` / `deleted_*`; three-level hierarchy (period → document → detail) — count lines themselves do not touch the ledger; the rollup at final submit creates already-`completed` stock-in/out documents (EOP adjustment types) **and posts each line to the ledger** in the same transaction (see § 3)
 
 > **Source of truth:** Backend Prisma schema plus the service methods that read/write it. Always read both first when updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma`
@@ -27,7 +27,7 @@ dateCreated: 2026-05-15T14:00:00.000Z
 
 The Physical Count module persists a three-level document tree under **`tb_physical_count_period` → `tb_physical_count` → `tb_physical_count_detail`**: a period header groups every count document opened against the same fiscal period (`tb_inventory_period`), each count document represents one `(period, location)` pairing, and each detail row is one product line on that count with `on_hand_qty` (book), `actual_qty` (counted), and `diff_qty` (variance). Comments and attachments hang off all three levels (`tb_physical_count_period_comment`, `tb_physical_count_comment`, `tb_physical_count_detail_comment`); the detail-level comment table is the one actually exercised by the live UI, via the entry screen's per-line "Add Notes" dialog (photo + free text).
 
-The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)** in name only: when a count document's final **Submit** fires (`physical-count.service.ts` `submit()`), the service inserts variance lines directly into new `tb_stock_in` (overage) and/or `tb_stock_out` (shortage) rows — but it does so with a raw Prisma transaction that never imports or calls `InventoryTransactionService`, `executeAdjustmentIn`, or `executeAdjustmentOut`, the helpers `stock-in.service.ts`/`stock-out.service.ts` call for every one of their own detail lines. As a direct consequence: no `tb_inventory_transaction` row is created by this rollup, `adjustment_type_id` is left `null` on both created headers (no reason code), and neither header nor any detail row's `info` JSON field is populated with a back-reference to the source `tb_physical_count.id` — the only trace connecting the two documents is a shared, human-readable description string (`"Physical Count Adjustment - Period: <start> to <end>"`) and a per-line `note` string. Lot data on the count detail is sparse — `tb_physical_count_detail` carries only `on_hand_qty` / `actual_qty` per product at a location (no `lot_no` column) — and since the rollup never reaches the inventory-transaction/cost-layer code path, no lot is created or consumed by a physical count at all in the current implementation.
+The module sits **upstream of [inventory-adjustment](/en/inventory/inventory-adjustment)**: when a count document's final **Submit** fires (`physical-count.service.ts` `submit()`), the service inserts variance lines into new `tb_stock_in` (overage) and/or `tb_stock_out` (shortage) rows created directly at `completed` — and, since the 2026-10 code, **posts each line to the ledger itself** through `InventoryTransactionService.executeAdjustmentIn` / `executeAdjustmentOut` (private `postAdjustmentIn` / `postAdjustmentOut`), writing the returned `inventory_transaction_id` onto the detail row, all inside the submit transaction (a posting failure rolls the whole submit back). The documents bypass `stock-in.service.ts` / `stock-out.service.ts` (no Save/Commit hop) but reach the same ledger helpers those services call at commit. They carry the BU's active **`eop_in` / `eop_out` adjustment type** (`adjustment_type_id` + `adjustment_type_code`), are dated to the counted period's `end_at`, and neither header nor any detail row's `info` JSON field holds a back-reference to the source `tb_physical_count.id` — the only trace connecting the two documents is a shared, human-readable description string (`"Physical Count Adjustment - Period yyyy-MM"`) and a per-line `note` string. Lot data on the count detail is sparse — `tb_physical_count_detail` carries only `on_hand_qty` / `actual_qty` per product at a location (no `lot_no` column); the ledger posting creates / consumes lots exactly as a manual adjustment would (`adjustment_in` creates a layer at the line's cost; `adjustment_out` draws FIFO lots or applies the average).
 
 ## 2. Entities
 
@@ -59,27 +59,28 @@ tb_inventory_period
                             ├─1──*──► tb_physical_count_comment  (unused by current UI)
                             │
                             └─1──*──► tb_physical_count_detail
-                                        │   (on_hand_qty stays 0 until Submit for Review;
+                                        │   (on_hand_qty stays 0 until Submit for Review, then = counted period's cost-layer balance;
                                         │    actual_qty / diff_qty; counted_at / counted_by_id
-                                        │    stamped only by Save; no lot_no column)
+                                        │    stamped by Save and by first-time Submit for Review; no lot_no column)
                                         │
                                         └─1──*──► tb_physical_count_detail_comment  (real: photo/notes)
 
-At final Submit, the backend groups non-zero-diff_qty lines by sign and inserts,
-in one transaction, orphan documents with NO linking field back to the count:
+At final Submit, the backend groups non-zero-diff_qty lines by sign and, in one
+transaction, inserts documents with NO linking field back to the count and posts them:
     ▼
-tb_stock_in  (doc_status = completed directly; adjustment_type_id = null)   for diff_qty > 0 lines
-tb_stock_out (doc_status = completed directly; adjustment_type_id = null)   for diff_qty < 0 lines
+tb_stock_in  (doc_status = completed directly; adjustment_type = active eop_in)   for diff_qty > 0 lines
+tb_stock_out (doc_status = completed directly; adjustment_type = active eop_out)  for diff_qty < 0 lines
     │
-    └── description / detail.note = free-text "Physical Count Adjustment - Period: …" string only
+    └── description / detail.note = free-text "Physical Count Adjustment - Period yyyy-MM …" string only
     │
-    └── NO tb_inventory_transaction row is created by this action (no executeAdjustmentIn/Out call)
+    └── per line: executeAdjustmentIn / executeAdjustmentOut -> tb_inventory_transaction (+ detail, cost layer);
+        detail.inventory_transaction_id stamped (shortage lines also get the posted cost_per_unit / total_cost)
 ```
 
 Notes:
 
 - **Three-level hierarchy, but the bottom two levels are the only ones with a live UI.** The period header exists to group locations under one fiscal period; the frontend's list screen (`physical-count`) reads it via `GET /physical-count-periods/current`, auto-provisioning a `draft` period the first time it is requested for a newly-opened fiscal period.
-- **No FK and no structured JSON linkage for the variance rollup.** Earlier drafts of this page described an `info.countId` / `info.countPeriodId` convention on the created `tb_stock_in`/`tb_stock_out` rows. Direct reading of `physical-count.service.ts`'s `submit()` method (lines ~934-1036) shows neither the header's nor any detail row's `info` field is ever written — the rollup's only trace back to its source count is a shared, unstructured description string. Reconstructing "which count produced this stock-in/out" from the ledger side is therefore not possible via any indexed field.
+- **No FK and no structured JSON linkage for the variance rollup.** Earlier drafts of this page described an `info.countId` / `info.countPeriodId` convention on the created `tb_stock_in`/`tb_stock_out` rows. Direct reading of `physical-count.service.ts`'s `submit()` method (re-read 2026-10-27) shows neither the header's nor any detail row's `info` field is ever written — the rollup's only trace back to its source count is a shared, unstructured description string. Reconstructing "which count produced this stock-in/out" from the ledger side is therefore not possible via any indexed field.
 - **All explicit `@relation` FK declarations use `onDelete: NoAction` or `onDelete: Cascade`** — preserving soft-delete (`deleted_at`) semantics.
 
 ## 4. Enums
@@ -88,7 +89,7 @@ Notes:
 - **`enum_physical_count_status`** — document-level lifecycle. Three values: `pending`, `in_progress`, `completed`. `pending` is defined on the enum but is not reachable through the confirmed `create()` path (every document is created directly at `in_progress`).
 - **`enum_physical_count_type`** — two values, `yes` / `no`. Declared on **both** `tb_location` (default `no`; the per-location "is this location required for physical count" admin flag, edited on the location's own config form) and `tb_physical_count` (default `yes`; never explicitly set by `create()`, so it stays at its default on every real document). There is no frozen-vs-live behavioural branch anywhere in the codebase associated with this enum — see [physical-count](/en/inventory/physical-count) § 3.
 - **`enum_physical_count_costing_method`** — a separate top-level enum (`standard`, `last`, `average`, `last_receiving`) that does **not** appear as a field on any physical-count table. It is read once per final `submit()` as a **business-unit-wide tenant config value** (`enum_business_unit_config_key.physical_count_costing_method`, default fallback `last_receiving` if unset or invalid), via `TenantService.getBuConfig()`, and applied uniformly to every variance line's `cost_per_unit` for that submit. No frontend screen was found that lets a user set this config key.
-- **`enum_transaction_type`** — at the inventory ledger level. `physical-count` is not a value on this enum, and — per § 1/§ 3 above — the values `adjustment_in`/`adjustment_out` that a normal inventory-adjustment posting would produce are never written by this module's own rollup at all, since no `tb_inventory_transaction` row is created.
+- **`enum_transaction_type`** — at the inventory ledger level. `physical-count` is not a value on this enum, and — per § 1/§ 3 above — the rollup's ledger rows use the ordinary `adjustment_in` / `adjustment_out` values (the same as a committed manual stock-in / stock-out), so a count correction cannot be told from a manual adjustment by transaction type — filter by the document's `eop_in` / `eop_out` adjustment type instead.
 
 ## 5. Divergences from carmen/docs
 
@@ -100,5 +101,5 @@ No `carmen/docs` source folder exists for this module. Two aspirational planning
 - **Service layer:** `../carmen-turborepo-backend/apps/micro-business/src/inventory/physical-count/physical-count.service.ts` (create/refresh/save/reviewItems/submit/delete/update); `.../physical-count-period/physical-count-period.service.ts` (findCurrent/create/update); `.../period-end/period-end.validate.ts` (`validatePhysicalCount`, the period-close gate).
 - **Secondary (aspirational, not implemented):** `../carmen-frontend-e2e/docs/persona-doc/System Process/tx-08-physical-stocktake.md`.
 - **Frontend:** `../carmen-frontend/routes/inventory-management/physical-count/` (`pc-component.tsx`, `pc-entry-component.tsx`, `pc-review-component.tsx`); `types/physical-count.ts`; `hooks/use-physical-count.ts`, `hooks/use-physical-count-period.ts`.
-- **E2E:** `../carmen-frontend-e2e/tests/` — no physical-count spec currently exists.
-- Related modules: [inventory](/en/inventory/inventory) (ledger that a *normal* inventory-adjustment posting writes to — not reached by this module's own rollup), [inventory-adjustment](/en/inventory/inventory-adjustment) (the tables the rollup writes into, bypassing that module's service layer), [spot-check](/en/inventory/spot-check) (partial-count cousin using a separate document tree).
+- **E2E:** `../carmen-frontend-e2e/tests/` — no dedicated `750-physical-count` spec exists, but counting is exercised through the real screens by the opt-in period-close specs `921-period-close-count.spec.ts` and `922-period-close-verify.spec.ts` (TC-PE-51xxxx / 52xxxx: count every location, EOP-IN / EOP-OUT compensation documents dated on the period's last day, their cost vs the BU's `si.cost-from`, system quantity = balance at the end of the counted period); run with `bun run test:period-close` (see [inventory/period-end](/en/inventory/inventory/period-end) § 8).
+- Related modules: [inventory](/en/inventory/inventory) (the ledger the rollup posts into via `executeAdjustmentIn/Out`), [inventory-adjustment](/en/inventory/inventory-adjustment) (the tables the rollup writes into, bypassing that module's Save/Commit path), [spot-check](/en/inventory/spot-check) (partial-count cousin using a separate document tree).

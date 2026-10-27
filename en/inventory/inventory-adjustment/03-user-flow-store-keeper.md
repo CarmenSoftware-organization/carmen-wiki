@@ -2,7 +2,7 @@
 title: Inventory Adjustment — User Flow — Store Keeper
 description: The day-to-day flow for entering a Stock-In or Stock-Out adjustment — Save keeps a draft, Commit posts it to the ledger.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: inventory-adjustment, user-flow, store-keeper, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T13:00:00.000Z
@@ -44,7 +44,7 @@ There is no code-level distinction between a "Store Keeper" and any other user o
 
 **Primary flow (Stock-In, 7 steps):**
 
-1. **Open Add Stock-In.** The form's date defaults to today, capped at the current period's end (`resolveDefaultDate`); it must fall inside the current period window (Zod) and, server-side, inside an open/locked inventory period.
+1. **Open Add Stock-In.** The form's date defaults to today, capped at the current period's end (`resolveDefaultDate`); it must fall inside the current period window and not after today (Zod, front-end only) and, server-side, inside an open/locked inventory period.
 2. **Pick the reason.** The **Reason** field (`adjustment_type_id`) lists only active `tb_adjustment_type` rows with `type = stock_in`, filtered client-side.
 3. **Pick the location.** `LookupUserLocation` filters to Inventory/Consignment location types.
 4. **Add lines.** Clicking **Add Item** opens the product picker immediately (`1f0f1f1a`) and warns if no location is selected yet. Each line: product (scoped to the selected location), `qty` (`≥ 0` in Zod, `min(0)`), `cost_per_unit` — pre-filled from the product's current cost at that location (`useProductCostByLocationQty`, `e246abaa`) but editable. (The API also accepts `expired_at` per line; the form has no field for it.)
@@ -56,7 +56,7 @@ There is no code-level distinction between a "Store Keeper" and any other user o
 
 - The `cost_per_unit` column is hidden — the cost is resolved by the ledger at commit (FIFO oldest layer first; Average at the current BU average) and never persisted on `tb_stock_out_detail`.
 - The date must be inside the **current** period (`STOCK_OUT_DATE_NOT_CURRENT_PERIOD`), not just any open one.
-- Commit pre-checks on-hand per product: a shortfall returns `Insufficient stock for {product} at {location}: on hand {x}, requested {y}` (400) and nothing is written.
+- Commit pre-checks on-hand per product: a shortfall returns `Insufficient stock for {product} at {location} on {date}: {x} available, requested {y} (lowest balance from {date} on falls on {day})` (400) and nothing is written. The same check also runs when you **Save** a stock-out draft, and Qty shows a red (i) icon as soon as it exceeds what can be drawn on the document date.
 
 ## 3. Decision Branches
 
