@@ -1,8 +1,8 @@
 ---
 title: Notification Template
-description: Template ข้อความในแอปที่ใช้ซ้ำได้ (tb_notification_template) ที่ถูกเลือกต่อ workflow stage/action/recipient ตั้งแต่ 2026-09-16 หน้าจอเป็น channel app เท่านั้น พร้อม {{variable}} จริงแปดตัว, chip สำหรับแทรก และ preview
+description: Template ข้อความในแอปที่ใช้ซ้ำได้ (tb_notification_template) เลือกต่อ workflow stage/action/recipient; channel app เท่านั้น, {{variables}} เก้าตัว, system template ที่มี code และ preview
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, notification-template, workflow, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:45:00.000Z
@@ -11,17 +11,25 @@ dateCreated: 2026-07-29T10:45:00.000Z
 # Notification Template
 
 > **สรุปโดยย่อ**
-> **Routes:** `/system-admin/notification-template` (+ `/new`, `/:id`) — nav entry ตอนนี้อยู่ใต้กลุ่ม **Workflows** (FE `00f2196d`, 2026-09-16) &nbsp;·&nbsp; **ตาราง:** `tb_notification_template` (tenant schema; `tb_message_format` ที่ platform schema ซึ่งหน้านี้เคยใช้เปรียบเทียบถูก **drop** ออกจาก `prisma-shared-schema-platform` ตั้งแต่ baseline) &nbsp;·&nbsp; **Endpoint:** `api/config/{bu_code}/notification-templates` &nbsp;·&nbsp; **Permission / licence:** `configuration.notification_template` &nbsp;·&nbsp; **ถูกใช้โดย:** config การแจ้งเตือนต่อ stage ของ [system-config/workflow](/th/inventory/system-config/workflow) dispatch โดย `WorkflowNotificationDispatcher` &nbsp;·&nbsp; **Channel:** `app` เท่านั้น — ตั้งแต่ 2026-09-16 (FE `541690f5`) รายการถูกกรอง `type:app`, ฟอร์มสร้างไม่มี control Channel หรือ Subject และ `WfChannel` ของ workflow editor มีแค่ `"app"`; dispatcher ไม่เคยส่งอย่างอื่นอยู่แล้ว `enum_notification_channel` ยังมีสี่ค่าและแถว legacy `email`/`line`/`sms` ราว 60 แถวยังอยู่ใน tenant ที่ seed ไว้
+> **Routes:** `/system-admin/notification-template` (+ `/new`, `/:id`) — nav entry ตอนนี้อยู่ใต้กลุ่ม **Workflows** (FE `00f2196d`, 2026-09-16) &nbsp;·&nbsp; **ตาราง:** `tb_notification_template` (tenant schema; `tb_message_format` ที่ platform schema ซึ่งหน้านี้เคยใช้เปรียบเทียบถูก **drop** ออกจาก `prisma-shared-schema-backstage` ตั้งแต่ baseline) &nbsp;·&nbsp; **Endpoint:** `api/config/{bu_code}/notification-templates` &nbsp;·&nbsp; **Permission / licence:** `configuration.notification_template` &nbsp;·&nbsp; **ถูกใช้โดย:** config การแจ้งเตือนต่อ stage ของ [system-config/workflow](/th/inventory/system-config/workflow) dispatch โดย `WorkflowNotificationDispatcher` &nbsp;·&nbsp; **Channel:** `app` เท่านั้น — ตั้งแต่ 2026-09-16 (FE `541690f5`) รายการถูกกรอง `type:app`, ฟอร์มสร้างไม่มี control Channel หรือ Subject และ `WfChannel` ของ workflow editor มีแค่ `"app"`; dispatcher ไม่เคยส่งอย่างอื่นอยู่แล้ว `enum_notification_channel` ยังมีสี่ค่าและแถว legacy `email`/`line`/`sms` ราว 60 แถวยังอยู่ใน tenant ที่ seed ไว้
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
+
+- **system template เก้าตัวที่มี code คงที่** `tb_notification_template` เพิ่มคอลัมน์ `code` (nullable) พร้อม partial unique index `notificationtemplate_code_live_u` บน `(code) WHERE deleted_at IS NULL AND code IS NOT NULL` (SQL เท่านั้น; BE `d2c8903e4`, `schema.prisma:4286-4304`) seed set `notification-templates` ของ tenant สร้าง template in-app (`type = 'app'`) เก้าตัว ข้อความไทย + อังกฤษ: `wf.submit.requestor`, `wf.submit.next_step`, `wf.approve.requestor`, `wf.approve.next_step`, `wf.reject.requestor`, `wf.reject.previous_step`, `wf.sendback.requestor`, `wf.sendback.next_step`, `wf.complete.requestor` (`packages/prisma-shared-schema-tenant/src/seed-data/workflow-notification-templates.ts`) seed set คู่กัน `notification-templates-legacy` มีสามขั้น: `retire-legacy` (soft-delete แถวเดิมแบบ 4 channel ที่ไม่มีใครแก้ — ตัวที่ถูกแก้จะคงไว้), `move-reject-previous` (ย้ายผู้รับ "previous approver" ของ reject จาก `current_approve` ไป `previous_step`) และ `fill-workflows` (ชี้ slot ว่างของ workflow ไปยัง template ที่มี code) (BE `15385fd93`, `f32fc97c6`; CLI รองรับ dry-run / `--apply`, `8914725af`) ตัวเลข "20 seeded app templates" ด้านล่างอธิบายรายการก่อนการยกเลิก
+- **badge "System default"** (FE `fb1545c3`): รายการแสดง badge ข้างแถวใดก็ตามที่มี `code` (`use-noti-tmpl-table.tsx`)
+- **ตัวแปรที่เก้า `docType`** (FE `fb1545c3`): รายการ chip ตอนนี้มี `docType` (render เป็นป้าย "PR" / "PO" / "SR" ผ่าน `NOTIFICATION_DOC_TYPE_LABEL`) context ของ dispatcher คือ `recipientName`, `docType`, `docNo`, `department`, `totalAmount`, `actorName`, `currentStage`, `reason`, `url` พอดี (`workflow-notification-dispatcher.service.ts:429-441`) template ที่ seed จงใจใช้เพียง `docType`, `docNo`, `actorName`, `currentStage` เพราะไม่มีผู้เรียกเติม `reason`/`url`/`totalAmount` ให้การ dispatch ของ workflow ในวันนี้
+- **พฤติกรรมของ dispatcher เปลี่ยน** (BE `d1db62509`, `50aeff813`): การอนุมัติขั้นสุดท้ายส่ง template `wf.complete.requestor` ที่ seed ไว้ให้ผู้ขอ (ค้นด้วย `code`, `type 'app'`, active) แม้ slot จะไม่ได้ตั้ง template — flag `is_active` ของ slot และ channel ยังมีผล; และ slot `current_approve` **ไม่เคยถูกส่ง** (เพราะจะแจ้งผู้ดำเนินการที่เพิ่งกด) เลขบรรทัด: `channel_not_supported` `:210`, template อนุมัติขั้นสุดท้าย `:233`, `render()` `:446-448`
+- **หน้ารายการ** ย้ายเข้า `ListPageShell` (FE `7e71ee51`) ไม่เปลี่ยนพฤติกรรม
+
+### สถานะก่อนหน้า (ตรวจสอบซ้ำ 2026-09-22)
 
 ข้อค้นพบเมื่อ 2026-07-29 ("มีแค่ `app` ที่ถูก dispatch, `email` เลือกได้แต่ถูกเพิกเฉย") ถูกแก้ที่**ฝั่ง UI** ไม่ใช่ด้วยการเพิ่มการส่ง: หน้าจอและ workflow editor ตอนนี้เสนอเฉพาะ `app` สิ่งที่เปลี่ยน (FE `541690f5`):
 
 - **รายการ** ขอ `filter=type:app` โดยไม่มีเงื่อนไข จึงแสดง app template ที่ seed ไว้ 20 ตัวแทน matrix 80 แถวแบบ 20 event × 4 channel; คอลัมน์ Channel หายไป
 - **ฟอร์ม** (`noti-tmpl-form.tsx`, `noti-tmpl-edit-content.tsx`) สร้างด้วย `type: "app"` ตายตัว (`noti-tmpl-form-schema.ts:25`) และไม่มีฟิลด์ Subject (subject เป็นแนวคิดของอีเมล) enum `type` ของ Zod ยังรับทั้งสี่ค่า (`:12`) และ `mapToPayload` ส่ง `type`/`subject` ที่โหลดมากลับไปตามเดิม ดังนั้นแถว legacy `email`/`line`/`sms` ที่เปิดผ่าน URL ตรงยัง validate และบันทึกได้โดยไม่ถูกแปลงเงียบ ๆ
-- **Variable เป็นของจริงแล้ว** `noti-tmpl-variables.ts` ประกาศ placeholder แปดตัวที่ dispatcher เติมค่า — `docNo`, `actorName`, `recipientName`, `url`, `currentStage`, `department`, `totalAmount`, `reason` — เรียงตามความถี่ที่ template ที่ seed ไว้ใช้; ฟอร์ม render เป็น chip แทรกที่ตำแหน่ง cursor (`noti-tmpl-variable-chips.tsx`) และ preview การ์ดแจ้งเตือนแบบสด (`noti-tmpl-preview.tsx`) ที่แทนค่าตัวอย่างและ **ไฮไลต์ `{{token}}` ที่ไม่รู้จัก** (`splitTemplate` / `unknownVariables`) ค่าตัวอย่างไม่เคยถูกส่ง
+- **Variable เป็นของจริงแล้ว** `noti-tmpl-variables.ts` ประกาศ placeholder ที่ dispatcher เติมค่า (แปดตัว ณ 2026-09-22; เพิ่ม `docType` ภายหลัง) — `docNo`, `actorName`, `recipientName`, `url`, `currentStage`, `department`, `totalAmount`, `reason` — เรียงตามความถี่ที่ template ที่ seed ไว้ใช้; ฟอร์ม render เป็น chip แทรกที่ตำแหน่ง cursor (`noti-tmpl-variable-chips.tsx`) และ preview การ์ดแจ้งเตือนแบบสด (`noti-tmpl-preview.tsx`) ที่แทนค่าตัวอย่างและ **ไฮไลต์ `{{tokens}}` ที่ไม่รู้จัก** (`splitTemplate` / `unknownVariables`) ค่าตัวอย่างไม่เคยถูกส่ง
 - **Workflow editor** `WfChannel = "app"` (`wf-stage-notifications.tsx:11`); slot `email` ยังอยู่ในรูปร่าง `notification_channel` ที่ persist (`wf-form-schema.ts:66-82`) สำหรับแถวเก่า
-- **Backend** ไม่เปลี่ยนในสาระสำคัญ: `WorkflowNotificationDispatcher.dispatch()` ยังข้ามทุก channel ยกเว้น `"app"` (`channel_not_supported`, `workflow-notification-dispatcher.service.ts:197`) และ `render()` ยังเป็นการแทนที่ `{{var}}` แบบแบน (`:402-404`); commit ตั้งแต่ baseline มีเพียง refactor RPC และการแก้ label ของ enum (`5cc7fd712`)
+- **Backend** ไม่เปลี่ยนในสาระสำคัญ: `WorkflowNotificationDispatcher.dispatch()` ยังข้ามทุก channel ยกเว้น `"app"` (`channel_not_supported`, `workflow-notification-dispatcher.service.ts:210`) และ `render()` ยังเป็นการแทนที่ `{{var}}` แบบแบน (`:446-448`); commit ตั้งแต่ baseline มีเพียง refactor RPC และการแก้ label ของ enum (`5cc7fd712`)
 
 ![Notification Template list](/screenshots/notification-template/index.png)
 
@@ -31,7 +39,7 @@ dateCreated: 2026-07-29T10:45:00.000Z
 
 ## 1. คืออะไรและใครใช้
 
-Notification Template คือหน้าจอ CRUD ธรรมดาสำหรับแถว **`tb_notification_template`** — ข้อความในแอปที่ใช้ซ้ำได้พร้อม `name`, `body` (required พร้อม `{{variable}}`), `description` (optional), และ flag `is_active`; `type` เป็น `app` เสมอสำหรับแถวที่สร้างที่นี่ และ `subject` แก้ไขไม่ได้อีกต่อไป (dispatcher fallback ไปที่ `${docType} update` / ชื่อ template) คำอธิบายที่แปลไว้ของหน้าจอเองบอกจุดประสงค์ตรง ๆ: *"Manage reusable notification templates for workflow events."*
+Notification Template คือหน้าจอ CRUD ธรรมดาสำหรับแถว **`tb_notification_template`** — ข้อความในแอปที่ใช้ซ้ำได้พร้อม `name`, `body` (required พร้อม `{{variables}}`), `description` (optional), และ flag `is_active`; `type` เป็น `app` เสมอสำหรับแถวที่สร้างที่นี่ และ `subject` แก้ไขไม่ได้อีกต่อไป (dispatcher fallback ไปที่ `${docType} update` / ชื่อ template) คำอธิบายที่แปลไว้ของหน้าจอเองบอกจุดประสงค์ตรง ๆ: *"Manage reusable notification templates for workflow events."*
 
 Template ไม่ใช่เนื้อหาลอย ๆ — มันมีอยู่เพื่อให้**ถูกเลือกโดย config การแจ้งเตือนของ workflow stage** บน stage editor ของ [system-config/workflow](/th/inventory/system-config/workflow) แต่ละ entry ของ `available_actions[<action>].recipients[<slot>].notification_channel[<channel>]` มี `notification_template_id` ของตัวเอง กรองเฉพาะ template ที่ active และมี `type` ตรงกับ channel นั้น (prop `channelType` ของ `LookupNotificationTemplate`) ตอน runtime `WorkflowNotificationDispatcher.dispatch()` อ่าน `notification_template_id` นั้นกลับจาก `tb_workflow.data` โหลดแถว `tb_notification_template` ที่อ้างถึง และ render `subject`/`body` ของมันผ่าน engine แทนที่ `{{placeholder}}` เล็ก ๆ ก่อน dispatch เป็นการแจ้งเตือนในแอป ดู §6 สำหรับ chain เต็มจาก trigger ถึง delivery
 
@@ -41,7 +49,7 @@ Template ไม่ใช่เนื้อหาลอย ๆ — มันม�
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| สร้าง template | Notification Template → **Add** → Name, Body (แทรก variable ผ่าน chip ตรวจ preview), Description, Active | `type` ถูกส่งเป็น `app`; `name` + `type` ต้อง unique คู่กัน — ซ้ำแล้วถูก reject ฝั่ง server (`ALREADY_EXISTS`); `{{token}}` นอกเหนือจาก variable ที่รู้จักแปดตัวจะถูก flag ใน preview และจะไปถึงผู้รับตามตัวอักษร |
+| สร้าง template | Notification Template → **Add** → Name, Body (แทรก variable ผ่าน chip ตรวจ preview), Description, Active | `type` ถูกส่งเป็น `app`; `name` + `type` ต้อง unique คู่กัน — ซ้ำแล้วถูก reject ฝั่ง server (`ALREADY_EXISTS`); `{{token}}` นอกเหนือจาก variable ที่รู้จักเก้าตัวจะถูก flag ใน preview และจะไปถึงผู้รับตามตัวอักษร |
 | แก้ template | Detail ของ template → **Edit** | `PUT`, guard ด้วย `doc_version` (optimistic lock) |
 | ปิดใช้งานโดยไม่ลบ | Detail → **Edit** → toggle **Active** ปิด | `is_active = false`; template ที่ปิดใช้งานจะหายไปจาก picker ของ workflow editor เท่านั้น (`filter: tpl.is_active && tpl.type === channelType`) — ไม่ได้ถูกลบ |
 | ลบ template | Detail → โหมด **Edit** → **Delete** | Soft delete (`deleted_at` + บังคับ `is_active = false`) — **ไม่มีการเช็คว่า workflow ยังอ้างอิง id ของ template นี้อยู่หรือไม่** (ดู §4) |

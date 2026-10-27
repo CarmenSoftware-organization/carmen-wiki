@@ -1,8 +1,8 @@
 ---
 title: การจัดการเอกสาร (Document Management)
-description: Registry ไฟล์ scope ตาม tenant backed ด้วย MinIO + tb_file_tag ในฐานข้อมูล file-service แยก (ไม่ใช่ tb_attachment ที่ตายแล้ว) endpoint storage summary ตั้งแต่ 2026-08-13; permission system_admin.document; ไม่เช็คขนาด/MIME ฝั่ง server
+description: Registry ไฟล์ scope ตาม tenant บน MinIO + tb_file_tag ในฐานข้อมูล file-service แยก (micro-file; ไม่ใช่ tb_attachment ที่ตายแล้ว) permission system_admin.document; ไม่เช็คขนาด/MIME ฝั่ง server
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, document, attachment, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![การจัดการเอกสาร (Document Management) screen](/screenshots/system-config/document.png)
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-10-27)
+
+**ย้าย repo (BE `73c80a0de`, `8b4dd9e75`):** file microservice ไม่ได้อยู่ใน backend monorepo อีกแล้ว `apps/micro-file` และ `packages/prisma-shared-schema-file` ถูกลบออกจาก `carmen-turborepo-backend`; service นี้เป็น repo ของตัวเอง (`../micro-file`, RPC 5007 / HTTP 6007) และ gateway คุยกับมันผ่าน package `@repo/file-contract` (`packages/file-contract/`) Prisma schema ของมัน (`CARMEN_FILE`, `tb_file_tag`) และ `file.client.ts` อยู่ที่นั่นแล้ว (`../micro-file/prisma/schema.prisma:21`, `src/prisma/file.client.ts`) ทุก path `micro-file/src/...` และ `prisma-shared-schema-file` ด้านล่างหมายถึง repo นั้น สอง finding ด้านล่าง (ตาราง registry, ไม่มี validation ฝั่ง server) อ่านซ้ำใน repo ใหม่ที่ `src/files/files.service.ts:152-156` (`putObject` ด้วย `mimetype` ที่ client ส่งมา ไม่มีการตรวจขนาดหรือประเภท) และยังเป็นจริง ชื่อ guard ของ gateway และเลขบรรทัด (`documents.*`, `:85`-`:530`) ไม่เปลี่ยน; UI ของหน้าเพียงย้ายเข้า `ListPageShell` (FE `ec51e8ed`)
+
+### สถานะก่อนหน้า (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22)
 
 **การเปลี่ยนแปลงตั้งแต่ baseline (อ่าน `document-management.controller.ts` เมื่อ 2026-09-22):**
 
@@ -26,7 +30,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 สองข้อแก้ไขสำหรับเวอร์ชันก่อนหน้าของหน้านี้:
 
-1. **ตาราง metadata คือ `tb_file_tag` ไม่ใช่ `tb_attachment`** การค้นทั่ว repo พบว่า **ไม่มีการอ้างอิง `tb_attachment` เลย** ที่ไหนใน `carmen-turborepo-backend/apps` นอกเหนือจากการประกาศ Prisma model ของมันเอง — ไม่มี service, controller หรือ DTO ใดอ่านหรือเขียนมัน เส้นทาง upload ไฟล์จริง (`micro-file/src/files/files.service.ts`) ใช้ `PrismaClient_FILE` จากฐานข้อมูล `@repo/prisma-shared-schema-file` ที่แยกต่างหากทั้งหมด (schema `CARMEN_FILE`) และเขียนหนึ่ง row ต่อการ upload ลงใน **`tb_file_tag`** (`bu_code`, `file_token`, `object_name`, `original_name`, `content_type`, `size`, `reference_type`/`reference_id`/`reference_no`, `tags` JSONB แบบอิสระ) — การจัดเก็บเองคือ **MinIO** ระบุตำแหน่งผ่าน `minioClient.putObject`/`getObject`/`removeObject`/`presignedGetObject` ไม่ใช่ claim "S3-compatible" ทั่วไปที่ผูกกับ `tb_attachment` §5 ด้านล่างแก้ไขให้อธิบาย `tb_file_tag` แล้ว
+1. **ตาราง metadata คือ `tb_file_tag` ไม่ใช่ `tb_attachment`** การค้นทั่ว repo พบว่า **ไม่มีการอ้างอิง `tb_attachment` เลย** ที่ไหนใน `carmen-turborepo-backend/apps` นอกเหนือจากการประกาศ Prisma model ของมันเอง — ไม่มี service, controller หรือ DTO ใดอ่านหรือเขียนมัน เส้นทาง upload ไฟล์จริง (`micro-file/src/files/files.service.ts`) ใช้ Prisma client สำหรับฐานข้อมูล file ที่แยกต่างหากทั้งหมด (เดิมคือ `@repo/prisma-shared-schema-file` ตอนนี้คือ `micro-file/src/prisma/file.client.ts`) (schema `CARMEN_FILE`) และเขียนหนึ่ง row ต่อการ upload ลงใน **`tb_file_tag`** (`bu_code`, `file_token`, `object_name`, `original_name`, `content_type`, `size`, `reference_type`/`reference_id`/`reference_no`, `tags` JSONB แบบอิสระ) — การจัดเก็บเองคือ **MinIO** ระบุตำแหน่งผ่าน `minioClient.putObject`/`getObject`/`removeObject`/`presignedGetObject` ไม่ใช่ claim "S3-compatible" ทั่วไปที่ผูกกับ `tb_attachment` §5 ด้านล่างแก้ไขให้อธิบาย `tb_file_tag` แล้ว
 2. **ไม่มีการ validate ขนาดหรือ MIME ฝั่ง server** `uploadFile()` ของ `files.service.ts` เรียก `minioClient.putObject` ด้วย `mimetype` และ buffer ที่ client ส่งมาตรงๆ — ไม่มีการตรวจสอบขนาดไฟล์และไม่มี MIME/extension allow-list ใดๆ ใน method นั้นเลย ขีดจำกัด 10 MB (`MAX_FILE_SIZE = 10 * 1024 * 1024` ใน `document-component.tsx`) และ attribute `accept` ของ picker เป็น **frontend-only** — ผู้เรียกที่ข้าม browser ไป (เรียก API ตรง) สามารถ upload ไฟล์ที่ใหญ่กว่าหรือประเภทใดก็ได้ ไม่พบ claim "defence-in-depth MIME sniffing ฝั่ง server" ในโค้ดเลย
 
 ## 1. คืออะไรและใครใช้
@@ -131,10 +135,10 @@ Document Management คือ **registry surface การจัดเก็บ�
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma (file schema — registry จริง):** `../carmen-turborepo-backend/packages/prisma-shared-schema-file/prisma/schema.prisma` — `tb_file_tag` (lines ~19-49)
+- **Prisma (file schema — registry จริง):** `../micro-file/prisma/schema.prisma` — `tb_file_tag` (บรรทัด 21; ย้ายออกจาก `carmen-turborepo-backend/packages/prisma-shared-schema-file` ใน BE `73c80a0de`)
 - **Prisma (tenant schema — ตาราง dead เพื่อเปรียบเทียบ):** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_attachment` (lines ~4797-4819); คอลัมน์ `attachments` JSONB ต่อเอกสารกระจายอยู่
 - **Backend gateway (ชั้น proxy):** `../carmen-turborepo-backend/apps/backend-gateway/src/application/document-management/document-management.controller.ts` + `document-management.service.ts` — forward ไปยัง microservice `FILE_SERVICE` ผ่าน TCP command `files.*`
-- **Backend file microservice (การจัดเก็บ + registry จริง):** `../carmen-turborepo-backend/apps/micro-file/src/files/files.controller.ts` + `files.service.ts` — MinIO client, `tb_file_tag` CRUD
+- **Backend file microservice (การจัดเก็บ + registry จริง):** `../micro-file/src/files/files.controller.ts` + `files.service.ts` (repo ของตัวเองตั้งแต่ BE `73c80a0de`; contract `../carmen-turborepo-backend/packages/file-contract/`) — MinIO client, `tb_file_tag` CRUD
 - **Frontend route:** `../carmen-frontend/routes/system-admin/document/document.route.tsx` + `document-component.tsx`, `document-summary-bar.tsx`, `document-summary-sheet.tsx`, `document-reference-labels.ts`, `document-card.tsx`, `use-document-table.tsx`
 - **Frontend hook:** `../carmen-frontend/routes/system-admin/document/use-document.ts` (ย้ายจาก `hooks/` เมื่อ 2026-08-28, `0d9757f3`) — `useDocument`, `useUploadDocument`, `useDeleteDocument`; `constant/api-endpoints.ts:108` `DOCUMENTS_SUMMARY`
 - **Frontend type:** `../carmen-frontend/types/document.ts` — `DocumentFile`, `DocumentSummary`

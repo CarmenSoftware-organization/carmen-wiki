@@ -78,7 +78,7 @@ All live in the **Backstage schema** because notifications cross BU boundaries a
 
 ## 4. Edge Cases
 
-- **Cross-schema linkage.** `metadata` may carry tenant identifiers (the new write path always puts the document id in `metadata.id`; older rows may still carry `pr_id` / `po_id` / `sr_id` / `grn_id` / `cn_id` — no new rows are produced with those keys). Platform schema enforces no FKs into tenant tables.
+- **Cross-schema linkage.** `metadata` may carry tenant identifiers (the new write path always puts the document id in `metadata.id`; older rows may still carry `pr_id` / `po_id` / `sr_id` / `grn_id` / `cn_id` — no new rows are produced with those keys). Backstage schema enforces no FKs into tenant tables.
 - **News scope is real, not global-only.** `business_unit_ids` (JSONB array) — an empty array means globally visible; a non-empty array scopes the post to only those business units. `findPublicAll()` applies `OR: [{business_unit_ids: {equals: []}}, {business_unit_ids: {array_contains: [bu_id]}}]` when a `bu_id` is supplied.
 - **News has a draft/published/archived lifecycle.** `status` defaults to `draft` on create; `create()`/`update()` auto-stamp `published_at = now()` the first time `status` transitions to `published` (unless an explicit `published_at` was supplied). Public queries hard-filter `status: published AND published_at <= now()`.
 - **Broadcast read state is lazy, not fanned out.** `tb_user_broadcast_action` rows are created on first read/dismiss action per user — the explicit design reason `tb_broadcast_notification` replaced the older per-recipient `tb_notification` fan-out for broadcasts.

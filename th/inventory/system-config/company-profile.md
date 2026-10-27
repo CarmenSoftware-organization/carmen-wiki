@@ -1,8 +1,8 @@
 ---
 title: Company Profile & Default Setting
-description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, format) และ Default Setting (config PR/SI/PO + print form) Permission system_admin.business_unit
+description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, format) และ Default Setting (config PR/SI/PO + print form)
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -13,9 +13,19 @@ dateCreated: 2026-07-29T10:30:00.000Z
 > **สรุปโดยย่อ**
 > **Routes:** `/system-admin/company-profile`, `/system-admin/default-setting` &nbsp;·&nbsp; **Redirect:** `/system-admin/business-setting` → `/system-admin/company-profile` (`<Navigate replace>` ฝั่ง client ไม่มีหน้าจอของตัวเอง) &nbsp;·&nbsp; **ตาราง:** `tb_business_unit` (platform schema) — แถวเดียวกับ [master-data/business-unit](/th/inventory/master-data/business-unit) แต่กลุ่มฟิลด์แยกกัน &nbsp;·&nbsp; **Endpoint:** `GET`/`PATCH /api/business-units` (ไม่มี id ใน URL — resolve ฝั่ง server จาก token/BU context ของผู้เรียก; `AppIdGuard('userBusinessUnit.getCurrent' | 'patchCurrent')`, `user-business-units.controller.ts:122-245`) &nbsp;·&nbsp; **Permission:** `system_admin.business_unit.view` / `.update` (ทั้งสองหน้าจอ; `constant/permissions.ts` — key `system_configuration.view` ที่หน้านี้เคยอ้างเป็น ghost ของ frontend ที่ไม่เคยมีอยู่ใน `tb_permission` ถูกแทนที่เมื่อ 2026-09-21 โดย FE `b9e2de5f`) &nbsp;·&nbsp; **Licence:** `system_admin`
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
 
-- **`max_license_users` หายไปแล้ว** คอลัมน์ถูก drop จาก `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21 ต่อจาก drop ที่ยังไม่ได้ apply `1280c2ce9`) เมื่อ seat licensing ย้ายไป `tb_business_unit_license` / seat pool ของ cluster; FE เอาฟิลด์ read-only ออกเมื่อ 2026-08-19 (`60d95cd9`) และ `types/business-unit.ts` ไม่ประกาศมันอีกแล้ว เหลือเพียง `calculation_method` เป็น `SettingField` read-only ใน section General (`company-profile-component.tsx:268-271`)
+- **Company Profile จัด layout ใหม่** (FE `1f7b317c`, `5177ef3a`): identity card ด้านบน (ชื่อ, alias, logo/avatar) ที่แสดง **ข้อเท็จจริงที่ถูกล็อก** — ชื่อ cluster, costing method, สกุลเงิน default — เป็นค่า read-only พร้อมคำใบ้เรื่องล็อก; section nav ด้านข้าง (General, Hotel, Company, Date & Time, Number Formats — `company-profile-component.tsx:216-222`); และที่อยู่ hotel / company แสดงเป็นบล็อกสไตล์หัวเอกสาร (`company-profile-address.tsx`) พร้อมป้าย "printed on documents" Default Setting กลายเป็นรายการหนึ่งแถวต่อหนึ่งการตั้งค่าบนหน้ากว้าง แต่ละแถวมีคำอธิบายสั้น ๆ และสำหรับ section ของเอกสาร มีรหัสเอกสาร (`PR`, `PO`, …) เป็น badge ของแถว (`descKey` / `code` ใน `company-profile-config-registry.ts`)
+- **Default Currency เป็น read-only เสมอ** (FE `ead2abe5`): ไม่อยู่ในฟอร์มและ `buildPatch` ไม่เคยส่งมัน (`company-profile-component.tsx:328-337`, comment "read-only เสมอ") หน้านี้ฉบับก่อนระบุว่าแก้ไขได้
+- **`perpage_format` ถูกลบ** ออกจากหน้าและ type (FE `ca482157`) — ไม่มีอะไรอ่านมัน รูปแบบตัวเลขคือ `amount_format`, `quantity_format`, `recipe_format` เท่านั้น
+- **`average_per_location` เป็น costing method ที่รู้จักแล้ว** (`enum_calculation_method`: `average`, `fifo`, `average_per_location` — `schema.prisma:169-173`) identity card แปลค่านี้ และตัวเลือก `average` ของ "Default price for added items" ใน Stock-In แสดงสำหรับ BU ทั้ง `average` **และ** `average_per_location` (`visibleWhenCalcMethod: ["average", "average_per_location"]`, `company-profile-config-registry.ts:72`; FE `83bb0624`)
+- **การบันทึกพก identity ของ BU** (FE `9e63781f`, BE `user-business-units.service.ts:111`): `PATCH api/business-units` ไม่มี `bu_code` ดังนั้น payload ตอนนี้รวม `id` และ `doc_version` ของ BU ที่โหลดมา (`toPatchPayload`) ถ้าผู้ใช้สลับ BU ในแท็บหรืออุปกรณ์อื่นหลังโหลดหน้า backend จะตอบ **409 `BUSINESS_UNIT_NOT_CURRENT`** แทนการเขียนผิด BU (`packages/error-catalog/src/catalog.ts:3401`)
+- **การตรวจจับการเปลี่ยนแปลงไม่สนลำดับ key** (FE `0ecf4ca9`): `config[]` ถูกเทียบด้วย `stableStringify` เพราะ Postgres JSONB คืน key เรียงต่างจาก Zod schema ซึ่งเคยทำให้ส่ง `config` ทุกครั้งที่ Save
+- **รายการ print-form template ดึงทีละหน้า** (`fetchAllPages`) แทน `perpage=-1` (`use-report-form-templates.ts`)
+
+### สถานะก่อนหน้า (ตรวจสอบซ้ำ 2026-09-22)
+
+- **`max_license_users` หายไปแล้ว** คอลัมน์ถูก drop จาก `tb_business_unit` (platform migration, BE `59c841346` 2026-08-21 ต่อจาก drop ที่ยังไม่ได้ apply `1280c2ce9`) เมื่อ seat licensing ย้ายไป `tb_business_unit_license` / seat pool ของ cluster; FE เอาฟิลด์ read-only ออกเมื่อ 2026-08-19 (`60d95cd9`) และ `types/business-unit.ts` ไม่ประกาศมันอีกแล้ว เหลือเพียง `calculation_method` ที่แสดงตอนนี้เป็นข้อเท็จจริงที่ล็อกบน identity card (`company-profile-component.tsx:307-340`)
 - **แก้ permission key** ตามข้างต้น; sidebar entry ของทั้งสองหน้าจอ gate ด้วย `PERMISSIONS.system_admin.business_unit.view` พร้อม `licenseFeature: "system_admin"` (`module-list.ts:592-607`)
 - **403 ของ lookup ใน Default Setting ไม่บล็อกหน้าอีกต่อไป** (`ee8c75bf`, 2026-09-21): 403 จาก lookup print-form template render แบบ inline แทนที่จะเป็น modal ทับทั้งหน้าจอ
 - ทุกอย่างอื่นบนหน้านี้ (กลุ่มฟิลด์, registry `config[]`, diff-แล้ว-`PATCH` พร้อม `doc_version`) ตรวจซ้ำกับ `company-profile-config-registry.ts` และ `company-profile-component.tsx` ที่ HEAD — ไม่เปลี่ยน key ของ print-form คือ `print-form.<type>` (`lib/print-form-config.ts:26-28`)
@@ -26,12 +36,12 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 นี่คือสองหน้าจอแยกกันที่ทั้งคู่อ่านและแก้ไข **แถว `tb_business_unit` ของ business unit ปัจจุบันเอง** — ตารางเดียวกับที่ [master-data/business-unit](/th/inventory/master-data/business-unit) บันทึกไว้จากมุมของ platform admin console หน้านั้นครอบคลุมฟอร์ม edit ของ `carmen-backstage` (identity, สกุลเงิน, costing method, module enablement, tenant DB connection) ส่วนสองหน้าจอนี้คือ**ฝั่ง tenant ภายในแอป** ที่ Sysadmin เข้าถึงได้จากใน Carmen Blue เอง และแก้ไข subset ของฟิลด์ในแถวเดียวกันที่**ไม่ทับซ้อนกัน**:
 
-- **Company Profile** (`/system-admin/company-profile`) — identity (ชื่อ, alias, description, info), ฟิลด์ costing/licensing แบบ read-only, สกุลเงิน default, ที่อยู่ hotel property, ที่อยู่ company legal, branding (logo/avatar, read-only), และค่า default ของ date/time/number-format
+- **Company Profile** (`/system-admin/company-profile`) — identity (ชื่อ, alias, description, info), costing method และสกุลเงิน default แบบ read-only (ล็อก), ที่อยู่ hotel property, ที่อยู่ company legal, branding (logo/avatar, read-only), และค่า default ของ date/time/number-format
 - **Default Setting** (`/system-admin/default-setting`) — array JSONB `config` ในแถวเดียวกัน: toggle การทำงานของ PR, SI, และ PO บวก selector ของ print-form template ต่อประเภทเอกสาร
 
 หน้าจอทั้งสองใช้ pattern view/edit toggle เดียวกันเป๊ะ, hook `useBusinessUnit`/`useUpdateBusinessUnit` เดียวกันเป๊ะ, และ endpoint `PATCH /api/business-units` เดียวกันเป๊ะ — ต่างกันแค่ *ฟิลด์ไหน* ของ `BusinessSettingFormValues` ที่แต่ละหน้าจอ render และ diff module ที่ใช้ร่วมกันหนึ่งตัว (`company-profile-form-schema.ts`, `company-profile-config-registry.ts`, `company-profile-ui.tsx`) รองรับฟอร์มของทั้งสองหน้าจอ แม้ `default-setting-component.tsx` จะอยู่ใน route folder ของตัวเอง — ยืนยันจาก import โดยตรง (`../company-profile/company-profile-ui`, `../company-profile/company-profile-form-schema`)
 
-**`/system-admin/business-setting` เป็น route ที่ตายแล้ว** — `router.tsx` ลงทะเบียนมันเป็น `{ path: "business-setting", element: <Navigate to="/system-admin/company-profile" replace /> }` เป็น redirect ฝั่ง client เปล่า ๆ ไม่มี component ของตัวเอง น่าจะเป็นร่องรอยจากการ rename: เอกสาร planning ก่อนหน้าในโปรเจกต์นี้ (`docs/superpowers/plans/2026-07-09-business-setting-*-config-section.md`, `docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`) อธิบายหน้า "Business Setting" เดียวที่ภายหลังถูกแยกเป็นสองหน้าจอนี้ โดยทิ้ง redirect ไว้สำหรับ link/bookmark เก่า
+**`/system-admin/business-setting` เป็น route ที่มีแต่ redirect** — `router.tsx` ลงทะเบียนมันเป็น `{ path: "business-setting", element: <Navigate to="/system-admin/company-profile" replace /> }` เป็น redirect ฝั่ง client เปล่า ๆ ไม่มี component ของตัวเอง น่าจะเป็นร่องรอยจากการ rename: เอกสาร planning ก่อนหน้าในโปรเจกต์นี้ (`docs/superpowers/plans/2026-07-09-business-setting-*-config-section.md`, `docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md`) อธิบายหน้า "Business Setting" เดียวที่ภายหลังถูกแยกเป็นสองหน้าจอนี้ โดยทิ้ง redirect ไว้สำหรับ link/bookmark เก่า
 
 **ดูแลโดย** Sysadmin ในแอป **อ่านโดย** ทุก module ที่ใช้ฟิลด์ของ `BusinessUnitDetail` (costing engine อ่าน `calculation_method`; หน้าจอ PR/SI/PO อ่าน config item ที่ Default Setting แก้ — ดู §6)
 
@@ -42,7 +52,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 | แก้ identity, ที่อยู่, หรือค่า format default ของ business unit | Company Profile → **Edit** → แก้ฟิลด์ → **Save** | ส่งเฉพาะฟิลด์ที่เปลี่ยนเป็น `PATCH` (diff กับ snapshot ล่าสุดที่โหลด) |
 | แก้ toggle การทำงานของ PR/SI/PO | Default Setting → **Edit** → เปลี่ยนค่า → **Save** | กลไก diff-and-`PATCH` เดียวกัน จำกัดเฉพาะ array `config` |
 | เลือก print form สำหรับประเภทเอกสาร | Default Setting → section Print Forms → เลือก template ต่อประเภท | Dropdown มาจาก catalog report-template ของ [reporting-audit](/th/inventory/reporting-audit) กรองตาม `report_group` ของเอกสารนั้น; ดู §6 |
-| ดู (ไม่แก้) costing method | Company Profile → section General | `calculation_method` render เป็น `SettingField` read-only — ไม่มี input ไม่ว่าจะอยู่โหมด edit หรือไม่ ฟิลด์ `max_license_users` เดิมถูกเอาออกแล้ว (คอลัมน์ drop เมื่อ 2026-08-21) |
+| ดู (ไม่แก้) costing method หรือสกุลเงิน default | Company Profile → identity card | `calculation_method` และ `default_currency_id` render เป็นข้อเท็จจริง read-only ที่ล็อก — ไม่มี input ไม่ว่าจะอยู่โหมด edit หรือไม่ ฟิลด์ `max_license_users` เดิมถูกเอาออกแล้ว (คอลัมน์ drop เมื่อ 2026-08-21) |
 | ยกเลิกการแก้ไขที่ยังไม่บันทึก | **Cancel** ตอนกำลังแก้ | แสดง confirm dialog (`useDiscardConfirm`) เฉพาะเมื่อฟอร์ม dirty |
 
 ## 3. การตรวจสอบและข้อผิดพลาด
@@ -58,7 +68,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 
 - **`config` ไม่มี schema ตายตัว และ frontend เป็นผู้ seed** `tb_business_unit.config` เป็นคอลัมน์ `Json?` เปล่า ๆ — ไม่มี schema ตายตัวสำหรับเนื้อหาของมัน หน้าจอ Default Setting แสดงเฉพาะ **4 section ที่รู้จัก** (`CONFIG_SECTIONS` ใน `company-profile-config-registry.ts`: PR, SI, PO, Print Forms — รวม 15 item, 12 อันในนั้นคือ print-form selector ต่อประเภทเอกสาร) entry ใด ๆ ใน `config` ที่ backend มีแต่ไม่อยู่ใน registry นี้จะ**ไม่ถูก render เลย**โดยทั้งสองหน้าจอ (ไม่มี UI "other settings" แบบ catch-all แม้โค้ดของ registry จะมี bucket type `other` ภายในไว้รองรับกรณีนี้ แต่ component ไม่เคย render มัน)
 - **Config ของ print-form เป็นของ frontend-seed ไม่ใช่ backend-required** ถ้า array `config` ของ tenant ไม่มี entry สำหรับ print-form key ใดตัวหนึ่ง (เช่น `print_form.pr`) หน้าจอยังแสดงแถวนั้นอยู่ (ผ่าน `mergeSeededConfig` โดย default เป็น `""` = "Use the system default") — การเปิดและ save หน้านี้ครั้งแรกคือสิ่งที่เขียนค่า default ที่ seed ไว้จริงลงในแถว backend
-- **`si.cost-from` มี option ที่มีเงื่อนไขจาก calculation-method** option `average` ใน dropdown "Default price for added items" ของ Stock-In จะแสดงเมื่อ `data.calculation_method === "average"` เท่านั้น (`visibleWhenCalcMethod`) — **ยกเว้น** ถ้าค่าที่เก็บไว้ของ BU เป็น `average` อยู่แล้วบน tenant ที่ใช้ method `fifo` ซึ่งกรณีนี้มันจะยังแสดงอยู่ เพื่อไม่ให้ค่าที่เก็บไว้หายไปเงียบ ๆ (`resolveConfigOptions()`)
+- **`si.cost-from` มี option ที่มีเงื่อนไขจาก calculation-method** option `average` ใน dropdown "Default price for added items" ของ Stock-In จะแสดงเมื่อ `data.calculation_method` เป็น `average` หรือ `average_per_location` เท่านั้น (`visibleWhenCalcMethod` เป็น array ตั้งแต่ FE `83bb0624`) — **ยกเว้น** ถ้าค่าที่เก็บไว้ของ BU เป็น `average` อยู่แล้วบน tenant ที่ใช้ method `fifo` ซึ่งกรณีนี้มันจะยังแสดงอยู่ เพื่อไม่ให้ค่าที่เก็บไว้หายไปเงียบ ๆ (`resolveConfigOptions()`)
 - **Branding เป็น read-only ทั้งสองหน้าจอ** Logo/avatar render ผ่าน `<img>` ธรรมดา ไม่มีปุ่ม upload — flow upload จริงอยู่ที่อื่น (หน้า profile ของผู้ใช้เอง ตาม code comment ของ component เอง) ไม่ใช่ที่นี่
 - **ฟิลด์ number-format มีโครงสร้าง ไม่ใช่ string ดิบ** `amount_format`/`quantity_format`/`recipe_format` แต่ละตัวเป็น `{ locales, minimumIntegerDigits }` — UI แสดงเป็น locale string สไตล์ `Intl` บวกจำนวนหลัก ไม่ใช่ pattern แบบ free-text เหมือนฟิลด์ `date_format`/`time_format` (ซึ่งเป็น string ที่ enumerate ไว้แล้วจาก `company-profile-options.ts`)
 - **การแสดงฟิลด์ที่อยู่ของ `master-data/business-unit.md` ล้าสมัยเทียบกับการอ่าน source ของหน้านี้เอง** หน้านั้น §5.1 (แก้ไขล่าสุดโดย resync pass ก่อนหน้า) ยังคงระบุคอลัมน์เดี่ยว `hotel_address`/`company_address`/`*_zip_code` — แต่ type `BusinessUnitDetail` จริงและฟอร์มของหน้าจอนี้ยืนยันว่ามี 10 คอลัมน์แบบมีโครงสร้างต่อที่อยู่ (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) บวก `*_postal_code` (ไม่ใช่ `*_zip_code`) — ตรงกับสิ่งที่ resync pass ของ Platform book พบเองอย่างเป็นอิสระสำหรับ `BusinessUnitEdit.tsx` กำลัง flag ไว้สำหรับรอบแก้ไขในอนาคตของ `master-data/business-unit.md` เอง ไม่ได้แก้ในที่นี้ (อยู่นอกขอบเขตของหน้านี้)
@@ -73,8 +83,8 @@ Source: `types/business-unit.ts` (`BusinessUnitDetail`) เทียบกับ
 
 | Section | ฟิลด์ | แก้ที่นี่ได้ไหม |
 |---|---|---|
-| General | `name`, `alias_name`, `cluster_name`, `description`, `info`, `default_currency_id` | ได้ (ยกเว้น `cluster_name`) |
-| General (read-only) | `calculation_method` | ไม่ได้ — แสดงผลอย่างเดียว (`max_license_users` drop เมื่อ 2026-08-21) |
+| General | `name`, `alias_name`, `description`, `info` | ได้ |
+| Identity card (ล็อก) | `cluster_name`, `calculation_method`, `default_currency_id` | ไม่ได้ — แสดงผลอย่างเดียว (`max_license_users` drop เมื่อ 2026-08-21; สกุลเงิน default ถูกล็อก read-only โดย FE `ead2abe5`) |
 | Hotel | `hotel_name`, `hotel_email`, `hotel_tel`, `hotel_address_line1/2`, `hotel_sub_district`, `hotel_district`, `hotel_city`, `hotel_province`, `hotel_postal_code`, `hotel_country` | ได้ |
 | Company | `company_name`, `branch_no`, `tax_no`, `company_email`, `company_tel`, `company_address_line1/2`, `company_sub_district`, `company_district`, `company_city`, `company_province`, `company_postal_code`, `company_country` | ได้ |
 | Branding | `logo`, `avatar` | ไม่ได้ — preview รูปแบบ read-only |
@@ -94,7 +104,7 @@ Print-form key แต่ละตัวสร้างจาก `printFormConfig
 | `po` | PO | `po.group-by-pr-comment` — "Group by PR comment" | boolean |
 | `printForm` | Print Forms | 12 key ต่อประเภทเอกสาร: PR, PO, GRN, SR, CN, SI, SO, IA, PC, SC, RFP, EOP | enum (id ของ report-template มาจาก catalog template ของ [reporting-audit](/th/inventory/reporting-audit) กรองตาม `report_group`) |
 
-\* option `average` แสดงเฉพาะเมื่อ `tb_business_unit.calculation_method = average` (หรือถูกเลือกอยู่แล้ว)
+\* option `average` แสดงเฉพาะเมื่อ `tb_business_unit.calculation_method` เป็น `average` หรือ `average_per_location` (หรือถูกเลือกอยู่แล้ว)
 
 ## 6. กติกาทางธุรกิจ
 
@@ -118,7 +128,7 @@ Print-form key แต่ละตัวสร้างจาก `printFormConfig
 - **Frontend types:** `../carmen-frontend/types/business-unit.ts` — `BusinessUnitDetail`, `BusinessUnitEditable`, `BusinessUnitConfigItem`
 - **API endpoint:** `../carmen-frontend/constant/api-endpoints.ts` — `BUSINESS_UNIT: "/api/proxy/api/business-units"`
 - **ประวัติการออกแบบ:** `../carmen-frontend/docs/superpowers/specs/2026-07-10-default-setting-page-split-design.md` + `.../plans/2026-07-10-default-setting-page-split.md`, `.../specs/2026-07-09-business-setting-{pr,si,po}-config-section-design.md` + `.../plans/2026-07-09-business-setting-{pr,si,po}-config-section.md` — การแยกจากหน้า "Business Setting" เดียวมาเป็นสองหน้าจอนี้ (suffix `-design` เป็น convention เฉพาะของ `specs/` เท่านั้น; ไฟล์ `plans/` คู่กันใช้ basename เดียวกันแต่ไม่มี suffix นี้)
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit`; ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม คอลัมน์ที่ drop ตั้งแต่ baseline: `max_license_users` (`59c841346`), คอลัมน์ credential ถูกแทนด้วยการอ้างอิง database-pool (`e54248d88`)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_business_unit`; ดู [master-data/business-unit](/th/inventory/master-data/business-unit) §8 สำหรับการอ้างอิงเต็ม คอลัมน์ที่ drop ตั้งแต่ baseline: `max_license_users` (`59c841346`), คอลัมน์ credential ถูกแทนด้วยการอ้างอิง database-pool (`e54248d88`)
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`GET`/`PUT`/`PATCH /api/business-units`, `POST /api/business-units/default`)
 - **Nav / permission:** `../carmen-frontend/constant/module-list.ts:592-607`, `constant/permissions.ts` (`system_admin.business_unit`)
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1114-company-profile.md` (29 case), `1115-default-setting.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec

@@ -1,8 +1,8 @@
 ---
 title: การตั้งค่าแอปพลิเคชัน (Application Config)
-description: การตั้งค่าแบบ key-value ทั่วไปที่ถูก consume เป็นราย key (email profile, email template, interface, print/approval-flow config) ตรวจสอบซ้ำ 2026-09-22: ไม่มี RBAC guard บน endpoint; gate ด้วย licence ต่อ key ตั้งแต่ 2026-09-20
+description: การตั้งค่า key-value ทั่วไปที่ถูก consume เป็นราย key (email, interface, print/approval-flow, ask_ai ที่ถูกป้องกัน) — ไม่มี RBAC guard บน endpoint; gate ด้วย licence ต่อ key
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, application-config, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,11 +13,20 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** ไม่มีหน้าจอเดียว — แต่ละ key ถูกจัดการโดย frontend feature ที่เป็นเจ้าของมัน (Email Profile เขียน `email_profiles`, Email Template เขียน `email_templates`, Interface เขียน `interface_<category>_<brand>`) &nbsp;·&nbsp; **ตาราง:** `tb_application_config` (+ `tb_application_user_config`) &nbsp;·&nbsp; **ใช้โดย:** เก้า key ที่มี Zod schema ฝั่ง backend (§1.1) บวก `email_templates` และ key `list_views_*` / signature; **ไม่มีหน้าจอ admin "Application Settings" ทั่วไป** &nbsp;·&nbsp; **ไม่มี RBAC permission guard** บน endpoint อ่าน/เขียน นอกเหนือจาก authentication (ตรวจสอบซ้ำ 2026-09-22) ยกเว้นการตรวจ BU-admin แบบแคบสำหรับ key `list_views_*`; ตั้งแต่ 2026-09-20 ชั้น **licence** gate สามกลุ่ม key แยกกัน (`configuration.email_profile`, `configuration.email_template`, `interface`)
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-06 และ 2026-09-22)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-06, 2026-09-22 และ 2026-10-27)
+
+**อ่านซ้ำ 2026-10-27** ข้อค้นพบจาก PR #10 **ยังคงอยู่**: `config_app-config.controller.ts` ยังมีแค่ `@UseGuards(KeycloakGuard)` ระดับ class (`:56`) และไม่มี `AppIdGuard` / `@Permission` บน route ใดเลย; `assertSharedListViewsAdmin` (`:287`) ถูกเรียกจาก `PUT :key` (`:231`) และ `DELETE :key` (`:267`) และยังตรวจเฉพาะ `list_views_*` การเปลี่ยนแปลงตั้งแต่ 2026-09-22:
+
+- **route ย้าย / เพิ่ม** (`config_app-config.controller.ts`): `GET` `:92`, `GET :key` `:125`, `PUT :key` `:162`, `DELETE :key` `:246`, `signature-candidates/:doc_type` `:328`, `test-email` `:376`, `test-email-profile` `:418` และ route ล็อกอิน Microsoft `email-profile/oauth/start` `:466` / `oauth/poll` `:519` (ไม่มี guard เช่นกัน; ดู [system-config/config-email](/th/inventory/system-config/config-email))
+- **`ask_ai` เป็น key ที่ถูกป้องกัน**: `GET :key`, `PUT :key` และ `DELETE :key` บน key นี้ตอบ 422 ที่ชั้น HTTP (`rejectAskAiKey`, `:73`, เรียกที่ `:148,:233,:269`) ("managed via /api/config/:bu_code/ask-ai") และถูกตัดออกจาก `GET /app-config` (`isListExcluded`, `config_app-config.service.ts:197-203`) มี endpoint ของตัวเองพร้อม `@Permission` + `AppIdGuard` จริง — ดู [system-config/ask-ai](/th/inventory/system-config/ask-ai)
+- **key ของ interface**: regex ของ category ตอนนี้คือ `interface_(accounting|pos|pms|export)` (BE `29894508e`); POS แยกเป็น `interface_pos_simphony` (schema ของตัวเอง, secret `sftp_password`) และ `interface_pos_micros3700` (`{ enabled }`, ไม่มี secret) และ brand บัญชีภายนอกเดิมกลายเป็น export: licence key `interface.accounting.external` → `interface.export.external` (BE `a7809c778`) `LICENSE_ROUTE_OVERRIDES` ตอนนี้เริ่มที่ `permission.route-map.ts:261` และรายการ `interface_accounting_carmen_gl`, `interface_accounting_blueledgers`, `interface_export_external`, `interface_pos_simphony`, `interface_pos_micros3700` → `interface` (รวม `interface_pos_infrasys`, `interface_pos_square`, `interface_pms_opera`, `interface_pms_protel`; `config:bu-api-key` → `interface.export.external`) บวก `email-profile` (route OAuth) → `configuration.email_profile`
+- **`GlSettingSchema`** เพิ่ม id บัญชี posting ของ AP/AR (`ap_control_account_id`, `input_vat_account_id`, `wht_payable_account_id`, `advance_deposit_account_id`, บัญชี AR) — โมดูลบัญชี นอกขอบเขต
+
+### สถานะก่อนหน้า (2026-09-22)
 
 **อ่านซ้ำ `config_app-config.controller.ts` ที่ HEAD เมื่อ 2026-09-22** `@UseGuards(KeycloakGuard)` ระดับ class ที่ `:56` ยังเป็น guard เดียว route: `GET` (`:72`), `GET :key` (`:105`), `PUT :key` (`:141`), `DELETE :key` (`:224`), `GET signature-candidates/:doc_type` (`:305`), `POST test-email` (`:353`), `POST test-email-profile` (`:395`, ใหม่ 2026-08 — ส่งอีเมลทดสอบผ่าน sender profile ที่ระบุชื่อหนึ่งตัว `to` ไม่บังคับ) ไม่มี `AppIdGuard`, ไม่มี `@Permission`, ไม่มี `RequirePlatformPermission` บนตัวไหนเลย; `assertSharedListViewsAdmin()` (`:264`) ยังถูกเรียกเฉพาะจาก `PUT :key` (`:210`) และ `DELETE :key` (`:245`) และยัง return ออกทันทีสำหรับทุก key ที่ไม่ตรง `/^list_views_/` **ข้อค้นพบจาก PR #10 (ผู้เรียกที่ authenticated ใครก็ได้อ่านและเขียนทุก row config ระดับ tenant ได้) ยังคงอยู่** — แต่มีสองชั้นเพิ่มเข้ามารอบ ๆ มันซึ่งเปลี่ยนสิ่งที่ผู้เรียก*เข้าถึง*ได้:
 
-1. **gate ด้วย licence ต่อ key (2026-09-20, `84667a405`)** `LicenseInterceptor` ระดับ global resolve ทุก request URL ไปยัง licence feature `config:app-config` map ไป `configuration.app_config` (ซึ่งทุก BU มี) แต่ `LICENSE_ROUTE_OVERRIDES` (`packages/prisma-shared-schema-platform/prisma/permission.route-map.ts:257-268`) map ใหม่ `…/app-config/email_profiles` และ `…/app-config/test-email-profile` → `configuration.email_profile`, `…/app-config/email_templates` → `configuration.email_template` และ key `…/app-config/interface_<category>_<brand>` แปดตัว → `interface` BU ที่สัญญาไม่มี feature นั้นได้ `403 LICENSE_REQUIRED` (หรือ `LICENSE_EXPIRED` ตอนเขียน) พร้อม `bu_codes`/`bu_names` ใน body (`c7a0d9168`) นี่คือการตรวจ **licence** (BU เป็นเจ้าของ feature หรือไม่) ไม่ใช่การตรวจ RBAC (ผู้ใช้คนนี้ทำได้หรือไม่) — ไม่ได้ปิดข้อค้นพบ
+1. **gate ด้วย licence ต่อ key (2026-09-20, `84667a405`)** `LicenseInterceptor` ระดับ global resolve ทุก request URL ไปยัง licence feature `config:app-config` map ไป `configuration.app_config` (ซึ่งทุก BU มี) แต่ `LICENSE_ROUTE_OVERRIDES` (`packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts:261-272`) map ใหม่ `…/app-config/email_profiles` และ `…/app-config/test-email-profile` → `configuration.email_profile`, `…/app-config/email_templates` → `configuration.email_template` และ key `…/app-config/interface_<category>_<brand>` แปดตัว → `interface` BU ที่สัญญาไม่มี feature นั้นได้ `403 LICENSE_REQUIRED` (หรือ `LICENSE_EXPIRED` ตอนเขียน) พร้อม `bu_codes`/`bu_names` ใน body (`c7a0d9168`) นี่คือการตรวจ **licence** (BU เป็นเจ้าของ feature หรือไม่) ไม่ใช่การตรวจ RBAC (ผู้ใช้คนนี้ทำได้หรือไม่) — ไม่ได้ปิดข้อค้นพบ
 2. **endpoint รายการซ่อน key ที่แยกออกไป (2026-09-20, `9c52288c0`, `5ff86e322`)** `GET /app-config` ตอนนี้กรอง `email_profiles`, `email_templates` และ key `interface_*` ใด ๆ ออก (`config_app-config.service.ts:198` `isListExcluded`) รายการจึงใช้อ่านพวกมันภายใต้ feature ทั่วไปไม่ได้; แต่ละตัวอ่านได้ผ่าน `GET /app-config/:key` เท่านั้น ซึ่งตาราง override ครอบคลุม service ยังรัน `assertInterfaceEntitled()` สำหรับ key `interface_*` ผู้เรียกภายในของ gateway service (เช่น `EmailLookupService`) ข้าม licence gate ต่อ key โดยตั้งใจ — comment ของ module เองระบุไว้
 
 ข้อค้นพบที่เหลือจาก 2026-09-06 ด้านล่างไม่เปลี่ยน
@@ -45,18 +54,21 @@ Application Config คือ **ที่เก็บ key-value ทั่วไ�
 
 ### 1.1 registry ของ key ที่ HEAD (ตรวจสอบ 2026-09-22)
 
-`AppConfigService.validateValue()` (`apps/micro-business/src/app-config/app-config.service.ts:488-500`) คือสิ่งที่ใกล้เคียง schema registry ที่สุด key ที่มี Zod schema ฝั่ง backend:
+`AppConfigService.validateValue()` (`apps/micro-business/src/app-config/app-config.service.ts:568-610`) คือสิ่งที่ใกล้เคียง schema registry ที่สุด key ที่มี Zod schema ฝั่ง backend:
 
 | Key | Schema | path ของ secret (encrypt at rest, mask เป็น `***ENCRYPTED***` ตอนอ่าน) | หน้าจอ / ฟีเจอร์ที่เป็นเจ้าของ |
 |---|---|---|---|
 | `report_email` | `ReportEmailSchema` | `smtp.password` | config SMTP เดี่ยวแบบ legacy (หน้าจอไม่มี route); `getReportEmailForSend` |
-| `email_profiles` | `EmailProfilesSchema` (`{ default_profile_id, profiles[] }`) | `profiles.*.smtp.password` (wildcard — restore ตาม id ไม่ใช่ตาม index, `49162675a`) | `/system-admin/email-profile`; `getEmailProfileForSend` (อีเมล PO / RFP) |
+| `email_profiles` | `EmailProfilesSchema` (`{ default_profile_id, profiles[] }` ปัจจุบันอยู่ใน `email-profile.schema.ts`) | `profiles.*.smtp.password`, `…smtp.oauth.client_secret`, `…smtp.oauth.refresh_token` (wildcard — restore ตาม id ไม่ใช่ตาม index, `49162675a`) | `/system-admin/email-profile`; `getEmailProfileForSend` (อีเมล PO / RFP) |
 | `gl_setting` | `GlSettingSchema` | — | โมดูล GL (นอกขอบเขต) |
 | `pr_approval_flow`, `po_approval_flow` | `ApprovalFlowSchema` | — | candidate ของ approval stage PR / PO (`min_required_last_n`) |
 | `pr_print_config`, `po_print_config`, `grn_print_config`, `sr_print_config` | `PrintConfigSchema` | — | ชั้น print |
 | `interface_accounting_carmen_gl` | `InterfaceAccountingCarmenGlSchema` | `authorize_token` | `/system-admin/interface` |
-| `interface_accounting_<brand>` (blueledgers, external) | `InterfaceAccountingSchema` | — | `/system-admin/interface` |
-| `interface_pos_<brand>`, `interface_pms_<brand>` | `InterfacePosSchema` / `InterfacePmsSchema` (จับคู่ด้วย pattern) | `api_key` | `/system-admin/interface` |
+| `interface_accounting_blueledgers` | `InterfaceAccountingSchema` | — | `/system-admin/interface` |
+| `interface_export_external` | `InterfaceExportSchema` (`{ enabled? }`, passthrough) | — | `/system-admin/interface` (External API access, BU API key) |
+| `interface_pos_simphony` | `InterfacePosSimphonySchema` (SFTP pull) | `sftp_password` | `/system-admin/interface` (config POS ที่พื้นที่ operation-plan เป็นเจ้าของ) |
+| `interface_pos_micros3700` | `InterfacePosMicros3700Schema` (`{ enabled }`) | — | เหมือนกัน |
+| `interface_pos_<other>`, `interface_pms_<brand>` | `InterfacePosSchema` / `InterfacePmsSchema` (จับคู่ด้วย pattern) | `api_key` | `/system-admin/interface` |
 
 `email_templates` (`{ defaults, templates[] }`, seed โดย `packages/prisma-shared-schema-tenant/src/seed-data/email-templates.ts`) **ไม่มี entry ใน `schemaByKey`** — backend เก็บอะไรก็ตามที่ client ส่งมา; body HTML ถูก sanitise ฝั่ง frontend เท่านั้น (`sanitizeEmailHtml`, `types/email-template.ts`) การตั้งค่า signature (`signature-candidates/:doc_type`) และ `list_views_*` ก็อ่าน/เขียนโดยไม่มี schema เช่นกัน
 
@@ -134,16 +146,18 @@ Application Config คือ **ที่เก็บ key-value ทั่วไ�
 ## 7. การอ้างอิงข้าม
 
 - [system-config/config-email](/th/inventory/system-config/config-email) — `email_profiles` + `email_templates` (และ `report_email` แบบ legacy)
-- `/system-admin/interface` (ยังไม่มีหน้า wiki) — key `interface_*` licence เท่านั้น
+- [system-config/interface](/th/inventory/system-config/interface) (`/system-admin/interface`) — key `interface_*` licence เท่านั้น
 - การตั้งค่า signature ของ workflow — ผู้บริโภคของ `signature-candidates/:doc_type`
 - "preference ของ list view ผ่าน `tb_application_user_config`" ของโมดูลอื่น — ยังไม่ได้ re-verify แยกในรอบนี้ เก็บไว้เป็นเจตนาการออกแบบที่ยังไม่ยืนยัน
+- [access-control/user](/th/inventory/access-control/user) — การ resolve `user_id`
+- [reporting-audit/widget](/th/inventory/reporting-audit/widget) — ที่เก็บทางเลือกสำหรับ config ของ dashboard
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_application_config` (lines ~5287-5301), `tb_application_user_config` (lines ~5304-5319)
 - **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/app-config/app-config.service.ts`
 - **Backend gateway controller:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` — อ่านซ้ำ 2026-09-22: `KeycloakGuard` ระดับ class (`:56`) เท่านั้น; การตรวจสิทธิ์เพียงอย่างเดียวคือ `assertSharedListViewsAdmin()` (`:264`) ซึ่งจำกัดที่ key แบบ `list_views_*` gateway service `config_app-config.service.ts` (`isListExcluded` `:198`, `assertInterfaceEntitled` `:94`)
-- **ชั้น licence:** `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/permission.route-map.ts` (`LICENSE_ROUTE_OVERRIDES` `:257-268`); `apps/backend-gateway/src/license/{license.interceptor,license-route-resolver,license.evaluator}.ts`; `GET /api/license` (`license.controller.ts:40`)
+- **ชั้น licence:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts` (`LICENSE_ROUTE_OVERRIDES` `:261-274`); `apps/backend-gateway/src/license/{license.interceptor,license-route-resolver,license.evaluator}.ts`; `GET /api/license` (`license.controller.ts:40`)
 - **config ต่อผู้ใช้:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-user-config/config_app-user-config.controller.ts`; Bruno `config/app-user-config/`
 - **Frontend:** ไม่มีหน้าจอ admin ทั่วไป ผู้บริโภค: `../carmen-frontend/hooks/use-app-config.ts`, `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `routes/system-admin/interface/use-interface-config.ts`; หน้าจอ `routes/system-admin/email-profile/`, `routes/system-admin/email-template/`, `routes/system-admin/interface/` `routes/system-admin/config-email/` ยังอยู่บนดิสก์แต่ไม่มี route
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/app-config/POST-test-email-profile-config-app-config.bru`, `config/app_config/`

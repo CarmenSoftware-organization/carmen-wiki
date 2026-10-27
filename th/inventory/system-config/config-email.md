@@ -1,8 +1,8 @@
 ---
 title: การตั้งค่าอีเมล (Sender Profiles & Message Library)
-description: อีเมลขาออกมีสองหน้าจอ — Email Profile (SMTP sender profile, key email_profiles) และ Email Template (คลังข้อความต่อเอกสาร, key email_templates) หน้าจอ report_email แบบเดี่ยวไม่มี route แล้ว ไม่มี RBAC guard
+description: อีเมลขาออกมีสองหน้าจอ — Email Profile (SMTP/Microsoft OAuth2 sender profile, key email_profiles) และ Email Template (คลังข้อความ, key email_templates); ไม่มี RBAC guard
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, email, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,16 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![การตั้งค่าอีเมล (Email Configuration) screen](/screenshots/system-config/config-email.png)
 
-## สถานะการ implement (ตรวจสอบซ้ำ 2026-09-22)
+## สถานะการ implement (ตรวจสอบซ้ำ 2026-10-27)
+
+- **Profile มีวิธี sign-in สามแบบแล้ว** (BE `email-profile.schema.ts:7`, FE `f9cc9dfc`): `smtp.auth_type` = `password` (ค่าเริ่มต้นเมื่อไม่มี), `oauth2_delegated` (กล่องจดหมาย Hotmail / Outlook.com ส่วนตัว, tenant ตรึงเป็น `consumers`, preset `smtp-mail.outlook.com:587`) หรือ `oauth2_app` (app registration Microsoft 365 ของลูกค้าเอง, preset `smtp.office365.com:587`) OAuth ทั้งสองแบบพก `smtp.oauth{ tenant_id, client_id, client_secret?, refresh_token?, connected_account?, connected_at? }` ฟอร์มต้องการ `smtp_password` สำหรับ `password`, `oauth_client_id` สำหรับ OAuth ทั้งสองแบบ และเพิ่ม `oauth_tenant_id` + `oauth_client_secret` สำหรับ `oauth2_app` (`email-profile-schema.ts:25-33`) backend ปฏิเสธ profile OAuth ที่ `host` ไม่ใช่หนึ่งใน `smtp-mail.outlook.com`, `smtp.office365.com`, `smtp.outlook.com` (`MICROSOFT_SMTP_HOSTS`, `email-profile.schema.ts:34-38,58-67`) เพื่อไม่ให้ชี้ access token ไปยัง server อื่นได้
+- **การเชื่อมกล่องจดหมาย Hotmail ใช้ device-code flow** (FE `ef8f94f8`, BE `74bb9f6d6`): `email-profile-oauth-dialog.tsx` เรียก `POST /api/config/:bu_code/app-config/email-profile/oauth/start` `{ profile_id }` (คืน `user_code`, `verification_uri`, `interval`, `expires_in`, `handle`) แอดมินล็อกอินที่ URL นั้น และ dialog poll `…/email-profile/oauth/poll` `{ profile_id, handle }` จน `status` เป็น `connected` (พร้อม `account`); status อื่นคือ `pending`, `slow_down`, `expired`, `denied`, `error` (`email-profile-oauth.service.ts:48`) รายการแสดงสถานะการเชื่อมต่อต่อ profile (`isOAuthConnected` = มี `connected_at`) ทั้งสอง route map ไป licence `configuration.email_profile` (`permission.route-map.ts:265`)
+- **ฟิลด์ token เป็นของ server** ทุกครั้งที่บันทึก backend ทิ้ง `refresh_token`, `connected_account` และ `connected_at` ที่ client ส่งมา และเติมกลับจาก profile ที่เก็บไว้เฉพาะเมื่อ identity (auth type, `client_id`, `tenant_id`, username) ไม่เปลี่ยน; ถ้าเปลี่ยนอย่างใดอย่างหนึ่ง การเชื่อมต่อจะถูกล้างและต้องทำใหม่ `client_secret` ถูกเข้ารหัสและ mask (`***ENCRYPTED***`) และ restore ตาม `id` ของ profile เหมือนรหัสผ่าน (`app-config.service.ts:416-523`)
+- **แยกหน้า**: `email-profile.route.tsx` / `email-template.route.tsx` ถูกลดเหลือ wrapper บาง ๆ เหนือ `email-profile-component.tsx` / `email-template-component.tsx` ภายใน `ListPageShell` (FE `633570ee`) — พฤติกรรมไม่เปลี่ยน
+- **Zod ฝั่ง backend ย้าย** ไปที่ `apps/micro-business/src/app-config/email-profile.schema.ts` (`EmailProfilesSchema`); อัปเดตเลขบรรทัดอ้างอิงด้านล่างแล้ว เลขบรรทัดของ controller เปลี่ยน: `PUT :key` `:162`, `DELETE :key` `:246`, `assertSharedListViewsAdmin` `:287`
+- **ตรวจ finding เรื่อง permission ซ้ำ 2026-10-27 — ยังเปิดอยู่** guard ระดับ class ยังเป็น `@UseGuards(KeycloakGuard)` อย่างเดียว (`config_app-config.controller.ts:56`) และ route OAuth `start`/`poll` ใหม่ก็ไม่มี `AppIdGuard` เช่นกัน
+
+### สถานะก่อนหน้า (ตรวจสอบซ้ำ 2026-09-22)
 
 หน้านี้เคยอธิบายหน้าจอเดียวที่แก้ JSON blob `report_email` ก้อนเดียว ระหว่าง 2026-08-08 ถึง 2026-09-20 อีเมลขาออกถูกสร้างใหม่เป็น **master list ของ sender profile ที่มีชื่อ** บวก **คลังข้อความต่อประเภทเอกสาร** แต่ละอย่างมีหน้าจอของตัวเองและ licence feature ของตัวเอง:
 
@@ -23,22 +32,22 @@ dateCreated: 2026-05-16T15:00:00.000Z
 |---|---|---|
 | หน้าจอ | `/system-admin/config-email` (ฟอร์มเดียว) | `/system-admin/email-profile` (`routes/system-admin/email-profile/`) + `/system-admin/email-template` (`routes/system-admin/email-template/`); `config-email` หายไปจาก `routes/router.tsx` และ `constant/module-list.ts` — folder ของ component เป็น dead code |
 | Config key | `report_email` (SMTP เดี่ยว + recipient + `subject_prefix`) | `email_profiles` = `{ default_profile_id, profiles[] }` (BE `f5c3e5c5b` 2026-08-08); `email_templates` = `{ defaults, templates[] }` (FE `2b80f83c` 2026-09-16) |
-| Schema ฝั่ง backend | `ReportEmailSchema` | `EmailProfilesSchema` / `EmailProfileSchema` (`app-config.service.ts:101-128`); **`email_templates` ไม่มี Zod schema ฝั่ง backend** — เก็บตามที่ส่งมา HTML ถูก sanitise ฝั่ง frontend เท่านั้น (`sanitizeEmailHtml`) |
+| Schema ฝั่ง backend | `ReportEmailSchema` | `EmailProfilesSchema` / `EmailProfileSchema` (`email-profile.schema.ts:84-103`); **`email_templates` ไม่มี Zod schema ฝั่ง backend** — เก็บตามที่ส่งมา HTML ถูก sanitise ฝั่ง frontend เท่านั้น (`sanitizeEmailHtml`) |
 | การจัดการ secret | `smtp.password` เข้ารหัส mask เป็น `***ENCRYPTED***` | `profiles[*].smtp.password` เข้ารหัสและ mask; ค่าที่ mask/ว่างตอนบันทึกถูก restore **ตาม `id` ของ profile ไม่ใช่ index ของ array** (`49162675a`) การลบ profile กลางรายการจึงไม่ทำให้รหัสผ่านของ profile อื่นเลื่อน |
 | ส่งทดสอบ | `POST /app-config/test-email` ใช้ `report_email` ที่บันทึกไว้ | `POST /api/config/:bu_code/app-config/test-email-profile` `{ profile_id, to? }` — ต่อ profile ระบุผู้รับได้ (`f00088307`, `7d82d77f9`); dialog คือ `email-profile-test-dialog.tsx` |
 | ผู้บริโภคตอน runtime | `micro-notification` ผ่าน `getReportEmailForSend` (RPC) | `getEmailProfileForSend(bu_code, profile_id?)` (`app-config.service.ts:828`) export ให้โมดูล Purchase Order สำหรับ `POST /api/:bu_code/purchase-orders/:id/send-email` (`purchase-orders.controller.ts:2474`, BE `1897b4fc1`) และ Request for Pricing `POST …/request-for-pricings/:id/send-email` (`:480`); การส่งแต่ละครั้งเขียนแถว `tb_activity` ด้วย `enum_activity_action.email_sent` ตัวใหม่ |
-| Lookup สำหรับ dialog ส่ง | — | `GET /api/:bu_code/email-senders` → `{ default_profile_id, profiles[{ id, name, enabled, from_email, from_name }] }` และ `GET /api/:bu_code/email-messages` — block `smtp` ถูกตัดออกทั้งหมด dialog จึงไม่เคยได้รับ host/username (`email-lookup.service.ts:22-54`, BE `6a859f9e2` 2026-09-20); ทั้งคู่ map ไปที่ licence ทั่วไป `configuration.app_config` (`permission.route-map.ts:55-56`) |
+| Lookup สำหรับ dialog ส่ง | — | `GET /api/:bu_code/email-senders` → `{ default_profile_id, profiles[{ id, name, enabled, from_email, from_name }] }` และ `GET /api/:bu_code/email-messages` — block `smtp` ถูกตัดออกทั้งหมด dialog จึงไม่เคยได้รับ host/username (`email-lookup.service.ts:22-54`, BE `6a859f9e2` 2026-09-20); ทั้งคู่ map ไปที่ licence ทั่วไป `configuration.app_config` (`permission.route-map.ts:56-57`) |
 | Licence | `configuration.app_config` | `configuration.email_profile` สำหรับ `app-config/email_profiles` + `test-email-profile`; `configuration.email_template` สำหรับ `app-config/email_templates` (`LICENSE_ROUTE_OVERRIDES`, 2026-09-20); `GET /app-config` (รายการ) ไม่คืน key ทั้งสองอีกแล้ว |
-| ฟิลด์ของ profile | — | `id`, `name`, `enabled`, `smtp{host,port,secure,username,password}`, `from_email`, `from_name` (FE `types/email-profile.ts`); schema ฝั่ง backend ยังรับ `reply_to`, `default_cc`, `subject_template`, `body_template`, `note` พร้อม default — ฟอร์มตัดออกเมื่อ 2026-09-16 (`e98ef3ee`) เพราะเนื้อหาข้อความย้ายไปคลัง template |
+| ฟิลด์ของ profile | — | `id`, `name`, `enabled`, `smtp{host,port,secure,username,auth_type?,password?,oauth?}`, `from_email`, `from_name` (FE `types/email-profile.ts`); schema ฝั่ง backend ยังรับ `reply_to`, `default_cc`, `subject_template`, `body_template`, `note` พร้อม default — ฟอร์มตัดออกเมื่อ 2026-09-16 (`e98ef3ee`) เพราะเนื้อหาข้อความย้ายไปคลัง template |
 | ฟิลด์ของ template | — | `id`, `name`, `doc_type` (`po` \| `rfp`), `enabled`, `subject_template` (ข้อความธรรมดา), `body_template` (HTML), `default_cc[]`, `note`; `defaults[doc_type]` ระบุ template ที่ถูกเลือกไว้ล่วงหน้าใน dialog ส่งของเอกสารนั้น |
 
-**ข้อค้นพบด้าน permission — ยังเปิดอยู่** `config_app-config.controller.ts` ที่ HEAD มีเพียง `@UseGuards(KeycloakGuard)` ระดับ class (`:56`) `PUT :key` (`:141`) และ `DELETE :key` (`:224`) เรียก `assertSharedListViewsAdmin()` (`:264`) ซึ่ง return ออกทันทีสำหรับทุก key ที่ไม่ตรง `/^list_views_/` — ดังนั้น `email_profiles` และ `email_templates` เขียนได้โดย **สมาชิก BU ที่ authenticated คนใดก็ได้** ที่สัญญาของ BU มี licence feature `system_admin.config_email.view` มีอยู่ใน `tb_permission` และ gate sidebar entry (`module-list.ts:680,687`) แต่ไม่มี route ใดตรวจมัน licence interceptor ตอบว่า "BU นี้ใช้ feature ได้ไหม" ไม่เคยตอบว่า "ผู้ใช้คนนี้ทำได้ไหม" ดู [system-config/application-config](/th/inventory/system-config/application-config) สำหรับเวอร์ชันที่ครอบคลุมทั้งโมดูลของ finding นี้
+**ข้อค้นพบด้าน permission — ยังเปิดอยู่** `config_app-config.controller.ts` ที่ HEAD มีเพียง `@UseGuards(KeycloakGuard)` ระดับ class (`:56`) `PUT :key` (`:162`) และ `DELETE :key` (`:246`) เรียก `assertSharedListViewsAdmin()` (`:287`) ซึ่ง return ออกทันทีสำหรับทุก key ที่ไม่ตรง `/^list_views_/` — ดังนั้น `email_profiles` และ `email_templates` เขียนได้โดย **สมาชิก BU ที่ authenticated คนใดก็ได้** ที่สัญญาของ BU มี licence feature `system_admin.config_email.view` มีอยู่ใน `tb_permission` และ gate sidebar entry (`module-list.ts:680,687`) แต่ไม่มี route ใดตรวจมัน licence interceptor ตอบว่า "BU นี้ใช้ feature ได้ไหม" ไม่เคยตอบว่า "ผู้ใช้คนนี้ทำได้ไหม" ดู [system-config/application-config](/th/inventory/system-config/application-config) สำหรับเวอร์ชันที่ครอบคลุมทั้งโมดูลของ finding นี้
 
 ## 1. คืออะไรและใครใช้
 
 สองหน้าจอตั้งค่า เส้นทาง runtime เดียว:
 
-- **Email Profile** (`/system-admin/email-profile`) — รายการ SMTP sender identity ที่มีชื่อของ business unit แต่ละ profile คือ SMTP host หนึ่งตัว + credential + identity `From:` พร้อม toggle `enabled`; มี profile **default** หนึ่งตัวพอดี (`default_profile_id`, row action "Set as default") การลบ profile สุดท้ายที่เหลือจะล้าง default; การเพิ่มตัวแรกจะทำให้เป็น default อัตโนมัติ (`email-profile.route.tsx:71,98`)
+- **Email Profile** (`/system-admin/email-profile`) — รายการ SMTP sender identity ที่มีชื่อของ business unit แต่ละ profile คือ SMTP host หนึ่งตัว + credential + identity `From:` พร้อม toggle `enabled`; มี profile **default** หนึ่งตัวพอดี (`default_profile_id`, row action "Set as default") การลบ profile สุดท้ายที่เหลือจะล้าง default; การเพิ่มตัวแรกจะทำให้เป็น default อัตโนมัติ (`email-profile-component.tsx:79,106`)
 - **Email Template / "Email Messages"** (`/system-admin/email-template`) — คลัง template subject + body HTML แยกตามประเภทเอกสาร `doc_type` ที่รองรับที่ HEAD: `po` และ `rfp` (`EMAIL_DOC_TYPES`, `types/email-template.ts`) placeholder คงที่ต่อประเภท (`lib/email-template.ts:14-24`): PO `{{po_no}}`, `{{vendor_name}}`, `{{bu_name}}`, `{{total}}`, `{{delivery_date}}`; RFP `{{rfp_name}}`, `{{vendor_name}}`, `{{contact_person}}`, `{{bu_name}}`, `{{start_date}}`, `{{end_date}}`, `{{portal_url}}` placeholder ที่ไม่ได้ให้ค่า render เป็น string ว่าง
 - **Runtime** — dialog *Send by email* บน Purchase Order (`po-send-email-dialog.tsx`) และ Request for Pricing (`rfp-send-email-dialog.tsx`) โหลด sender และ message ผ่าน lookup ที่ไม่มี secret ให้ผู้ใช้เลือก profile และ message (เติมล่วงหน้าจาก `defaults[doc_type]`) แล้ว `POST …/send-email` backend ถอดรหัสรหัสผ่านของ profile ที่เลือกผ่าน `getEmailProfileForSend` ส่งเมลพร้อมแนบ PDF และ log `email_sent`
 
@@ -87,7 +96,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 แหล่งที่มา: tenant schema **ไม่มีตารางเฉพาะ** — row ใน `tb_application_config` สองแถว
 
-### 5.1 `email_profiles` (Zod: `EmailProfilesSchema`, `app-config.service.ts:101-128`)
+### 5.1 `email_profiles` (Zod: `EmailProfilesSchema`, `email-profile.schema.ts:84-103`)
 
 ```
 {
@@ -102,7 +111,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
         "port": 587,                         // int 1..65535
         "secure": true,
         "username": "purchasing@example.com",
-        "password": "***ENCRYPTED***"        // เข้ารหัสตอนเก็บ mask ตอนอ่าน
+        "auth_type": "password",             // ไม่บังคับ: password (ค่าเริ่มต้น) | oauth2_delegated | oauth2_app
+        "password": "***ENCRYPTED***",       // เข้ารหัสตอนเก็บ mask ตอนอ่าน; จำเป็นสำหรับ password auth
+        "oauth": {                           // จำเป็นสำหรับ oauth2_* สองแบบ; host ต้องเป็น Microsoft SMTP host
+          "tenant_id": "consumers", "client_id": "…",
+          "client_secret": "***ENCRYPTED***",   // เฉพาะ oauth2_app
+          "refresh_token": "…", "connected_account": "…", "connected_at": "…"   // backend เขียนเท่านั้น
+        }
       },
       "from_email": "purchasing@example.com",
       "from_name": "Carmen Blue Purchasing",
@@ -139,6 +154,8 @@ dateCreated: 2026-05-16T15:00:00.000Z
 GET  /api/config/:bu_code/app-config/email_profiles         licence configuration.email_profile
 PUT  /api/config/:bu_code/app-config/email_profiles         { value }  (hook ส่ง doc_version กลับมา)
 POST /api/config/:bu_code/app-config/test-email-profile     { profile_id, to? }  licence configuration.email_profile
+POST /api/config/:bu_code/app-config/email-profile/oauth/start  { profile_id }  licence configuration.email_profile
+POST /api/config/:bu_code/app-config/email-profile/oauth/poll   { profile_id, handle }  licence configuration.email_profile
 GET  /api/config/:bu_code/app-config/email_templates        licence configuration.email_template
 PUT  /api/config/:bu_code/app-config/email_templates        { value }
 GET  /api/:bu_code/email-senders                            ไม่มี secret { default_profile_id, profiles[] }
@@ -151,7 +168,7 @@ POST /api/:bu_code/request-for-pricings/:id/send-email      ผู้บริ�
 
 ## 6. กฎทางธุรกิจ
 
-- **Sysadmin เท่านั้นตามข้อตกลง ไม่ใช่การบังคับ** ไม่มี RBAC guard บน app-config controller (ตรวจสอบซ้ำ 2026-09-22)
+- **Sysadmin เท่านั้นตามข้อตกลง ไม่ใช่การบังคับ** ไม่มี RBAC guard บน app-config controller (ตรวจสอบซ้ำ 2026-10-27)
 - **licence ต่อกลุ่ม key** (`configuration.email_profile`, `configuration.email_template`) ผ่าน `LICENSE_ROUTE_OVERRIDES`; endpoint รายการทั่วไปซ่อนทั้งสอง key
 - **การเข้ารหัสและ mask รหัสผ่าน** restore ตาม id; ค่าว่างไม่เคยลบ secret
 - **default profile หนึ่งตัวต่อ BU** (`default_profile_id`); `enabled: false` คง profile ไว้แต่ควรถูกตัดออกจาก dialog ส่ง
@@ -169,8 +186,8 @@ POST /api/:bu_code/request-for-pricings/:id/send-email      ผู้บริ�
 ## 8. แหล่งข้อมูลอ้างอิง
 
 - **Backend service:** `../carmen-turborepo-backend/apps/micro-business/src/app-config/app-config.service.ts` — `EmailProfileSchema`/`EmailProfilesSchema` (`:96-128`), `secretPathsFor` (`:216`), `retainMaskedEmailProfileSecrets` (`:396`), `getEmailProfileForSend` (`:828`), `testEmailProfile`; `app-config.module.ts` (export ให้โมดูล PO)
-- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` (`test-email-profile` `:395`); `apps/backend-gateway/src/application/email-lookup/{email-lookup.controller,email-lookup.service}.ts`; `packages/prisma-shared-schema-platform/prisma/permission.route-map.ts:55-56,257-260`
+- **Backend gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_app-config/config_app-config.controller.ts` (`test-email-profile` `:395`); `apps/backend-gateway/src/application/email-lookup/{email-lookup.controller,email-lookup.service}.ts`; `packages/prisma-shared-schema-backstage/prisma/permission.route-map.ts:55-56,257-260`
 - **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/src/seed-data/email-templates.ts`; `apps/micro-business/src/authen/tenant_seed/seed-sets/email-templates.seed-set.ts`
-- **Frontend:** `../carmen-frontend/routes/system-admin/email-profile/` (`email-profile.route.tsx`, `email-profile-dialog.tsx`, `email-profile-test-dialog.tsx`, `email-profile-schema.ts`); `routes/system-admin/email-template/`; `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `hooks/use-email-senders.ts`, `hooks/use-email-messages.ts`; `types/email-profile.ts`, `types/email-template.ts`, `lib/email-template.ts`; `routes/procurement/purchase-order/po-send-email-dialog.tsx`, `routes/vendor-management/request-price-list/rfp-send-email-dialog.tsx` Legacy: `routes/system-admin/config-email/` (ไม่มี route)
+- **Frontend:** `../carmen-frontend/routes/system-admin/email-profile/` (`email-profile.route.tsx`, `email-profile-component.tsx`, `email-profile-dialog.tsx`, `email-profile-oauth-dialog.tsx`, `use-email-profile-oauth.ts`, `email-profile-test-dialog.tsx`, `email-profile-schema.ts`); `routes/system-admin/email-template/`; `hooks/use-email-profiles.ts`, `hooks/use-email-templates.ts`, `hooks/use-email-senders.ts`, `hooks/use-email-messages.ts`; `types/email-profile.ts`, `types/email-template.ts`, `lib/email-template.ts`; `routes/procurement/purchase-order/po-send-email-dialog.tsx`, `routes/vendor-management/request-price-list/rfp-send-email-dialog.tsx` Legacy: `routes/system-admin/config-email/` (ไม่มี route)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/config/app-config/POST-test-email-profile-config-app-config.bru`
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1116-email-profile.md` (30 case), `1117-email-template.md` (30 case) — แคตตาล็อกเท่านั้น ไม่มี Playwright spec

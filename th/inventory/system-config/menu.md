@@ -1,8 +1,8 @@
 ---
 title: เมนู (Menu)
-description: ตาราง tb_menu มีอยู่ใน tenant schema แต่ไม่มีการอ้างอิงจากโค้ด non-schema เลยไม่ว่าใน backend หรือ frontend — sidebar จริงของ app shell คือ static navigation tree ที่เขียนด้วยโค้ด ไม่ได้ขับเคลื่อนด้วยข้อมูลจากตารางนี้
+description: ตาราง tb_menu มีอยู่ใน tenant schema แต่ไม่มีโค้ด non-schema อ้างอิงเลย — sidebar จริงของ app shell คือ static navigation tree ที่เขียนด้วยโค้ด ไม่ได้ขับเคลื่อนด้วยตารางนี้
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: system-config, menu, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,11 +13,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **เจ้าของ:** ไม่มีใคร — **ไม่มีโค้ดใดอ่านหรือเขียนตารางนี้เลย** &nbsp;·&nbsp; **ตาราง:** `tb_menu` (schema เท่านั้น) &nbsp;·&nbsp; **การนำทางจริง:** static tree ที่เขียนด้วยโค้ด (เช่น `CHAPTERS` ใน `landing-types.ts` สำหรับ System Admin hub และโครงสร้างเดียวกันสำหรับ sidebar หลักของแอป) &nbsp;·&nbsp; ตาราง dead — เก็บไว้ใน schema แต่ไม่ต่อสายกับอะไรเลย
 
-## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-09-22 — ไม่เปลี่ยน)
+## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบซ้ำ 2026-10-27 — ยังไม่ได้เชื่อมต่อ)
 
-การค้นทั่ว repo หา `tb_menu` ใน `carmen-turborepo-backend/apps` และ `carmen-turborepo-backend/packages` พบ **เฉพาะการประกาศใน Prisma schema และ migration SQL ของมัน** — ไม่มีแม้แต่จุดเดียวในไฟล์ `.service.ts`, `.controller.ts` หรือ DTO ใดเลย (รันซ้ำ 2026-09-22 ยังเป็นศูนย์) ไม่มี `menu.service.ts`, ไม่มี `menu.controller.ts`, ไม่มี Bruno folder `config/menu/*` และไม่มี route `menu` ที่ไหนใต้ `../carmen-frontend/routes/`
+การค้นทั่ว repo หา `tb_menu` ใน `carmen-turborepo-backend/apps` และ `carmen-turborepo-backend/packages` พบ **เฉพาะการประกาศใน Prisma schema และ migration SQL ของมัน** — ไม่มีแม้แต่จุดเดียวในไฟล์ `.service.ts`, `.controller.ts` หรือ DTO ใดเลย (รันซ้ำ 2026-10-27 เหนือ `apps/`, `packages/` และ FE `routes/`, `hooks/`, `constant/` — ยังเป็นศูนย์; hit อื่นเพียงอย่างเดียวคือ migration `add_doc_version` ที่เพิ่ม `doc_version` ให้ตารางนี้) ไม่มี `menu.service.ts`, ไม่มี `menu.controller.ts`, ไม่มี Bruno folder `config/menu/*` และไม่มี route `menu` ที่ไหนใต้ `../carmen-frontend/routes/`
 
-การนำทางจริงของ app shell ถูก **hard-code ไว้ใน frontend** ไม่ได้ขับเคลื่อนด้วยข้อมูล: หน้า System Admin landing render จาก array `CHAPTERS` ที่กำหนดตอน compile (`routes/system-admin/landing-types.ts:43-140`) ที่มีห้า chapter — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — และ sidebar หลักคือ tree แบบ static ใน `constant/module-list.ts` สิ่งที่*แปรผัน*ต่อ property ที่ runtime จริง ๆ คือ **การมองเห็นตาม licence และ permission** ไม่ใช่ตามตารางนี้: แต่ละ entry ใน `module-list.ts` มี key `licenseFeature` และ `permission` และ `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) ซ่อนฟีเจอร์ที่เลิกใช้และล็อกฟีเจอร์ที่ไม่มี licence (FE `2addc658`, 2026-08-31) การเพิ่มหรือเปลี่ยนชื่อ entry ยังต้องอาศัย **การแก้โค้ด frontend และ redeploy** — ไม่มีหน้าจอ admin และไม่มี row ที่ runtime ควบคุมมันได้
+การนำทางจริงของ app shell ถูก **hard-code ไว้ใน frontend** ไม่ได้ขับเคลื่อนด้วยข้อมูล: หน้า System Admin landing render จาก array `CHAPTERS` ที่กำหนดตอน compile (`routes/system-admin/landing-types.ts:47-144`) ที่มีห้า chapter — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — และ sidebar หลักคือ tree แบบ static ใน `constant/module-list.ts` สิ่งที่*แปรผัน*ต่อ property ที่ runtime จริง ๆ คือ **การมองเห็นตาม licence และ permission** ไม่ใช่ตามตารางนี้: แต่ละ entry ใน `module-list.ts` มี key `licenseFeature` และ `permission` และ `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) ซ่อนฟีเจอร์ที่เลิกใช้และล็อกฟีเจอร์ที่ไม่มี licence (FE `2addc658`, 2026-08-31); licence ที่หมดอายุไม่ล็อกหน้าที่ตั้ง `viewableWhenExpired` อีกต่อไป (เช่น Interface, FE `87a67e55` — `isExpired`) การเพิ่มหรือเปลี่ยนชื่อ entry ยังต้องอาศัย **การแก้โค้ด frontend และ redeploy** — ไม่มีหน้าจอ admin และไม่มี row ที่ runtime ควบคุมมันได้
 
 เนื้อหาหลังจากบรรทัดนี้ทั้งหมดอธิบาย **เจตนาการออกแบบ** ที่บอกใบ้จากรูปร่างฟิลด์ของ schema (`is_visible` / `is_active` / `is_lock` / `module_id`) เก็บไว้เพราะตารางอาจถูกสร้างต่อในอนาคต — ไม่ใช่พฤติกรรมที่ยืนยันแล้วหรือ ship แล้ว
 
@@ -66,6 +66,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 | ฟิลด์ | Prisma Type | Nullable | คำอธิบาย |
 | --- | --- | --- | --- |
+| `doc_version` | `Int` | No | Default `0` ตัวนับ optimistic-lock ที่เพิ่มโดย migration `add_doc_version` (`20260612000100`); ไม่มีอะไรเพิ่มค่าเพราะไม่มีอะไรเขียนตาราง |
 | `id` | `String @db.Uuid` | No | Primary key |
 | `module_id` | `String @db.Uuid` | No | การจัดกลุ่มโมดูลเชิงตรรกะ (แคตตาล็อกฝั่งแอป) |
 | `name` | `String @db.VarChar` | No | Label สำหรับแสดง |
@@ -91,5 +92,5 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 8. แหล่งข้อมูลอ้างอิง
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1412-1430)
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1595-1614)
 - **Frontend (การนำทางจริงแบบ static สำหรับเทียบ):** `../carmen-frontend/routes/system-admin/landing-types.ts` (`CHAPTERS` — รายการโมดูลของ System Admin hub), `constant/module-list.ts` (tree ของ sidebar พร้อม `licenseFeature` / `permission` ต่อ entry), `hooks/use-license.ts` (ซ่อน/ล็อกที่ runtime) และ `routes/router.tsx` (route tree แบบ static ทั้งหมด) ไม่มีตัวไหนอ่าน `tb_menu`

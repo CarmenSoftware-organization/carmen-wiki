@@ -1,8 +1,8 @@
 ---
 title: กำหนดการรายงาน (Report Schedule)
-description: กำหนดการรายงานเกิดซ้ำ — สร้าง/รายการ/ลบ อยู่เบื้องหลังด้วยตาราง Cronjob ของ micro-cronjobs (ไม่ใช่ tb_report_schedule ที่ตายแล้ว); เวลารันแยกจาก notify_at พร้อม offset วันถัดไป ("+1") ที่เก็บไว้ ตั้งแต่ 2026-09-03
+description: กำหนดการรายงานเกิดซ้ำ — สร้าง/รายการ/ลบ อยู่เบื้องหลังด้วยตาราง Cronjob ของ micro-cronjobs (ไม่ใช่ tb_report_schedule ที่ตายแล้ว); เวลารันแยกจาก notify_at; template ที่ถูกปฏิเสธจะถูกข้าม
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: reporting-audit, schedule, automation, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -15,7 +15,11 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 ![กำหนดการรายงาน (Report Schedule) screen](/screenshots/reporting-audit/schedule.png)
 
-## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22)
+## สถานะการทำงานจริง (ตรวจสอบเมื่อ 2026-07-22, ตรวจซ้ำ 2026-10-27)
+
+**การเปลี่ยนแปลง 2026-10-27** (FE `0713cbc9..391062b5`, backend `ef4d6f08f..c9d788829`, micro-cronjobs `5137b0a..c5464da`): **(a)** schedule ที่ BU ไม่สามารถใช้ report template ได้อีกต่อไปจะถูกติดธง — list API เพิ่ม `template_available` (เป็น false เฉพาะเมื่อ micro-report ตอบ 403 `REPORT_TEMPLATE_UNAVAILABLE`; template ที่ inactive หรือถูกลบ *ไม่* ติดธง, `90ed14b42`) และ grid แสดง badge "template unavailable" พร้อม tooltip (`use-schedule-table.tsx`); **(b)** micro-cronjobs **ข้าม** การรันที่ micro-report ปฏิเสธด้วย 403 นั้น — บันทึกเป็น skipped, อัปเดต `last_run` พร้อมเหตุผล, **ไม่ retry** และไม่นับเป็นความล้มเหลว (§ 1.2); **(c)** ช่องผู้รับเป็น checklist แบบแบ่งหน้าที่ค้นหาฝั่ง server (`PagedChecklist`, 2026-09-29) แทนการโหลดทะเบียนผู้ใช้ทั้งหมด; **(d)** รายการพารามิเตอร์ของฟอร์ม schedule รองรับ `Label=` บน control ของ dialog และทำ `<Group>` ให้แบน (ไม่สนใจ layout แต่ไม่มีฟิลด์หาย); **(e)** หน้ารายการใช้ `ListPageShell` และ endpoint รายการของ gateway ใช้กฎ `perpage` 1-100 ร่วมกัน (`fe80fc14b`) ทุกอย่างด้านล่างเรื่องสร้าง/ดู/ลบเท่านั้น, การส่งลิงก์ viewer และ `notify_at` ตรวจซ้ำแล้วไม่เปลี่ยน
+
+**baseline 2026-07-22 (คงไว้)**
 
 หน้านี้ฉบับก่อนหน้าบันทึก `tb_report_schedule` (tenant schema) ว่าเป็นตารางที่เก็บ schedule จริง พร้อมหน้ารายละเอียดที่มี cron-expression builder, Active toggle, action Test Run และ recipients picker แบบมี type (`email`/`user`/`sftp`) การค้นหาโค้ดทั่ว `carmen-turborepo-backend/apps` พบว่า **ไม่มีการอ้างอิง `tb_report_schedule` เลย** นอกเหนือจากการประกาศ Prisma model ของมันเอง — เป็นตารางที่ตายแล้ว รูปแบบเดียวกับที่ยืนยันแล้วสำหรับ `tb_attachment` และตระกูล `tb_widget_*` เดิม
 
@@ -33,14 +37,18 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 
 **กลุ่มผู้ใช้:** ผู้ใช้ที่ authenticate แล้วและมี BU context คนใดก็ได้สามารถสร้างและลบ schedule ของตนเองผ่านหน้าจอนี้ — ไม่พบสิทธิ์ schedule-admin ที่แยกออกมาบน endpoint schedule ของ `reports.controller.ts` (มี `KeycloakGuard` + header `X-App-Id` เหมือน endpoint report อื่น ๆ ไม่ใช่ role check ที่แคบกว่า)
 
+### 1.2 Template ที่ถูกปฏิเสธจะถูกข้าม ไม่ใช่ล้มเหลว
+
+การรันรายงานตาม schedule เรียก micro-report ด้วย internal token และ **ไม่มี** header ของผู้เรียกฝั่งเว็บ ดังนั้นสวิตช์ `allow_run` ของ template ไม่มีผลกับมัน (`X-Report-Caller: web` ถูกส่งโดย gateway เฉพาะปุ่ม Run แบบ interactive, `report_controller.go:295-298`); รายการ allow/deny ของ BU และข้อจำกัด costing-method ยังมีผล เมื่อ micro-report ตอบ `403 { code: "REPORT_TEMPLATE_UNAVAILABLE", reason }`, `model.SkippedFromResponse` (`micro-cronjobs/internal/model/skipped.go`) แปลงเป็น `SkippedError`: scheduler log `job skipped`, **ไม่** เรียก `retryJob` และ **ไม่** log error; `last_run` ของแถว cronjob ถูกอัปเดตด้วยเวลารันถัดไปและเหตุผล เช่นเดียวกันทั้งเส้นทาง viewer-URL และเส้นทางไฟล์แบบ legacy ใน `internal/executor/report.go` เหตุผลคือตามที่อยู่ใน [report](/th/inventory/reporting-audit/report) § 1.5 ทดสอบ: ปฏิเสธ BU บน template ใน Backstage, รอการ fire ครั้งถัดไป, คาดหวังว่าไม่มี notification, ไม่มี error และแถว schedule ถูกติดธง "template unavailable"
+
 ## 2. งานที่พบบ่อย
 
 | งาน | ที่ไหน | หมายเหตุ |
 |---|---|---|
-| สร้าง schedule | `/report/schedules` → **Create Schedule** | เลือก report template, ความถี่ (รายวัน/รายสัปดาห์/รายเดือน) + เวลา, filter เฉพาะ template แบบเลือกได้, ช่องทางแจ้งเตือน (checkbox web/email) และผู้รับ (multi-select ของผู้ใช้) |
+| สร้าง schedule | `/report/schedules` → **Create Schedule** | เลือก report template, ความถี่ (รายวัน/รายสัปดาห์/รายเดือน) + เวลา, filter เฉพาะ template แบบเลือกได้, ช่องทางแจ้งเตือน (checkbox web/email) และผู้รับ (checklist แบบแบ่งหน้าที่ค้นหาได้ของผู้ใช้) |
 | ตั้งเวลาแจ้งเตือน | Create dialog → **Notifications** → Notify at | `HH:mm` ไม่บังคับ; เร็วกว่าเวลารัน = วันถัดไป (badge +1); ใช้ได้เฉพาะการส่งมอบแบบลิงก์ viewer |
 | ตั้งความถี่ | Create dialog → select **Frequency** + ตัวเลือกเวลา | รายสัปดาห์เพิ่ม multi-toggle จันทร์–อาทิตย์; รายเดือนเพิ่ม multi-toggle 1–31 **ไม่มีช่อง cron expression ดิบ** ใน UI — backend derive `cron_expression` จาก `schedule_config` เมื่อไม่ได้ส่งมา |
-| เลือกผู้รับ | Create dialog → **Recipients** | checkbox multi-select บน `useAllUsers()` — user ID ธรรมดา ไม่ใช่ entry แบบมี type `email`/`user`/`sftp` |
+| เลือกผู้รับ | Create dialog → **Recipients** | `PagedChecklist` ที่ค้นหาผู้ใช้ฝั่ง server และโหลดทีละหน้า (ไม่ใช้ `useAllUsers()` อีกต่อไป); ค่าเป็น user ID ธรรมดา ไม่ใช่ entry แบบมี type `email`/`user`/`sftp` |
 | ดูการ fire ล่าสุด/ครั้งหน้า | รายการ → คอลัมน์ **Last Run** / **Next Run** | เติมจาก `lastRunAt`/`nextRunAt` ของแถว `Cronjob` |
 | ลบ schedule | รายการ → ไอคอน trash บนแถว | dialog ยืนยัน แล้วตามด้วย `DELETE .../schedules/:id` |
 | **ไม่มีใน UI เลย** | — | การแก้ไข schedule ที่มีอยู่, pause/reactivate (`is_active` แสดงผลอย่างเดียว), cron-expression builder และการ "run now" แบบ manual |
@@ -95,7 +103,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 | `TimeoutSeconds` / `timeoutSeconds` | `int` | Default `300` |
 | คอลัมน์ audit | mixed | `createdAt`/`createdByID`, `updatedAt`/`updatedByID`, `deletedAt` (soft delete) |
 
-**ตาราง:** `"CRONJOBS"."Cronjob"` (schema-qualified, ครอบด้วย double-quote เพื่อรักษา case — นี่คือ Postgres schema ที่แยกต่างหาก ไม่ใช่ฐานข้อมูล tenant หรือ platform)
+**ตาราง:** `"CRONJOBS"."Cronjob"` (schema-qualified, ครอบด้วย double-quote เพื่อรักษา case — นี่คือ Postgres schema ที่แยกต่างหาก ไม่ใช่ฐานข้อมูล tenant หรือ Backstage)
 
 ### 5.2 `ReportJobConfig` (รูปร่าง JSONB `jobData`/`JobConfig` สำหรับ `job_type = "report"`)
 
@@ -117,7 +125,7 @@ Schedule ทุกตัวที่สร้างผ่าน UI ส่งม�
 
 ## 7. ความเชื่อมโยงข้ามโมดูล
 
-- [reporting-audit/report](/th/inventory/reporting-audit/report) — โมดูลพ่อ; `report_template_id` resolve แถว `tb_report_template` (platform schema, ยังมีอยู่จริง)
+- [reporting-audit/report](/th/inventory/reporting-audit/report) — โมดูลพ่อ; `report_template_id` resolve แถว `tb_report_template` (Backstage schema, ยังมีอยู่จริง)
 - [reporting-audit/history](/th/inventory/reporting-audit/history) — เพราะ schedule ทุกตัวที่สร้างผ่านหน้าจอนี้ส่งมอบผ่าน `viewer_url` schedule ที่ fire จึง **ไม่** เขียนแถว `tb_report_job` — ดู implementation status ของหน้านั้นสำหรับช่องว่างที่เกิดขึ้น
 - [reporting-audit/notification](/th/inventory/reporting-audit/notification) — mechanism การส่งมอบที่แท้จริง: เรียก `POST /api/internal/notifications` หนึ่งครั้งต่อผู้รับหนึ่งคนเมื่อ schedule fire
 - [access-control/user](/th/inventory/access-control/user) — ผู้รับคือ user ID ธรรมดา
