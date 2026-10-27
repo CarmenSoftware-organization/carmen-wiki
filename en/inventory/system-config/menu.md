@@ -2,7 +2,7 @@
 title: Menu
 description: A tb_menu table exists in the tenant schema with zero non-schema code references anywhere in the backend or frontend — the app shell's real sidebar is a static, code-defined navigation tree, not data-driven from this table.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: '2026-10-27T00:00:00.000Z'
 tags: system-config, menu, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -13,11 +13,11 @@ dateCreated: 2026-05-16T08:00:00.000Z
 > **At a Glance**
 > **Owner:** Nobody — **the table is never read or written by any code found** &nbsp;·&nbsp; **Table:** `tb_menu` (schema-only) &nbsp;·&nbsp; **Real navigation:** a static, code-defined tree (e.g. `landing-types.ts`'s `CHAPTERS` for the System Admin hub, and an equivalent structure for the main app sidebar) &nbsp;·&nbsp; Dead table — kept in the schema, not wired to anything.
 
-## Implementation status (verified 2026-07-16; re-verified 2026-09-22 — unchanged)
+## Implementation status (verified 2026-07-16; re-verified 2026-10-27 — still unwired)
 
-A repo-wide search for `tb_menu` across `carmen-turborepo-backend/apps` and `carmen-turborepo-backend/packages` returns **only the Prisma schema declaration and its migration SQL** — zero hits in any `.service.ts`, `.controller.ts`, or DTO file (re-run 2026-09-22, still zero). There is no `menu.service.ts`, no `menu.controller.ts`, no Bruno `config/menu/*` folder, and no `menu` route anywhere under `../carmen-frontend/routes/`.
+A repo-wide search for `tb_menu` across `carmen-turborepo-backend/apps` and `carmen-turborepo-backend/packages` returns **only the Prisma schema declaration and its migration SQL** — zero hits in any `.service.ts`, `.controller.ts`, or DTO file (re-run 2026-10-27 over `apps/`, `packages/` and the FE `routes/`, `hooks/`, `constant/` — still zero; the only other hit is the `add_doc_version` migration that added `doc_version` to this table). There is no `menu.service.ts`, no `menu.controller.ts`, no Bruno `config/menu/*` folder, and no `menu` route anywhere under `../carmen-frontend/routes/`.
 
-The app shell's actual navigation is **hard-coded in the frontend**, not data-driven: the System Admin landing page renders from a compile-time `CHAPTERS` array (`routes/system-admin/landing-types.ts:43-140`) with five chapters — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — and the main sidebar is the static `constant/module-list.ts` tree. What *does* vary per property at runtime is **visibility by licence and permission**, not by this table: each `module-list.ts` entry carries a `licenseFeature` and a `permission` key, and `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) hides retired features and locks unlicensed ones (FE `2addc658`, 2026-08-31). Adding or renaming an entry still requires a **frontend code change and redeploy** — there is no admin screen, and no runtime row, that controls it.
+The app shell's actual navigation is **hard-coded in the frontend**, not data-driven: the System Admin landing page renders from a compile-time `CHAPTERS` array (`routes/system-admin/landing-types.ts:47-144`) with five chapters — `access` (roles, assign), `process` (`inventoryPeriod` → `/system-admin/inventory-period`, workflows, docs), `observe` (userActivity, monitor), `config` (interface, notifyTemplate, code), `data` (dataset) — and the main sidebar is the static `constant/module-list.ts` tree. What *does* vary per property at runtime is **visibility by licence and permission**, not by this table: each `module-list.ts` entry carries a `licenseFeature` and a `permission` key, and `hooks/use-license.ts` (`isLicensed`, `isHidden`, `canWrite`) hides retired features and locks unlicensed ones (FE `2addc658`, 2026-08-31); an expired licence no longer locks a page that sets `viewableWhenExpired` (e.g. Interface, FE `87a67e55` — `isExpired`). Adding or renaming an entry still requires a **frontend code change and redeploy** — there is no admin screen, and no runtime row, that controls it.
 
 Everything below this line describes the **design intent** implied by the schema's field shape (`is_visible` / `is_active` / `is_lock` / `module_id`), preserved because the table may be built out later — not verified, shipped behavior.
 
@@ -66,6 +66,7 @@ Source: tenant schema.
 
 | Field | Prisma Type | Nullable | Description |
 | --- | --- | --- | --- |
+| `doc_version` | `Int` | No | Default `0`. Optimistic-lock counter added by the `add_doc_version` migration (`20260612000100`); nothing increments it because nothing writes the table. |
 | `id` | `String @db.Uuid` | No | Primary key. |
 | `module_id` | `String @db.Uuid` | No | Logical module grouping (app-side catalogue). |
 | `name` | `String @db.VarChar` | No | Display label. |
@@ -91,5 +92,5 @@ No module was found to read `tb_menu`. Cross-links removed — there is nothing 
 
 ## 8. References
 
-- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1412-1430).
+- **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_menu` (lines ~1595-1614).
 - **Frontend (the real, static navigation, for comparison):** `../carmen-frontend/routes/system-admin/landing-types.ts` (`CHAPTERS` — the System Admin hub's module list), `constant/module-list.ts` (sidebar tree with `licenseFeature` / `permission` per entry), `hooks/use-license.ts` (runtime hide/lock), and `routes/router.tsx` (the full static route tree). None reads `tb_menu`.
