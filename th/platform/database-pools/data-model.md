@@ -1,8 +1,8 @@
 ---
 title: พูลฐานข้อมูล — โมเดลข้อมูล (Data Model)
-description: ตารางฟิลด์เต็มของ tb_database_pool — รหัสผ่านที่เข้ารหัส, note เทียบกับ description, ความหมายของ is_active — พร้อมการยืนยันตรงกับสิ่งที่ Business Units และ Tenant Migrations พูดถึงการ resolve connection ของ tenant ไว้แล้ว
+description: ตารางฟิลด์เต็มของ tb_database_pool — รหัสผ่านที่เข้ารหัส, note เทียบกับ description, ความหมายของ is_active และการยืนยันตรงกับ Business Units และ Tenant Migrations
 published: true
-date: '2026-09-06T21:00:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, database-pools, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,13 +11,13 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # พูลฐานข้อมูล — โมเดลข้อมูล (Data Model)
 
 > **Source of truth:** อ่านสิ่งเหล่านี้ก่อนแก้ไขหน้านี้
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1713-1742` — `model tb_database_pool`
 > - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — `POOL_SELECT`, `maskPassword`, `passwordPatch`, `create`, `update`, `delete` (อ่านครบ)
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — สคริปต์ backfill `db_connection` → pool ครั้งเดียว (อ่านครบ)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrate.database-pool.ts` — สคริปต์ backfill `db_connection` → pool ครั้งเดียว (อ่านครบ)
 > - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts` — `encryptSecret`/`decryptSecret`
 > - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`/`resolveTenantUrl`
 >
-> ยืนยันกับ `carmen-backstage` HEAD `157a65e` (2026-09-04) และ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06)
+> ยืนยันกับ `carmen-backstage` HEAD `8405788f` และ `carmen-turborepo-backend` HEAD `c9d788829` (ทั้งสอง origin/main, 2026-10-27)
 
 ## 1. ภาพรวม
 
@@ -36,7 +36,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `username` | `String @db.VarChar` | ไม่ | Username สำหรับเชื่อมต่อ — เป็น login ฐานข้อมูลดิบ ไม่ถูกตรวจว่าเป็นอีเมล (case `validateField('username')` ที่แชร์กัน เขียนไว้สำหรับโมดูล Users จงใจไม่ถูกนำมาใช้ซ้ำที่นี่) |
 | `password` | `String @db.VarChar` | ไม่ | Ciphertext จาก `encryptSecret()` (AES-256-GCM, `enc:v1:<iv_b64>:<authTag_b64>:<ciphertext_b64>`, `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`) ดู §4 สำหรับวงจรเต็ม — **ค่า plaintext ของมันไม่เคยปรากฏใน response ของ API, ในหน้านี้ หรือในวิกินี้เลย** |
 | `is_active` | `Boolean @default(true) @db.Boolean` | ไม่ | ดู §3 สำหรับผลของมันต่อ picker ของ Business Units และการ resolve connection |
-| `note` | `String?` | ใช่ | คนละคอลัมน์กับ `description` (`schema.prisma:1398`) สคริปต์ backfill เดิมเขียนค่าตายตัว `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ลงไปโดยอัตโนมัติ (`migrate.database-pool.ts:412`) บนทุก pool ที่มันสร้างจาก connection blob เดิมของ BU — เป็นสัญญาณว่าแถวนั้นไม่ได้ถูกตั้งค่าด้วยมือ ไม่ใช่ช่องคอมเมนต์อเนกประสงค์ แม้ว่าฟอร์มสร้าง/แก้ไขจะให้ผู้ดูแลตั้งหรือเปลี่ยนค่านี้เองในภายหลังได้อย่างอิสระก็ตาม |
+| `note` | `String?` | ใช่ | คนละคอลัมน์กับ `description` (`schema.prisma:1729`) สคริปต์ backfill เดิมเขียนค่าตายตัว `'สร้างอัตโนมัติจาก tb_business_unit.db_connection'` ลงไปโดยอัตโนมัติ (`migrate.database-pool.ts:427`) บนทุก pool ที่มันสร้างจาก connection blob เดิมของ BU — เป็นสัญญาณว่าแถวนั้นไม่ได้ถูกตั้งค่าด้วยมือ ไม่ใช่ช่องคอมเมนต์อเนกประสงค์ แม้ว่าฟอร์มสร้าง/แก้ไขจะให้ผู้ดูแลตั้งหรือเปลี่ยนค่านี้เองในภายหลังได้อย่างอิสระก็ตาม |
 | `doc_version` | `Int @default(0) @db.Integer` | ไม่ | ตัวนับ optimistic lock **จำเป็นต้องส่งทุกครั้งที่ `PUT` ไม่มีข้อยกเว้น** — `DatabasePoolUpdateDto` ไม่มีค่า default และ backend ปฏิเสธการอัปเดตที่ `data.doc_version` ไม่ใช่ตัวเลข (`COMMON_DOC_VERSION_REQUIRED`) ต่างจาก entity พี่น้องบางตัวที่ตีความ token ที่หายไปว่า "ข้ามการเช็ค conflict" |
 | `created_at` / `created_by_id` / `updated_at` / `updated_by_id` / `deleted_at` / `deleted_by_id` | `DateTime?` / `String? @db.Uuid` | ใช่ | คอลัมน์ audit/soft-delete มาตรฐาน แสดงผ่าน `auditColumns()`/`normalizeAudit()` ที่แชร์กันบนหน้ารายการและหน้าแก้ไข |
 
@@ -78,28 +78,28 @@ tb_database_pool  1 ─── M  tb_business_unit   (ผ่าน tb_business_un
 
 | สถานการณ์ | สิ่งที่เกิดขึ้นจริง | แหล่งที่มา |
 |---|---|---|
-| Pool ที่มี business unit ผูกอยู่ถูกสั่งลบ | ถูกปฏิเสธ (409 `DATABASE_POOL_IN_USE`) ระบุ BU ที่บล็อกอยู่สูงสุด 10 ตัวด้วย `code` | `database-pool.service.ts:247-272` |
+| Pool ที่มี business unit ผูกอยู่ถูกสั่งลบ | ถูกปฏิเสธ (409 `DATABASE_POOL_IN_USE`) ระบุ BU ที่บล็อกอยู่สูงสุด 10 ตัวด้วย `code` | `database-pool.service.ts:260-286` |
 | Pool ถูกปิด (`is_active: false`) ขณะที่ยังมี BU ผูกอยู่ | ไม่ถูกบล็อก — การปิดไม่ใช่การเช็ค in-use ทุก BU ที่ยังผูกอยู่จะ resolve connection ของ tenant ไม่สำเร็จด้วยข้อความ "is inactive" ครั้งถัดไปที่ [Tenant Migrations — Data Model](/th/platform/tenant-migrations/data-model) §3 พยายาม resolve มัน | `tenant.service.ts` (ตามหน้านั้น); `database-pool.service.ts` (ไม่มีการเช็ค active ตอนอัปเดต) |
-| Business unit สองตัวมี `db_connection` เดิมที่ host/port/database/username ตรงกันแต่รหัสผ่านต่างกัน | สคริปต์ backfill ไม่เดาให้และหยุดทั้ง run ทั้งชุดด้วย error ที่ระบุ code ของทั้งสอง business unit — ถือเป็นข้อมูลขัดแย้งที่ต้องแก้ด้วยคน ไม่ใช่สิ่งที่จะเลือกฝ่ายใดฝ่ายหนึ่งให้เงียบ ๆ | `migrate.database-pool.ts:338-345` |
-| `db_connection` เดิมไม่มีค่า `schema` | Business unit นั้นถูกข้าม (นับและรายงาน ไม่ใช่ตกหล่นแบบเงียบ ๆ) แทนที่จะย้ายด้วยการเดา schema | `migrate.database-pool.ts:316-319` |
-| `SECRET_ENCRYPTION_KEY` ของ `micro-cluster` (เข้ารหัสตอนเขียน) กับ `micro-business` (ถอดรหัสตอน resolve connection) ไม่ตรงกัน | ทุก pool ที่ได้รับผลกระทบจะถอดรหัสไม่ผ่านตอน resolve connection ด้วยข้อความ "Failed to decrypt the database pool password (check `SECRET_ENCRYPTION_KEY`...)" — ความไม่ตรงกันนี้โผล่มาเป็นความล้มเหลวของ tenant-migration/connection ไม่ใช่ error ตรวจสอบ config ตอน startup ของ service ไหนเลย | `crypto.util.ts` (key แยกต่อ service ไม่มีการเช็คข้าม service); `tenant-url.ts:58-68` |
-| session ที่มีแค่ `database_pool.read` เปิด `/platform/database-pools/new` | เห็นและกรอกทุกฟิลด์ของฟอร์มสร้างใหม่ได้ แต่ submit ไม่ได้ผ่านทั้งปุ่ม Save (ไม่ render) และผ่าน Enter/`Ctrl+S` (`handleSubmit` เช็ค `hasPermission('database_pool.manage')` เองแล้วคืนค่าก่อน) ดู [หน้าหลัก](/th/platform/database-pools) §4 | `DatabasePoolEdit.tsx:260`, `App.tsx:517` |
+| Business unit สองตัวมี `db_connection` เดิมที่ host/port/database/username ตรงกันแต่รหัสผ่านต่างกัน | สคริปต์ backfill ไม่เดาให้และหยุดทั้ง run ทั้งชุดด้วย error ที่ระบุ code ของทั้งสอง business unit — ถือเป็นข้อมูลขัดแย้งที่ต้องแก้ด้วยคน ไม่ใช่สิ่งที่จะเลือกฝ่ายใดฝ่ายหนึ่งให้เงียบ ๆ | `migrate.database-pool.ts:351-358` |
+| `db_connection` เดิมไม่มีค่า `schema` | Business unit นั้นถูกข้าม (นับและรายงาน ไม่ใช่ตกหล่นแบบเงียบ ๆ) แทนที่จะย้ายด้วยการเดา schema | `migrate.database-pool.ts:329-332` |
+| `SECRET_ENCRYPTION_KEY` ของ `micro-cluster` (เข้ารหัสตอนเขียน) กับ `micro-business` (ถอดรหัสตอน resolve connection) ไม่ตรงกัน | ทุก pool ที่ได้รับผลกระทบจะถอดรหัสไม่ผ่านตอน resolve connection ด้วยข้อความ "Failed to decrypt the database pool password (check `SECRET_ENCRYPTION_KEY`...)" — ความไม่ตรงกันนี้โผล่มาเป็นความล้มเหลวของ tenant-migration/connection ไม่ใช่ error ตรวจสอบ config ตอน startup ของ service ไหนเลย | `crypto.util.ts` (key แยกต่อ service ไม่มีการเช็คข้าม service); `tenant-url.ts:54-69` |
+| session ที่มีแค่ `database_pool.read` เปิด `/backstage/database-pools/new` | เห็นและกรอกทุกฟิลด์ของฟอร์มสร้างใหม่ได้ แต่ submit ไม่ได้ผ่านทั้งปุ่ม Save (ไม่ render) และผ่าน Enter/`Ctrl+S` (`handleSubmit` เช็ค `hasPermission('database_pool.manage')` เองแล้วคืนค่าก่อน) ดู [หน้าหลัก](/th/platform/database-pools) §4 | `DatabasePoolEdit.tsx:260`, `App.tsx:517` |
 
 ## 7. คำแนะนำ
 
 - **เพิ่ม `@@unique` บน `name`** (จำกัดขอบเขตแค่แถวที่ยังไม่ถูกลบ ตามรูปแบบที่ใช้ที่อื่นในสคีมานี้ เช่น `business_unit_code_global_u`) เพื่อให้ความไม่ซ้ำที่โมดูลนี้บังคับไว้ที่ระดับ application ถูกรับประกันที่ระดับฐานข้อมูลด้วย ป้องกันเส้นทางเขียนที่สองที่โมดูลนี้ไม่ได้ควบคุม (backend service ในอนาคต, สคริปต์ หรือการ insert ผ่าน `psql` ด้วยมือ)
-- **พิจารณา gate `/platform/database-pools/new` และ `/:id/edit` ด้วย `database_pool.manage` ที่ระดับ route** ให้ตรงกับที่ [Business Units](/th/platform/business-units) gate route `/new` และ `/:id/edit` ของตัวเองด้วย permission create/update ไม่ใช่ permission อ่าน — การตั้งค่า `database_pool.read` บนทุก route ปัจจุบัน (§4 ของหน้าหลัก) ไม่ได้ถูกใช้ประโยชน์ในทางที่เป็นอันตรายจากการเช็คภายในฟอร์ม แต่ก็ไม่ตรงกับรูปแบบที่โมดูล CRUD อื่นในวิกินี้ใช้เหมือนกัน
+- **พิจารณา gate `/backstage/database-pools/new` และ `/:id/edit` ด้วย `database_pool.manage` ที่ระดับ route** ให้ตรงกับที่ [Business Units](/th/platform/business-units) gate route `/new` และ `/:id/edit` ของตัวเองด้วย permission create/update ไม่ใช่ permission อ่าน — การตั้งค่า `database_pool.read` บนทุก route ปัจจุบัน (§4 ของหน้าหลัก) ไม่ได้ถูกใช้ประโยชน์ในทางที่เป็นอันตรายจากการเช็คภายในฟอร์ม แต่ก็ไม่ตรงกับรูปแบบที่โมดูล CRUD อื่นในวิกินี้ใช้เหมือนกัน
 - **รัน `migrate.database-pool.ts --verify` เป็นประจำตามตารางเวลา** ไม่ใช่แค่ครั้งเดียวก่อน migration ที่ลบ `db_connection` ที่มันถูกเขียนมาเพื่อรองรับ — การหมุนเวียน `SECRET_ENCRYPTION_KEY` ที่ทำโดยไม่ได้เข้ารหัส pool ที่มีอยู่แล้วใหม่ จะถูกพบก็ต่อเมื่อมีคนพยายาม resolve connection ของ tenant ครั้งถัดไปเท่านั้น
 
 ## 8. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:1382-1411` — `model tb_database_pool`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:1713-1742` — `model tb_database_pool`
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts` — อ่านครบ
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.controller.ts` — RPC message handler อ่านครบ
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/platform_database-pools/platform_database-pools.service.ts` — RPC proxy จาก gateway
-- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:515-517`
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) และ `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrate.database-pool.ts` — อ่านครบ
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_database-pools/backstage_database-pools.service.ts` — RPC proxy จาก gateway
+- `../carmen-turborepo-backend/packages/error-catalog/src/catalog.ts:3562-3581`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260813000000_database_pool_additive/` (commit `343b8c16b`) และ `.../20260813010000_database_pool_drop_db_connection/` (commit `7f825bb20`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrate.database-pool.ts` — อ่านครบ
 - `../carmen-turborepo-backend/packages/secret-crypto/src/crypto.util.ts`, `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`
 - `../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, `src/utils/databasePool.ts`
 - [Business Units — Data Model](/th/platform/business-units/data-model) §2.4; [Tenant Migrations — Data Model](/th/platform/tenant-migrations/data-model) §3 — ตรวจสอบไขว้กันใน §5 ข้างบน

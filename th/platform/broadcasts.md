@@ -2,7 +2,7 @@
 title: บรอดแคสต์ (Broadcasts)
 description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: platform/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -21,7 +21,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 ## 1. ภาพรวม
 
-รายการใน sidebar ("Broadcasts", ไอคอน Megaphone, กลุ่ม Content) ถูกกำหนดไว้ใน `platformNav.ts` ด้วย `permission: 'broadcast.read'` และ `feature: 'broadcasts'` — ไม่มี `superAdminOnly` มันเปิดหน้า **List** ซึ่งคือ `BroadcastManagement`: `PageHeader` (พร้อม subtitle และข้อความบอกชัดเจนว่าการส่งแบบระบุผู้รับไม่แสดงที่นี่), แถบสรุปสถานะที่คลิกได้ (จำนวน All / Active / Scheduled / Expired / Deleted แต่ละอันสลับ filter ที่ตรงกัน), ช่องค้นหา, sheet ของ Filters (สถานะ, scope, "show deleted"), `DataTable` แบบ server-side (Title+message, Scope, Severity, Status, Scheduled Date, Expires, Created), ปุ่ม CSV Export และปุ่ม "New Broadcast" ที่ gate ด้วย `broadcast.send` action menu ของแต่ละแถวมี Edit (`broadcast.update`, ซ่อนเมื่อถูกลบไปแล้ว), Expire Now (`broadcast.update`, เฉพาะแถวที่ active) และ Delete (`broadcast.delete`, ซ่อนเมื่อถูกลบไปแล้ว)
+รายการใน sidebar ("Broadcasts", ไอคอน Megaphone, กลุ่ม Content) ถูกกำหนดไว้ใน `backstageNav.ts` ด้วย `permission: 'broadcast.read'` และ `feature: 'broadcasts'` — ไม่มี `superAdminOnly` มันเปิดหน้า **List** ซึ่งคือ `BroadcastManagement`: `PageHeader` (พร้อม subtitle และข้อความบอกชัดเจนว่าการส่งแบบระบุผู้รับไม่แสดงที่นี่), แถบสรุปสถานะที่คลิกได้ (จำนวน All / Active / Scheduled / Expired / Deleted แต่ละอันสลับ filter ที่ตรงกัน), ช่องค้นหา, sheet ของ Filters (สถานะ, scope, "show deleted"), `DataTable` แบบ server-side (Title+message, Scope, Severity, Status, Scheduled Date, Expires, Created), ปุ่ม CSV Export และปุ่ม "New Broadcast" ที่ gate ด้วย `broadcast.send` action menu ของแต่ละแถวมี Edit (`broadcast.update`, ซ่อนเมื่อถูกลบไปแล้ว), Expire Now (`broadcast.update`, เฉพาะแถวที่ active) และ Delete (`broadcast.delete`, ซ่อนเมื่อถูกลบไปแล้ว)
 
 **Compose** (`/broadcasts/new` → `BroadcastCompose`) คือหน้าจอส่ง: แถบแท็บ Target (All users / Specific users / Business Unit), ตัวเลือกผู้รับแบบมีเงื่อนไข (`UserMultiSelect`) หรือ select ของ BU, ป้าย metadata "Related Business Unit" ที่เป็นตัวเลือก (ไม่เกี่ยวกับกลุ่มผู้รับจริง), Title/Message พร้อมตัวนับแบบ live, preset ของ Type (Info / Warning / Critical / Maintenance / Other…) ที่**เป็นป้ายฝั่งผู้ส่งล้วน ๆ** — ผู้รับไม่มีวันเห็นมันเลย — แถบแท็บ Send-time (ทันทีหรือกำหนดเวลา) และวันหมดอายุที่บังคับ (7/30/90 วัน หรือกำหนดเอง) การ์ด `BroadcastPreview` ที่ใช้ร่วมกันจะ render การแจ้งเตือน, การเข้าถึง และเวลาส่ง/หมดอายุแบบ live จาก state ของฟอร์ม การส่งต้องยืนยันเสมอ โดยสไตล์สีแดงสงวนไว้สำหรับการยิงแบบ system-wide เท่านั้น
 
@@ -49,7 +49,7 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 
 ## 4. บทบาทและ Persona
 
-ตอนนี้มีสี่ permission key ที่ gate โมดูลนี้ ผ่าน [Platform RBAC](/th/platform/rbac) ที่ seed ไว้ตาม role ใน `seed.platform-role-permission.data.ts`:
+ตอนนี้มีสี่ permission key ที่ gate โมดูลนี้ ผ่าน [Platform RBAC](/th/platform/rbac) ที่ seed ไว้ตาม role ใน `seed.backstage-role-permission.data.ts`:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -60,16 +60,16 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 | ปุ่ม Edit (แถวใน List + หน้า Edit) | `<Can>` | `broadcast.update` |
 | Expire Now (แถวใน List) | `<Can>` | `broadcast.update` |
 | Delete (แถวใน List) | `<Can>` | `broadcast.delete` |
-| `GET/PATCH/DELETE .../broadcasts*` | `KeycloakGuard` + `PlatformPermissionGuard` | key ที่ตรงกัน ฝั่ง server |
+| `GET/PATCH/DELETE .../broadcasts*` | `KeycloakGuard` + `BackstagePermissionGuard` | key ที่ตรงกัน ฝั่ง server |
 
 | Role | Key ที่ได้รับ |
 |---|---|
-| Platform Admin | `broadcast.*` (ครบทั้งสี่) |
+| Backstage Admin | `broadcast.*` (ครบทั้งสี่) |
 | Support Manager | `read`, `send`, `update` — **ไม่มี** `delete` |
 | Support Staff | `read` เท่านั้น |
 | Security Officer | ไม่มีเลย |
 
-`broadcast.read` **ไม่ใช่ orphan key อีกต่อไป** — ตอนนี้มัน gate route ของ List, รายการใน nav และโหมดดูของหน้า Edit ทุก route ฝั่ง server บังคับใช้ key ที่ตรงกันผ่าน `PlatformPermissionGuard` แบบหยาบ (coarse): grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster เดียวก็ผ่านได้ ตรงกับ check ฝั่ง SPA เอง; การจำกัดขอบเขตราย-cluster แบบแท้จริงยังเป็นช่องว่างที่รู้และตั้งใจเลื่อนออกไป matrix แบบเต็ม, กฎ content lock และ delivery/scheduling semantics แต่ละโหมดอยู่ใน [Permissions](/th/platform/broadcasts/permissions)
+`broadcast.read` **ไม่ใช่ orphan key อีกต่อไป** — ตอนนี้มัน gate route ของ List, รายการใน nav และโหมดดูของหน้า Edit ทุก route ฝั่ง server บังคับใช้ key ที่ตรงกันผ่าน `BackstagePermissionGuard` แบบหยาบ (coarse): grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster เดียวก็ผ่านได้ ตรงกับ check ฝั่ง SPA เอง; การจำกัดขอบเขตราย-cluster แบบแท้จริงยังเป็นช่องว่างที่รู้และตั้งใจเลื่อนออกไป matrix แบบเต็ม, กฎ content lock และ delivery/scheduling semantics แต่ละโหมดอยู่ใน [Permissions](/th/platform/broadcasts/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -81,7 +81,7 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 ## 6. แหล่งอ้างอิง
 
 - `../carmen-backstage/src/App.tsx` — สาม route guard (`broadcast.read`, `broadcast.send`, `broadcast.read`) และ `feature="broadcasts"`
-- `../carmen-backstage/src/components/nav/platformNav.ts` — รายการ nav "Broadcasts" (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, ไม่มี `superAdminOnly`)
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — รายการ nav "Broadcasts" (`permission: 'broadcast.read'`, `feature: 'broadcasts'`, ไม่มี `superAdminOnly`)
 - `../carmen-backstage/src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/{BroadcastSummary,BroadcastFilters,broadcastColumns}.tsx` — หน้า List
 - `../carmen-backstage/src/pages/BroadcastCompose.tsx` — หน้า Compose: แท็บ, validation, payload builder, preset วันหมดอายุ, confirm dialog, shortcut
 - `../carmen-backstage/src/pages/BroadcastEdit.tsx` — หน้า Edit: content lock, การแก้ schedule/วันหมดอายุ, confirm ของ past/reschedule
@@ -89,11 +89,11 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 - `../carmen-backstage/src/utils/broadcastExpiry.ts` — `resolveExpiryIso()`, preset 7/30/90 วัน
 - `../carmen-backstage/src/services/broadcastService.ts` — `sendSystem`/`sendBu`/`getAll`/`getById`/`update`/`remove`; `src/types/index.ts` — `BroadcastTargetMode`, `BroadcastTypePreset`, `BroadcastListItem`, `BroadcastStatus`, `BroadcastUpdatePayload`, `BroadcastSummary`
 - `../carmen-backstage/src/utils/permissions.ts` — ค่าคงที่ `PERMISSIONS.BROADCAST.SEND`
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403); enum `enum_broadcast_scope`, `enum_notification_doc_type`, `enum_notification_event` (บรรทัด 112–131)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — การปรับใหญ่ที่ลบ `type`/`category`/`is_sent` และเพิ่ม `scope`/`doc_type`/`event`/`pushed_at`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (บรรทัด 438), `tb_broadcast_notification` (บรรทัด 475), `tb_user_broadcast_action` (บรรทัด 509); enum `enum_notification_doc_type`, `enum_notification_event`, `enum_broadcast_scope` (บรรทัด 148–167)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/` — การปรับใหญ่ที่ลบ `type`/`category`/`is_sent` และเพิ่ม `scope`/`doc_type`/`event`/`pushed_at`
 - `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast และ guard ของมัน
-- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (เส้นทางสร้าง), `broadcast-admin.service.ts` (list/get/update/delete, การคำนวณ status), `schedule.worker.ts` (worker push ที่ทำงานทุก 30 วินาที เฉพาะ `tb_notification`)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` — สี่ key `broadcast.*` และการมอบสิทธิ์ตาม role
+- `../micro-notification/src/notification/broadcast.service.ts` (เส้นทางสร้าง), `broadcast-admin.service.ts` (list/get/update/delete, การคำนวณ status), `schedule.worker.ts` (worker push ที่ทำงานทุก 30 วินาที เฉพาะ `tb_notification`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts`, `seed.backstage-role-permission.data.ts` — สี่ key `broadcast.*` และการมอบสิทธิ์ตาม role
 
 ## 7. หน้าในโมดูลนี้
 

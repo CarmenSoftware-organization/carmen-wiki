@@ -1,8 +1,8 @@
 ---
 title: Carmen Blue Backstage
-description: ภาพรวมของผลิตภัณฑ์ Carmen Blue Backstage admin — จุดเริ่มต้นของ book นี้ จัดเรียงตามแถว Dashboard ที่ไม่อยู่ในกลุ่มใด บวกเจ็ดกลุ่ม `groupKey` ของ sidebar ใน SPA เอง (รวมเป็นแปดส่วน) บวก persona cluster-admin แยกต่างหาก
+description: ภาพรวมผลิตภัณฑ์ Carmen Blue Backstage admin — จุดเริ่มต้นของ book จัดตามแถว Dashboard บวกเจ็ดกลุ่ม groupKey ของ sidebar (รวมแปดส่วน) บวก persona cluster-admin แยกต่างหาก
 published: true
-date: 2026-09-06T23:30:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -12,7 +12,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 คู่มืออ้างอิงสำหรับนักพัฒนาและ QA engineer ที่ทำงานกับ Carmen Blue Backstage admin — tenancy (cluster และ business unit), การจัดการไลเซนส์, identity และการเข้าถึง, การส่งมอบเนื้อหา, การวิเคราะห์, การจัดตารางเวลา, การตั้งค่าระดับแพลตฟอร์ม และฐานข้อมูลที่ใช้ร่วมกัน
 
-รายการโมดูลด้านล่างเรียงจากบนลงล่างตามลำดับเดียวกับ sidebar ที่ผู้อ่านเพิ่งมาจาก: แถว Dashboard ที่ไม่อยู่ในกลุ่มใดก่อน ตามด้วยเจ็ดกลุ่ม `groupKey` ที่ตัว SPA ใช้สร้าง navigation ของตัวเอง (`../carmen-backstage/src/components/nav/platformNav.ts`) — รวมเป็นแปดส่วน — ตามด้วยส่วนสุดท้ายสำหรับคอนโซล cluster-admin — persona แยกต่างหากที่มี nav file เป็นของตัวเอง ไม่ใช่กลุ่มเมนูที่เก้า
+รายการโมดูลด้านล่างเรียงจากบนลงล่างตามลำดับเดียวกับ sidebar ที่ผู้อ่านเพิ่งมาจาก: แถว Dashboard ที่ไม่อยู่ในกลุ่มใดก่อน ตามด้วยเจ็ดกลุ่ม `groupKey` ที่ตัว SPA ใช้สร้าง navigation ของตัวเอง (`../carmen-backstage/src/components/nav/backstageNav.ts`) — รวมเป็นแปดส่วน — ตามด้วยส่วนสุดท้ายสำหรับคอนโซล cluster-admin — persona แยกต่างหากที่มี nav file เป็นของตัวเอง ไม่ใช่กลุ่มเมนูที่เก้า
 
 ## 1. Dashboard
 

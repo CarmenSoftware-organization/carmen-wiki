@@ -2,7 +2,7 @@
 title: Broadcasts — สิทธิ์การเข้าถึง (Permissions)
 description: สี่คีย์ broadcast.* (read/send/update/delete) กั้นหน้าจอ List/Compose/Edit และ endpoint ฝั่ง server ที่ตรงกัน — เนื้อหาถูกล็อกเมื่อออกอากาศแล้ว
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -11,19 +11,19 @@ dateCreated: 2026-06-10T16:00:00.000Z
 # Broadcasts — สิทธิ์การเข้าถึง (Permissions)
 
 > **At a Glance**
-> **สี่ key ไม่ใช่หนึ่ง:** `broadcast.read` (List + ดูหน้า Edit), `broadcast.send` (Compose + Send), `broadcast.update` (action Edit + Expire Now + `PATCH`), `broadcast.delete` (Delete + `DELETE`) &nbsp;·&nbsp; **ทั้งสี่ถูกบังคับใช้ฝั่ง server** ผ่าน `PlatformPermissionGuard` บนทุกหนึ่งในหกเส้นทางของ broadcast &nbsp;·&nbsp; **ความหยาบที่รู้อยู่แล้ว (ไม่เปลี่ยนตั้งแต่ sync ครั้งก่อน):** guard ผ่านได้ด้วย grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster เดียวก็ได้ — การจำกัดขอบเขตราย-cluster แบบแท้จริงยังถูกเลื่อนออกไปอย่างชัดเจน &nbsp;·&nbsp; **Content lock:** title/message/metadata แก้ได้เฉพาะตอน broadcast ยัง `scheduled`; ไม่งั้น 400 `content_locked` &nbsp;·&nbsp; **`doc_version` เป็น optimistic lock จริง** ทั้ง `PATCH` และ `DELETE` ตรวจสอบมัน &nbsp;·&nbsp; **การส่งแบบระบุผู้รับ (`system_users`) ยังคง fire-and-forget** — มองไม่เห็นจาก `broadcast.read`/`.update`/`.delete` เลย เพราะไม่เคยแตะ `tb_broadcast_notification`
+> **สี่ key ไม่ใช่หนึ่ง:** `broadcast.read` (List + ดูหน้า Edit), `broadcast.send` (Compose + Send), `broadcast.update` (action Edit + Expire Now + `PATCH`), `broadcast.delete` (Delete + `DELETE`) &nbsp;·&nbsp; **ทั้งสี่ถูกบังคับใช้ฝั่ง server** ผ่าน `BackstagePermissionGuard` บนทุกหนึ่งในหกเส้นทางของ broadcast &nbsp;·&nbsp; **ความหยาบที่รู้อยู่แล้ว (ไม่เปลี่ยนตั้งแต่ sync ครั้งก่อน):** guard ผ่านได้ด้วย grant ระดับแพลตฟอร์ม **หรือ** grant ใน cluster เดียวก็ได้ — การจำกัดขอบเขตราย-cluster แบบแท้จริงยังถูกเลื่อนออกไปอย่างชัดเจน &nbsp;·&nbsp; **Content lock:** title/message/metadata แก้ได้เฉพาะตอน broadcast ยัง `scheduled`; ไม่งั้น 400 `content_locked` &nbsp;·&nbsp; **`doc_version` เป็น optimistic lock จริง** ทั้ง `PATCH` และ `DELETE` ตรวจสอบมัน &nbsp;·&nbsp; **การส่งแบบระบุผู้รับ (`system_users`) ยังคง fire-and-forget** — มองไม่เห็นจาก `broadcast.read`/`.update`/`.delete` เลย เพราะไม่เคยแตะ `tb_broadcast_notification`
 
 ## 1. ภาพรวม
 
-Broadcasts ย้ายจาก key gate เดียวมาเป็นสี่ key เต็มรูปแบบ สอดคล้องกับการย้ายจากหน้าส่งครั้งเดียวมาเป็นสามหน้าจอ List/Compose/Edit ทั้งสี่ key ถูกลงทะเบียนใน permission catalog ของแพลตฟอร์ม (`seed.platform-permission.data.ts`) พร้อมคำอธิบายจริง — `broadcast.read` **ไม่ใช่ orphan อีกต่อไป**: ตอนนี้มัน gate route ของ List, รายการใน nav และโหมดดูของหน้า Edit ปิดผลตรวจสอบเดิมก่อนปรับใหญ่ที่บอกว่ามัน "ไม่ gate อะไรใน SPA เลย"
+Broadcasts ย้ายจาก key gate เดียวมาเป็นสี่ key เต็มรูปแบบ สอดคล้องกับการย้ายจากหน้าส่งครั้งเดียวมาเป็นสามหน้าจอ List/Compose/Edit ทั้งสี่ key ถูกลงทะเบียนใน permission catalog ของแพลตฟอร์ม (`seed.backstage-permission.data.ts`) พร้อมคำอธิบายจริง — `broadcast.read` **ไม่ใช่ orphan อีกต่อไป**: ตอนนี้มัน gate route ของ List, รายการใน nav และโหมดดูของหน้า Edit ปิดผลตรวจสอบเดิมก่อนปรับใหญ่ที่บอกว่ามัน "ไม่ gate อะไรใน SPA เลย"
 
-ทุก key ถูกบังคับใช้**ทั้งสอง**ฝั่ง — client (`<Can>`, `PrivateRoute`) และ server (`KeycloakGuard` + `PlatformPermissionGuard` + `@RequirePlatformPermission(...)`) บนทั้งหกเส้นทางของ gateway: สอง endpoint สำหรับส่ง (การบังคับใช้แบบหยาบไม่เปลี่ยนตั้งแต่ backend PR #239) บวกสี่ endpoint ฝั่งแอดมิน (list/get/update/delete) ที่ถูกเพิ่มมาในการปรับใหญ่ครั้งเดียวกันที่สร้างหน้า List/Edit การบังคับใช้ตั้งใจให้**หยาบ**ทุกที่ ไม่ใช่แค่ตอนส่ง: `PlatformPermissionService.has()` คืน true ถ้า key ที่ต้องการมีอยู่ใน scope **ระดับแพลตฟอร์ม** ของผู้เรียก **หรือ** ใน scope ของ **cluster เดียวก็ได้** — ผู้ใช้ที่ได้รับ เช่น `broadcast.delete` แค่ cluster เดียว สามารถลบ broadcast row **ไหนก็ได้** ผ่าน API นี้ ไม่ว่าจะเป็น system-wide หรือ scope เป็น BU เพราะไม่มี code path ไหนในโมดูลนี้ที่ resolve ว่า "broadcast รายการนี้เป็นของ cluster ไหน" แล้วเช็ค grant กับมัน นี่คือข้อจำกัดเดียวกับที่ wiki ก่อนปรับใหญ่ document ไว้สำหรับ `broadcast.send` อย่างเดียว ตอนนี้มันใช้กับทั้งสี่ key เหมือนกันหมด
+ทุก key ถูกบังคับใช้**ทั้งสอง**ฝั่ง — client (`<Can>`, `PrivateRoute`) และ server (`KeycloakGuard` + `BackstagePermissionGuard` + `@RequireBackstagePermission(...)`) บนทั้งหกเส้นทางของ gateway: สอง endpoint สำหรับส่ง (การบังคับใช้แบบหยาบไม่เปลี่ยนตั้งแต่ backend PR #239) บวกสี่ endpoint ฝั่งแอดมิน (list/get/update/delete) ที่ถูกเพิ่มมาในการปรับใหญ่ครั้งเดียวกันที่สร้างหน้า List/Edit การบังคับใช้ตั้งใจให้**หยาบ**ทุกที่ ไม่ใช่แค่ตอนส่ง: `BackstagePermissionService.has()` คืน true ถ้า key ที่ต้องการมีอยู่ใน scope **ระดับแพลตฟอร์ม** ของผู้เรียก **หรือ** ใน scope ของ **cluster เดียวก็ได้** — ผู้ใช้ที่ได้รับ เช่น `broadcast.delete` แค่ cluster เดียว สามารถลบ broadcast row **ไหนก็ได้** ผ่าน API นี้ ไม่ว่าจะเป็น system-wide หรือ scope เป็น BU เพราะไม่มี code path ไหนในโมดูลนี้ที่ resolve ว่า "broadcast รายการนี้เป็นของ cluster ไหน" แล้วเช็ค grant กับมัน นี่คือข้อจำกัดเดียวกับที่ wiki ก่อนปรับใหญ่ document ไว้สำหรับ `broadcast.send` อย่างเดียว ตอนนี้มันใช้กับทั้งสี่ key เหมือนกันหมด
 
 ## 2. เมทริกซ์ของ gate
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
-| route `/broadcasts` + รายการใน nav | `PrivateRoute` / nav filter | `broadcast.read` | `src/App.tsx`, `src/components/nav/platformNav.ts` |
+| route `/broadcasts` + รายการใน nav | `PrivateRoute` / nav filter | `broadcast.read` | `src/App.tsx`, `src/components/nav/backstageNav.ts` |
 | route `/broadcasts/:id/edit` (เปิดในโหมดดู) | `PrivateRoute` | `broadcast.read` | `src/App.tsx` |
 | route `/broadcasts/new` | `PrivateRoute requiredPermission` | `broadcast.send` | `src/App.tsx` |
 | "New Broadcast" (หัวหน้า List + empty state) | `<Can>` | `broadcast.send` | `BroadcastManagement.tsx` |
@@ -32,17 +32,17 @@ Broadcasts ย้ายจาก key gate เดียวมาเป็นส�
 | ปุ่ม Edit (แถวใน List + หน้า Edit) | `<Can>` | `broadcast.update` | `broadcastColumns.tsx`, `BroadcastEdit.tsx` |
 | Expire Now (แถวใน List) | `<Can>` | `broadcast.update` | `broadcastColumns.tsx` |
 | Delete (แถวใน List) | `<Can>` | `broadcast.delete` | `broadcastColumns.tsx` |
-| `POST /api/notifications/broadcasts/system` / `/bu` | `KeycloakGuard` + `PlatformPermissionGuard` | `broadcast.send` (หยาบ) | `notification.controller.ts` |
+| `POST /api/notifications/broadcasts/system` / `/bu` | `KeycloakGuard` + `BackstagePermissionGuard` | `broadcast.send` (หยาบ) | `notification.controller.ts` |
 | `GET /api/notifications/broadcasts` (list) | guard เดียวกัน | `broadcast.read` (หยาบ) | `notification.controller.ts` |
 | `GET /api/notifications/broadcasts/:id` | guard เดียวกัน | `broadcast.read` (หยาบ) | `notification.controller.ts` |
 | `PATCH /api/notifications/broadcasts/:id` | guard เดียวกัน | `broadcast.update` (หยาบ) | `notification.controller.ts` |
 | `DELETE /api/notifications/broadcasts/:id` | guard เดียวกัน | `broadcast.delete` (หยาบ) | `notification.controller.ts` |
 
-### การมอบสิทธิ์ตาม role (จาก `seed.platform-role-permission.data.ts`)
+### การมอบสิทธิ์ตาม role (จาก `seed.backstage-role-permission.data.ts`)
 
 | Role | Key |
 |---|---|
-| Platform Admin | `broadcast.*` — ครบทั้งสี่ |
+| Backstage Admin | `broadcast.*` — ครบทั้งสี่ |
 | Support Manager | `read`, `send`, `update` — **ไม่มี** `delete` |
 | Support Staff | `read` เท่านั้น |
 | Security Officer | ไม่มีเลย |
@@ -95,7 +95,7 @@ Delivery/การมองเห็นยังคงรูปแบบ filter 
 | 10 | BU code ไม่รู้จักหรือถูกลบแบบ soft ตอนส่ง | Resolve กับ BU ที่ live; ความล้มเหลวตอนนี้แสดงเป็น **404** (`COMMON_BUSINESS_UNIT_NOT_FOUND`) | แก้คำอธิบายเดิมก่อนปรับใหญ่ที่บอกว่า "500-enveloped" — ตรวจสอบ status code ใหม่ ไม่ใช่แค่ข้อความ ถ้าเขียน regression test |
 | 11 | Confirmation แบบทำลายล้างของ `system_all` | โหมดเดียวที่มีปุ่ม confirm สีแดงและคำเตือน "reach every user" | ไม่เปลี่ยนแปลง |
 | 12 | ส่งซ้ำ | ไม่มี unique constraint ไม่มี idempotency key — confirm สองครั้งจากสอง compose สร้างสอง row ปุ่ม Send ยังคง disable ระหว่าง request กำลังทำงาน ทำให้คลิกครั้งเดียว double-post ไม่ได้ | ไม่เปลี่ยนจากเดิม แต่ตอนนี้ลบรายการซ้ำภายหลังได้ผ่าน Delete บนหน้า List ซึ่งทำไม่ได้ก่อนปรับใหญ่ |
-| 13 | Session ที่ไม่มี `.send`/`.read`/`.update`/`.delete` เรียก endpoint ที่ตรงกันโดยตรง | `PlatformPermissionGuard` ปฏิเสธด้วย 403 (ข้อความ "Missing platform permission: `<key>`" ตามที่บันทึกไว้ใน comment ของ code `BroadcastCompose.tsx` สำหรับ `broadcast.send`) ก่อนที่ request จะไปถึง micro-notification สำหรับ**ทั้งหกเส้นทาง**แล้ว ไม่ใช่แค่สอง endpoint ส่ง | ตรวจสอบทั้งสี่ key แยกกัน — งานนี้ขยาย coverage เกินกว่าการบังคับใช้แค่ตอนส่งที่ sync ครั้งก่อนตรวจสอบไว้ |
+| 13 | Session ที่ไม่มี `.send`/`.read`/`.update`/`.delete` เรียก endpoint ที่ตรงกันโดยตรง | `BackstagePermissionGuard` ปฏิเสธด้วย 403 (ข้อความ "Missing backstage permission: `<key>`" ตามที่บันทึกไว้ใน comment ของ code `BroadcastCompose.tsx` สำหรับ `broadcast.send`) ก่อนที่ request จะไปถึง micro-notification สำหรับ**ทั้งหกเส้นทาง**แล้ว ไม่ใช่แค่สอง endpoint ส่ง | ตรวจสอบทั้งสี่ key แยกกัน — งานนี้ขยาย coverage เกินกว่าการบังคับใช้แค่ตอนส่งที่ sync ครั้งก่อนตรวจสอบไว้ |
 | 14 | Grant แบบ cluster เดียวเข้าถึง broadcast ของทุก cluster | Grant ของ key `broadcast.*` แบบ cluster เดียวผ่าน guard สำหรับ**ทุก**row ไม่ว่า system-wide หรือ BU ไหนก็ตาม — ไม่ใช่แค่ cluster ของผู้ได้รับ grant เอง | ความหยาบที่ตั้งใจและ document ไว้ (§1) ไม่ใช่บั๊กที่ต้อง file — ใช้เหมือนกันหมดกับ read/send/update/delete แล้ว |
 | 15 | เปิด broadcast ที่ถูกลบแล้วจากรายการ | `GET .../broadcasts/:id` ยังคืนมันอยู่ (`status: "deleted"`) จึงยังดูได้แบบอ่านอย่างเดียว; ปุ่ม Edit ถูกซ่อน เนื้อหาถูกล็อกโดยธรรมชาติ | ตรวจสอบว่า row ที่ถูกลบไม่มีทาง un-delete ได้จาก UI — ไม่มี action กู้คืนเลยในโมดูลนี้ |
 | 16 | ตั้งเวลาที่กำหนดไว้เป็นอดีต | Client validation ปฏิเสธ ("Scheduled time must be in the future" ตรวจกับ `Date.now()` ตอน validate); Zod request schema (`scheduled_at: z.string().datetime().optional()`) **ไม่มี check ว่าเป็นอนาคตฝั่ง server เลย** — API caller สร้าง row ที่มี `scheduled_at` เป็นอดีตได้ ซึ่งจะมองเห็นได้ทันที (ผ่าน filter `<= NOW()` อยู่แล้ว) แต่ไม่เคยถูก push แบบ live | ไม่เปลี่ยนจาก wiki ก่อนปรับใหญ่ SPA เองก็หลุด race ได้เหมือนกัน: validation รันตอนกด Send แต่ confirm dialog ไม่ re-validate จึง dialog ที่ค้างเปิดอยู่เลยเวลาที่กำหนดจะยัง submit `scheduled_at` ที่เป็นอดีตไปแล้ว |
@@ -107,10 +107,10 @@ Delivery/การมองเห็นยังคงรูปแบบ filter 
 - **ทดสอบขอบเขต content-lock โดยตรง**: แก้ title ของ broadcast ที่ `scheduled` (ควรสำเร็จ) ปล่อยให้มันกลายเป็น `active` (หรือส่งอันหนึ่งทันที) แล้วลองแก้แบบเดิมอีกครั้ง (ควร 400 `content_locked` ฝั่ง server และ render แบบอ่านอย่างเดียวฝั่ง client)
 - **ทดสอบ optimistic lock**: เปิด broadcast เดียวกันในสอง session, save จากอันหนึ่ง แล้วลอง save จากอีกอัน — ควรได้ 409 และ toast version-conflict ไม่ใช่การเขียนทับเงียบ ๆ
 - **ทดสอบ edge case 1 โดยตรง** (ผู้รับ → สลับไป All users → confirm dialog เทียบกับ payload จริง) — ไม่เปลี่ยนแปลงจากผลตรวจสอบเดิมและยังคุ้มที่จะ file bug report ต่อ SPA ถ้ายังไม่เคย file
-- **ยืนยันว่าการส่งแบบ `system_users` ไม่ปรากฏบน List หรือ Edit เลยจริง ๆ** แม้แต่สำหรับ Platform Admin — เป็นความตั้งใจ ไม่ใช่ filter ที่ต้องหาทางเลี่ยง
+- **ยืนยันว่าการส่งแบบ `system_users` ไม่ปรากฏบน List หรือ Edit เลยจริง ๆ** แม้แต่สำหรับ Backstage Admin — เป็นความตั้งใจ ไม่ใช่ filter ที่ต้องหาทางเลี่ยง
 - **Read-state QA ต้องใช้สองผู้ใช้**: ส่ง broadcast แบบ `system_all`/`bu`, ยืนยันว่าทั้งคู่เห็นมันยังไม่อ่าน (ยังไม่มี row ของ `tb_user_broadcast_action`), ให้คนหนึ่ง mark ว่าอ่านแล้ว แล้วยืนยันว่าสถานะยังไม่อ่านของอีกคนไม่ถูกแตะ — ไม่เปลี่ยนแปลงจากการปรับใหญ่ครั้งนี้
 - **`dismissed_at` และ `tb_user_broadcast_action.doc_version` ยังคงไม่ถูกใช้งานจริง** — ถูก seed/ประกาศไว้แต่ไม่มี code path ไหนใช้; อย่า file การหายไปจาก UI ว่าเป็น defect ข้อนี้แคบกว่าโน้ตเดิมของ wiki ก่อนปรับใหญ่ ที่เคยรวม `broadcast.read`, `end_at` และ `doc_version` ของตาราง broadcast เองไว้ด้วยว่าไม่ถูกใช้งาน — ทั้งสามอย่างนั้นตอนนี้เป็นของจริงและ active แล้ว (§1, §4)
 
-**แหล่งอ้างอิง:** `../carmen-backstage/src/App.tsx` (route guard) · `src/components/nav/platformNav.ts` (รายการ nav) · `src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/broadcastColumns.tsx` (gate ของ row action) · `src/pages/BroadcastCompose.tsx` (`canSendSystem`/`canSend`, `<Can>`) · `src/pages/BroadcastEdit.tsx` (`contentEditable`, `<Can permission="broadcast.update">`) · `src/utils/permissions.ts` (`PERMISSIONS.BROADCAST.SEND`) · `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (ทั้งหก route ที่ถูก guard) · `apps/backend-gateway/src/auth/guards/platform-permission.guard.ts`, `src/auth/services/platform-permission.service.ts` (check แบบหยาบ platform-or-any-cluster ไม่เปลี่ยนตั้งแต่ PR วันที่ 2026-06-10) · `apps/micro-notification/src/notification/broadcast-admin.service.ts` (กฎ `content_locked`/`conflict`) · `apps/micro-notification/src/notification/schedule.worker.ts` (worker push เฉพาะแบบระบุผู้รับ) · `packages/prisma-shared-schema-platform/prisma/seed.platform-permission.data.ts`, `seed.platform-role-permission.data.ts` (สี่ key และการมอบสิทธิ์ตาม role) · `packages/error-catalog/src/catalog.ts` (`COMMON_BUSINESS_UNIT_NOT_FOUND`, 404)
+**แหล่งอ้างอิง:** `../carmen-backstage/src/App.tsx` (route guard) · `src/components/nav/backstageNav.ts` (รายการ nav) · `src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/broadcastColumns.tsx` (gate ของ row action) · `src/pages/BroadcastCompose.tsx` (`canSendSystem`/`canSend`, `<Can>`) · `src/pages/BroadcastEdit.tsx` (`contentEditable`, `<Can permission="broadcast.update">`) · `src/utils/permissions.ts` (`PERMISSIONS.BROADCAST.SEND`) · `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (ทั้งหก route ที่ถูก guard) · `apps/backend-gateway/src/auth/guards/backstage-permission.guard.ts`, `src/auth/services/backstage-permission.service.ts` (check แบบหยาบ platform-or-any-cluster ไม่เปลี่ยนตั้งแต่ PR วันที่ 2026-06-10) · `../micro-notification/src/notification/broadcast-admin.service.ts` (กฎ `content_locked`/`conflict`) · `../micro-notification/src/notification/schedule.worker.ts` (worker push เฉพาะแบบระบุผู้รับ) · `packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts`, `seed.backstage-role-permission.data.ts` (สี่ key และการมอบสิทธิ์ตาม role) · `packages/error-catalog/src/catalog.ts` (`COMMON_BUSINESS_UNIT_NOT_FOUND`, 404)
 
 **Cross-links:** [หน้าแรก Broadcasts](/th/platform/broadcasts) &nbsp;·&nbsp; [Data Model](/th/platform/broadcasts/data-model) &nbsp;·&nbsp; [UI Screens](/th/platform/broadcasts/ui-screens) &nbsp;·&nbsp; [Platform RBAC — Permissions](/th/platform/rbac/permissions) &nbsp;·&nbsp; [Business Units](/th/platform/business-units)

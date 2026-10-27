@@ -1,8 +1,8 @@
 ---
 title: Dashboard
-description: หน้า home hub สำหรับผู้ใช้ที่ signed-in (/dashboard) — activity stream รวมทั่ว 6 โดเมน บวกแถบสรุปจำนวน active/total ต่อโดเมนแบบ sticky ไม่มี requiredPermission ของตัวเอง ทุกโดเมนจะหลุดจากทั้งสองส่วนแบบเงียบ ๆ ถ้า session อ่านไม่ได้
+description: หน้า home hub ของผู้ใช้ที่ signed-in (/dashboard) — activity stream รวม 6 โดเมน บวกแถบสรุปจำนวน active/total แบบ sticky ไม่มี requiredPermission ของตัวเอง โดเมนที่อ่านไม่ได้จะหายไปเงียบ ๆ
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: platform/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-07-29T09:46:00.000Z
 # Dashboard
 
 > **At a Glance**
-> **หน้าจอ:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **การเข้าถึง:** authenticated เท่านั้น — route ไม่มี `requiredPermission` **และไม่มีคีย์ `feature`** (แถว nav เดียวใน `platformNav.ts` ที่ไม่มีทั้งสอง) เหมือนกับ [Profile](/th/platform/profile) จึงเห็นได้/เข้าถึงได้เสมอไม่ว่าจะมีสิทธิ์หรือสถานะ feature-flag อย่างไร &nbsp;·&nbsp; **Sidebar:** รายการ nav บนสุด ไม่ถูก gate อยู่เหนือทุกกลุ่ม `groupKey` (Organization, License Management, Content, Analytics, Scheduling, Platform, Database — ดู §4) &nbsp;·&nbsp; **เนื้อหา:** activity stream รวมทั่ว 6 โดเมน + แถบสรุป active/total แบบ sticky &nbsp;·&nbsp; **เข้าถึงจาก:** redirect หลัง login (จาก [Landing](/th/platform/landing) หรือ Login), สัญลักษณ์แบรนด์ใน sidebar, หรือรายการ nav "Dashboard" เอง — แม้ว่า cluster admin แบบ membership-only ที่มาถึงหน้านี้จะถูกส่งต่อไปที่ `/cluster-admin` ทันที (§5)
+> **หน้าจอ:** `Dashboard` (`/dashboard`) &nbsp;·&nbsp; **การเข้าถึง:** authenticated เท่านั้น — route ไม่มี `requiredPermission` **และไม่มีคีย์ `feature`** (แถว nav เดียวใน `backstageNav.ts` ที่ไม่มีทั้งสอง) เหมือนกับ [Profile](/th/platform/profile) จึงเห็นได้/เข้าถึงได้เสมอไม่ว่าจะมีสิทธิ์หรือสถานะ feature-flag อย่างไร &nbsp;·&nbsp; **Sidebar:** รายการ nav บนสุด ไม่ถูก gate อยู่เหนือทุกกลุ่ม `groupKey` (Organization, License Management, Content, Analytics, Scheduling, Backstage, AI, Database — ดู §4) &nbsp;·&nbsp; **เนื้อหา:** activity stream รวมทั่ว 6 โดเมน + แถบสรุป active/total แบบ sticky &nbsp;·&nbsp; **เข้าถึงจาก:** redirect หลัง login (จาก [Landing](/th/platform/landing) หรือ Login), สัญลักษณ์แบรนด์ใน sidebar, หรือรายการ nav "Dashboard" เอง — แม้ว่า cluster admin แบบ membership-only ที่มาถึงหน้านี้จะถูกส่งต่อไปที่ `/cluster-admin` ทันที (§5)
 
 ![Dashboard screen](/screenshots/platform/dashboard/index.png)
 
@@ -33,25 +33,28 @@ Timeline ที่ render จัดกลุ่มตามวัน (แถว 
 
 ## 4. สิ่งที่ไม่มีบน Dashboard
 
-`ACTIVITY_SOURCES` (หกโดเมนที่ระบุใน §2) ไม่ได้เพิ่มขึ้นเลยตั้งแต่โมดูลนี้ถูกสร้าง — ทุกแถวอื่นในรายการ navigation จริงของ sidebar คือ `ALL_PLATFORM_NAV_ITEMS` ใน `platformNav.ts` ขาดหายจากทั้งสองส่วนหมด รายการนั้นเติบโตขึ้นมากตั้งแต่หน้านี้ sync ครั้งล่าสุด (หลายแถวด้านล่างเป็นโมดูลที่เพิ่มหลัง 2026-07-29) ช่องว่างจึงกว้างกว่าที่อ่านจากหน้านี้ครั้งแรก:
+`ACTIVITY_SOURCES` (หกโดเมนที่ระบุใน §2) ไม่ได้เพิ่มขึ้นเลยตั้งแต่โมดูลนี้ถูกสร้าง — ทุกแถวอื่นในรายการ navigation จริงของ sidebar คือ `ALL_BACKSTAGE_NAV_ITEMS` ใน `backstageNav.ts` ขาดหายจากทั้งสองส่วนหมด รายการนั้นเติบโตขึ้นมากตั้งแต่หน้านี้ sync ครั้งล่าสุด (หลายแถวด้านล่างเป็นโมดูลที่เพิ่มหลัง 2026-07-29) ช่องว่างจึงกว้างกว่าที่อ่านจากหน้านี้ครั้งแรก:
 
 | `groupKey` | รายการ sidebar ที่ไม่มีบน Dashboard |
 |---|---|
-| `navGroup.organization` | Tenant Migrations, Tenant Imports (อีกสามแถวในกลุ่มนี้ — Clusters, Business Units, Users — *มี* ครอบคลุมแล้ว) |
+| `navGroup.organization` | Tenant Migrations, Tenant Seed Data, Data Import (อีกสามแถวในกลุ่มนี้ — Clusters, Business Units, Users — *มี* ครอบคลุมแล้ว) |
 | `navGroup.licenseManagement` | Licenses, License Feature Groups, License Features — ทั้งกลุ่ม |
-| `navGroup.content` | Report Form Groups, Broadcasts (Report Templates และ News อีกสองแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
+| `navGroup.content` | Report Form Groups, Dashboard Templates, Broadcasts (Report Templates และ News อีกสองแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
 | `navGroup.analytics` | Usage Analytics, Activity Events — ทั้งกลุ่ม |
-| `navGroup.scheduling` | Cronjobs — ทั้งกลุ่ม |
-| `navGroup.platform` | Platform Config, Email Settings, Platform Roles, User Platform, Super Admins, Feature Flags (Applications อีกแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
-| `navGroup.database` | Platform Migrations, SQL Workbench, Database Pools — ทั้งกลุ่ม |
+| `navGroup.scheduling` | Scheduled Jobs — ทั้งกลุ่ม |
+| `navGroup.backstage` | Backstage Config, Email Settings, Backstage Roles, Backstage Users, Super Admins, Feature Flags (Applications อีกแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
+| `navGroup.ai` | Purchase Request AI Providers — ทั้งกลุ่ม |
+| `navGroup.database` | Backstage Migrations, SQL Workbench, Database Pools — ทั้งกลุ่ม |
 
-นอกเหนือจากนี้ยังมี persona **cluster-admin** (`/cluster-admin/...`) ที่ Dashboard เข้าไม่ถึงเลย เพราะไม่ได้อยู่ใน `ALL_PLATFORM_NAV_ITEMS` เลยด้วยซ้ำ และไม่มีหน้า landing แบบ Dashboard เป็นของตัวเอง
+นอกเหนือจากนี้ยังมี persona **cluster-admin** (`/cluster-admin/...`) ที่ Dashboard เข้าไม่ถึงเลย เพราะไม่ได้อยู่ใน `ALL_BACKSTAGE_NAV_ITEMS` เลยด้วยซ้ำ และไม่มีหน้า landing แบบ Dashboard เป็นของตัวเอง
 
 Broadcasts ควรได้รับการแก้ไขเฉพาะ: หน้านี้เคยบอกว่า "ไม่มี endpoint list เลย" ซึ่งเป็นจริงตอนที่ Broadcasts ยังเป็นหน้าจอ compose แบบ fire-and-forget อย่างเดียว แต่ไม่จริงอีกต่อไปแล้ว — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) มีอยู่มาตั้งแต่การออกแบบ notification ใหม่เมื่อ 2026-08-10/11 ที่ให้ Broadcasts มีพื้นผิว list/edit สำหรับแอดมินเป็นของตัวเอง (ดู [Broadcasts](/th/platform/broadcasts)) `ACTIVITY_SOURCES` ของ Dashboard เพียงแต่ยังไม่ถูกอัปเดตให้เพิ่มมันเป็นโดเมนที่เจ็ด — เป็นช่องว่างจริงตอนนี้ ไม่ใช่ข้อจำกัดเชิงสถาปัตยกรรมอีกต่อไป Report Form Groups เป็นมุมมองหนึ่งของทรัพยากร Report Templates มาตั้งแต่แรก ไม่ใช่โดเมนของตัวเอง การขาดหายจึงเป็นการออกแบบ ไม่ใช่ช่องว่าง ไม่มีข้อใดในรายการเหล่านี้ปรากฏที่ Activity Stream หรือ Counts Rail เลย — การเปลี่ยน role, การให้สิทธิ์ super-admin, tenant migration, cronjob หรือ default ของ form-group จะไม่ปรากฏบนหน้านี้ไม่ว่าจะเพิ่งเกิดขึ้นแค่ไหนก็ตาม
 
 ## 5. บทบาทและ Persona
 
-route `/dashboard` ถูกห่อด้วย `<PrivateRoute>` เปล่า ๆ ไม่มี prop `requiredPermission` และไม่มี prop `feature` — การห่อแบบเปล่า ๆ เดียวกับที่ route `/profile` ฝั่ง platform ของ [Profile](/th/platform/profile) ได้รับ "การ authenticate เป็น gate เดียว" ไม่ใช่เรื่องทั้งหมด: `PrivateRoute` (`src/components/PrivateRoute.tsx`) มี branch การตัดสินใจ platform-authority/cluster-admin ที่ทำงานทุก route ที่มันคุม ไม่ว่าจะ gate หรือไม่ก็ตาม เมื่อ `effectivePermissions` resolve แล้ว session ที่ไม่มี platform authority จะไม่ถูก render ที่นี่เลย — ถ้ามี cluster-admin scope อย่างน้อยหนึ่งคลัสเตอร์ (`hasClusterAdminScope`) จะถูก redirect ไป `/cluster-admin` แทน (`PrivateRoute.tsx:72-73`); session ที่ไม่มีทั้ง platform authority และ cluster-admin scope จะ fall through และยัง render หน้านี้อยู่ดี ซึ่งเป็นข้อยกเว้นที่ตั้งใจไว้เพื่อไม่ให้แอดมินคนแรก (bootstrap) ของการติดตั้งใหม่ถูกล็อกออกจาก `/dashboard` ระหว่างที่การตรวจนับ super-admin ของตัวเองยังทำงานไม่เสร็จ กล่าวอีกอย่างคือ: การมาถึง `/dashboard` ได้เลยก็หมายความแล้วว่ามี platform authority (หรืออยู่ในช่วง bootstrap แคบ ๆ นั้น) — cluster admin แบบ membership-only จะไม่มีวันเห็นหน้านี้เลย เพราะถูก guard ส่งออกไปเอง ไม่ใช่เพราะ Dashboard เช็คอะไร ไม่มี gate `<Can>` ใด ๆ ภายในหน้านี้เลย นอกเหนือจาก guard นั้น การเข้าถึงเนื้อหาของแต่ละส่วนเป็นแบบทางอ้อม: การเรียก `getAll` ทั้งหกครั้งข้างต้นยังผ่านการตรวจสอบ permission ฝั่ง backend ของโดเมนนั้นเองอยู่ ดังนั้น session ที่ขาด (ตัวอย่างเช่น) `report_template.read` จะทำให้การ fetch Report Templates ล้มเหลวที่ API และโดเมนนั้นก็จะหายไปจากทั้งสองส่วนเฉย ๆ (§2/§3) — Dashboard เองไม่ได้เช็ค `hasPermission` สำหรับโดเมนใดเลย มันสืบทอดสิ่งที่ endpoint list ของโดเมนนั้นบังคับใช้อยู่แล้ว ทีละ request ที่ล้มเหลว
+route `/dashboard` ถูกห่อด้วย `<PrivateRoute>` เปล่า ๆ ไม่มี prop `requiredPermission` และไม่มี prop `feature` — การห่อแบบเปล่า ๆ เดียวกับที่ route `/profile` ฝั่ง platform ของ [Profile](/th/platform/profile) ได้รับ "การ authenticate เป็น gate เดียว" ไม่ใช่เรื่องทั้งหมด: `PrivateRoute` (`src/components/PrivateRoute.tsx`) มี branch การตัดสินใจ Backstage-authority/cluster-admin ที่ทำงานทุก route ที่มันคุม ไม่ว่าจะ gate หรือไม่ก็ตาม เมื่อ `effectivePermissions` resolve แล้ว session ที่ไม่มี platform authority จะไม่ถูก render ที่นี่เลย — ถ้ามี cluster-admin scope อย่างน้อยหนึ่งคลัสเตอร์ (`hasClusterAdminScope`) จะถูก redirect ไป `/cluster-admin` แทน (`PrivateRoute.tsx:74-75`); session ที่ไม่มีทั้ง platform authority และ cluster-admin scope จะ fall through และยัง render หน้านี้อยู่ดี ซึ่งเป็นข้อยกเว้นที่ตั้งใจไว้เพื่อไม่ให้แอดมินคนแรก (bootstrap) ของการติดตั้งใหม่ถูกล็อกออกจาก `/dashboard` ระหว่างที่การตรวจนับ super-admin ของตัวเองยังทำงานไม่เสร็จ กล่าวอีกอย่างคือ: การมาถึง `/dashboard` ได้เลยก็หมายความแล้วว่ามี platform authority (หรืออยู่ในช่วง bootstrap แคบ ๆ นั้น) — cluster admin แบบ membership-only จะไม่มีวันเห็นหน้านี้เลย เพราะถูก guard ส่งออกไปเอง ไม่ใช่เพราะ Dashboard เช็คอะไร ไม่มี gate `<Can>` ใด ๆ ภายในหน้านี้เลย นอกเหนือจาก guard นั้น การเข้าถึงเนื้อหาของแต่ละส่วนเป็นแบบทางอ้อม: การเรียก `getAll` ทั้งหกครั้งข้างต้นยังผ่านการตรวจสอบ permission ฝั่ง backend ของโดเมนนั้นเองอยู่ ดังนั้น session ที่ขาด (ตัวอย่างเช่น) `report_template.read` จะทำให้การ fetch Report Templates ล้มเหลวที่ API และโดเมนนั้นก็จะหายไปจากทั้งสองส่วนเฉย ๆ (§2/§3) — Dashboard เองไม่ได้เช็ค `hasPermission` สำหรับโดเมนใดเลย มันสืบทอดสิ่งที่ endpoint list ของโดเมนนั้นบังคับใช้อยู่แล้ว ทีละ request ที่ล้มเหลว
+
+**กลับไปหน้าเดิมหลัง sign-in (ตั้งแต่ 2026-10-26, `254a5121`)** การเข้าชม route ที่ถูก guard ตอนยังไม่ได้ sign-in ไม่ได้แค่ตกไปที่ `/login` อีกแล้ว: `PrivateRoute` ส่งเบราว์เซอร์ไป `/login?next=<path+query+hash>` (`loginPathFor()` ใน `src/utils/resolveNextPath.ts`, `PrivateRoute.tsx:59`) และ Login ส่งผู้ใช้กลับไปที่นั่นหลัง sign-in แทนที่จะไป `/dashboard` เสมอ `/dashboard` เป็นเพียง fallback เมื่อไม่มี `next` หรือไม่ผ่านตัวป้องกัน open-redirect (`resolveNextPath` รับเฉพาะ path แบบ relative ที่ same-origin) หน้า public (`/`, `/login`, `/login/callback`, `/changelog`) ไม่เคยได้ `next` การขาด permission ยัง render `<Forbidden />` ในที่เดิม และ session ที่ไม่มี Backstage authority ยังไป `/cluster-admin`
 
 ## 6. โมดูลที่เกี่ยวข้อง
 
@@ -66,9 +69,9 @@ route `/dashboard` ถูกห่อด้วย `<PrivateRoute>` เปล่�
 - `../carmen-backstage/src/pages/dashboard/activity.ts` — `ACTIVITY_SOURCES` (หกโดเมนตามลำดับที่แสดง), `fetchActivity`, `toActivityItem`, `deriveVerb`, `mergeAndSort`
 - `../carmen-backstage/src/pages/dashboard/ActivityStream.tsx` — filter chip, การจัดกลุ่มตามวัน, การ render timeline, state loading/error/empty
 - `../carmen-backstage/src/pages/dashboard/CountsRail.tsx` — ยอดรวม Estate และแถว active/total ต่อโดเมน
-- `../carmen-backstage/src/App.tsx:103-109` — `<PrivateRoute>` เปล่า ๆ (ไม่มี `requiredPermission`, ไม่มี `feature`) บน `/dashboard`
-- `../carmen-backstage/src/components/PrivateRoute.tsx:66-84` — branch การตัดสินใจ platform-authority/cluster-admin ที่อธิบายใน §5 (`effectivePermissions`, `hasClusterAdminScope`, การ redirect ไป `/cluster-admin`, และ fall-through ของแอดมิน bootstrap)
-- `../carmen-backstage/src/components/nav/platformNav.ts` — `ALL_PLATFORM_NAV_ITEMS` รายการ sidebar จริงที่ §4 ใช้เทียบ แถว `/dashboard` ที่ไม่ถูก gate และไม่มี feature อยู่นอกทุกกลุ่ม `groupKey` `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว — มันแค่เรียก `buildPlatformNav()` (`Layout.tsx:107`) และคำนวณปลายทางของสัญลักษณ์แบรนด์ (`Layout.tsx:111`, `hasPlatformAuthority ? '/dashboard' : '/cluster-admin'` — ดังนั้นกรอบ "เข้าถึงได้จากทุกที่" ใน §1 จะเป็นจริงเฉพาะ session ที่มี platform authority)
+- `../carmen-backstage/src/App.tsx:107-114` — `<PrivateRoute>` เปล่า ๆ (ไม่มี `requiredPermission`, ไม่มี `feature`) บน `/dashboard`
+- `../carmen-backstage/src/components/PrivateRoute.tsx:62-83` — branch การตัดสินใจ Backstage-authority/cluster-admin ที่อธิบายใน §5 (`effectivePermissions`, `hasClusterAdminScope`, การ redirect ไป `/cluster-admin`, และ fall-through ของแอดมิน bootstrap)
+- `../carmen-backstage/src/components/nav/backstageNav.ts` — `ALL_BACKSTAGE_NAV_ITEMS` รายการ sidebar จริงที่ §4 ใช้เทียบ แถว `/dashboard` ที่ไม่ถูก gate และไม่มี feature อยู่นอกทุกกลุ่ม `groupKey` `Layout.tsx` เองไม่ได้กำหนดแถว nav แล้ว — มันแค่เรียก `buildBackstageNav()` (`Layout.tsx:105`) และคำนวณปลายทางของสัญลักษณ์แบรนด์ (`Layout.tsx:109`, `hasBackstageAuthority ? '/dashboard' : '/cluster-admin'` — ดังนั้นกรอบ "เข้าถึงได้จากทุกที่" ใน §1 จะเป็นจริงเฉพาะ session ที่มี platform authority)
 
 ## 8. หน้าในโมดูลนี้
 

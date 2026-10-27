@@ -2,7 +2,7 @@
 title: พูลฐานข้อมูล — หน้าจอ UI (UI Screens)
 description: หน้ารายการของ DatabasePoolManagement ที่ยุบทุกแถวเหลือ DSN เดียวพร้อมปุ่มคัดลอก และหน้าบันทึก/ฟอร์มของ DatabasePoolEdit — รวมถึงช่องรหัสผ่านที่มาสก์และไม่มีทางเปิดเผยค่าจริง
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, database-pools, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -10,19 +10,19 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 # พูลฐานข้อมูล — หน้าจอ UI (UI Screens)
 
-> **หน้าจอ:** `DatabasePoolManagement` (รายการ, `/platform/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — component เดียวทั้งสร้าง (`/platform/database-pools/new`) และแก้ไข (`/platform/database-pools/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดเดียวทั้งโหมดสร้างและแก้ไข &nbsp;·&nbsp; **Dialog:** ยืนยันการลบ pool &nbsp;·&nbsp; **สถานะที่ persist ใน UI:** 5 key `localStorage` บนหน้ารายการ (search/filters/page/perpage/sort); หน้าแก้ไขไม่ persist อะไรเลย &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` จำเป็นต้องส่งทุกครั้งที่บันทึก &nbsp;·&nbsp; **ภาพหน้าจอ:** เลื่อนออกไปตามแผน — ยังไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้
+> **หน้าจอ:** `DatabasePoolManagement` (รายการ, `/backstage/database-pools`) &nbsp;·&nbsp; `DatabasePoolEdit` — component เดียวทั้งสร้าง (`/backstage/database-pools/new`) และแก้ไข (`/backstage/database-pools/:id/edit`) &nbsp;·&nbsp; **ไม่มีแท็บ ไม่มี wizard** — การ์ดเดียวทั้งโหมดสร้างและแก้ไข &nbsp;·&nbsp; **Dialog:** ยืนยันการลบ pool &nbsp;·&nbsp; **สถานะที่ persist ใน UI:** 5 key `localStorage` บนหน้ารายการ (search/filters/page/perpage/sort); หน้าแก้ไขไม่ persist อะไรเลย &nbsp;·&nbsp; **Concurrency:** optimistic lock `doc_version` จำเป็นต้องส่งทุกครั้งที่บันทึก &nbsp;·&nbsp; **ภาพหน้าจอ:** เลื่อนออกไปตามแผน — ยังไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้
 
-![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) screen](/screenshots/platform/database-pools/ui-screens.png)
+![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) screen](/screenshots/backstage/database-pools/ui-screens.png)
 
-![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/database-pools/ui-screens-form.png)
+![พูลฐานข้อมูล — หน้าจอ UI (UI Screens) form screen](/screenshots/backstage/database-pools/ui-screens-form.png)
 
 ## 1. ภาพรวม
 
-โมดูลนี้มีสองหน้าจอและไม่มีสถานะระหว่างกลางนอกเหนือจากกำลังโหลด/ไม่พบข้อมูล/error ต่างจากหน้าแก้ไขแบบหลายแท็บหลายการ์ดที่อื่นในวิกินี้ ([Business Units](/th/platform/business-units/ui-screens), [Clusters](/th/platform/clusters/ui-screens)) `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 467 บรรทัด) เป็น `DataTable` แบบแบ่งหน้าฝั่ง server มาตรฐาน `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 บรรทัด) เป็นทั้งฟอร์มสร้างใหม่และหน้าแก้ไขระเบียนเดียวในตัวเดียวกัน ตามรูปแบบสลับโหมดอ่าน/แก้ไขที่ SPA นี้ใช้ที่อื่น แต่ render เป็นบันทึกแบบมีป้ายกำกับธรรมดา (`RecordRow`) ในโหมดอ่าน ไม่ใช่ฟอร์มที่มีช่องกรอกถูก disable
+โมดูลนี้มีสองหน้าจอและไม่มีสถานะระหว่างกลางนอกเหนือจากกำลังโหลด/ไม่พบข้อมูล/error ต่างจากหน้าแก้ไขแบบหลายแท็บหลายการ์ดที่อื่นในวิกินี้ ([Business Units](/th/platform/business-units/ui-screens), [Clusters](/th/platform/clusters/ui-screens)) `DatabasePoolManagement.tsx` (`../carmen-backstage/src/pages/DatabasePoolManagement.tsx`, 468 บรรทัด) เป็น `DataTable` แบบแบ่งหน้าฝั่ง server มาตรฐาน `DatabasePoolEdit.tsx` (`../carmen-backstage/src/pages/DatabasePoolEdit.tsx`, 672 บรรทัด) เป็นทั้งฟอร์มสร้างใหม่และหน้าแก้ไขระเบียนเดียวในตัวเดียวกัน ตามรูปแบบสลับโหมดอ่าน/แก้ไขที่ SPA นี้ใช้ที่อื่น แต่ render เป็นบันทึกแบบมีป้ายกำกับธรรมดา (`RecordRow`) ในโหมดอ่าน ไม่ใช่ฟอร์มที่มีช่องกรอกถูก disable
 
-## 2. `DatabasePoolManagement` — หน้ารายการ (`/platform/database-pools`)
+## 2. `DatabasePoolManagement` — หน้ารายการ (`/backstage/database-pools`)
 
-**คอลัมน์** (`columns`, `DatabasePoolManagement.tsx:200-295`):
+**คอลัมน์** (`columns`, `DatabasePoolManagement.tsx:201-296`):
 
 | คอลัมน์ | เนื้อหา |
 |---|---|
@@ -33,7 +33,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 `id` ของคอลัมน์เรียงลำดับคือ `'host'` ตรง ๆ ไม่ใช่ `'connection'` — ตาม comment ของโค้ดเอง การเรียงแบบนี้จัดกลุ่ม pool ตามเครื่องจริง ซึ่งเป็นสิ่งที่ operator ต้องการจากคอลัมน์นี้จริง ๆ และ `'connection'` ก็ไม่ใช่ฟิลด์ backend จริงที่จะเรียงตามได้อยู่แล้ว
 
-**การค้นหา** ค้นใน `name`/`host`/`database` (`defaultSearchFields` ยืนยันแล้วว่าตรงกับ `defaultSearchFields` ของ backend เองใน `database-pool.service.ts:80` เป๊ะ — comment ของ frontend ที่อ้างไฟล์และบรรทัดนี้ถูกต้อง ยืนยันจากการอ่านทั้งสองไฟล์) **ตัวกรอง**: panel แบบ Sheet มี toggle chip Active/Inactive เลือกได้ทั้งสองพร้อมกันในหน้าจอ แต่ `buildAdvance()` จะสร้าง filter `is_active` ฝั่ง server ก็ต่อเมื่อเลือก**อย่างใดอย่างหนึ่งเท่านั้น** (`filters.length === 1`) — ไม่เลือกเลยหรือเลือกทั้งสองอย่างจะได้ผลเหมือนกันคือ "ไม่มี filter" แสดง pool ทุกตัวไม่ว่าสถานะใด
+**การค้นหา** ค้นใน `name`/`host`/`database` (`defaultSearchFields` ยืนยันแล้วว่าตรงกับ `defaultSearchFields` ของ backend เองที่ `database-pool.service.ts:83` — comment ของ frontend ยังเขียนว่า `:80` ดังนั้นเลขบรรทัดใน comment นั้นเลื่อนไปแล้วแม้รายการฟิลด์จะตรงกัน) **ตัวกรอง**: panel แบบ Sheet มี toggle chip Active/Inactive เลือกได้ทั้งสองพร้อมกันในหน้าจอ แต่ `buildAdvance()` จะสร้าง filter `is_active` ฝั่ง server ก็ต่อเมื่อเลือก**อย่างใดอย่างหนึ่งเท่านั้น** (`filters.length === 1`) — ไม่เลือกเลยหรือเลือกทั้งสองอย่างจะได้ผลเหมือนกันคือ "ไม่มี filter" แสดง pool ทุกตัวไม่ว่าสถานะใด
 
 **Export CSV** (`handleExport`) — 12 คอลัมน์: `dsn` (ประกอบขึ้น ไม่ได้เก็บไว้จริง), `name`, `host`, `port`, `database`, `username`, `is_active`, `note` ตามด้วยฟิลด์ audit สี่ตัว (`created_at`/`created_by`/`updated_at`/`updated_by`) **`password` และ `description` ไม่ถูก export**
 
@@ -43,9 +43,9 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 **การยืนยันลบ** `ConfirmDialog` บน action Delete ของแถว เมื่อยืนยันแล้วเจอ 409 `DATABASE_POOL_IN_USE` จะแสดงข้อความดิบจาก backend (ระบุ business unit ที่บล็อกอยู่ด้วย `code`) แทนที่จะผ่าน error-detail redactor ทั่วไป ตาม comment ของ handler เองเรื่องการไม่กลืนรายชื่อ BU นั้นไปกับ "Please try again later." ทั่วไปตอน production
 
-**เครื่องมือสำหรับ dev:** `DevDebugSheet` แสดง response ดิบของ `GET /api-system/platform/database-pools` ตรงกับรูปแบบที่หน้ารายการอื่นในวิกินี้ใช้
+**เครื่องมือสำหรับ dev:** `DevDebugSheet` แสดง response ดิบของ `GET /api-system/backstage/database-pools` ตรงกับรูปแบบที่หน้ารายการอื่นในวิกินี้ใช้
 
-## 3. `DatabasePoolEdit` — โหมดสร้างใหม่ (`/platform/database-pools/new`)
+## 3. `DatabasePoolEdit` — โหมดสร้างใหม่ (`/backstage/database-pools/new`)
 
 หน้าเปิดมาในโหมดแก้ไขทันที (`editing = isNew`) — ไม่มีขั้นตอนแยก "กด Edit ก่อนถึงจะเริ่มได้" สำหรับ pool ใหม่ล้วน ดู [หน้าหลัก](/th/platform/database-pools) §4 ว่า permission อะไรบ้างที่ gate เรื่องนี้ไว้ และอะไรที่ไม่ gate
 
@@ -65,7 +65,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 เมื่อ submit สำเร็จ จะขึ้น toast แล้ว navigate (`replace: true`) ไปหน้าแก้ไขของ pool ใหม่นั้นเอง — หน้าไม่ค้างอยู่ที่ `/new` หลังสำเร็จ 409 ที่มีข้อความ `DATABASE_POOL_NAME_EXISTS` จาก backend จะแสดงเป็น error ระดับฟิลด์ตรงใต้ Name โดยใช้ข้อความของ backend เอง (ที่ระบุชื่อฟิลด์) แทนข้อความทั่วไปที่ถูก redact
 
-## 4. `DatabasePoolEdit` — โหมดแก้ไข (`/platform/database-pools/:id/edit`)
+## 4. `DatabasePoolEdit` — โหมดแก้ไข (`/backstage/database-pools/:id/edit`)
 
 **โหมดอ่าน** (ค่าเริ่มต้นตอนโหลด) render เป็นบันทึกมีป้ายกำกับ ไม่ใช่ฟอร์ม:
 
@@ -85,7 +85,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 **สถานะไม่พบข้อมูล** การ์ด `EmptyState` เฉพาะ ("ไม่พบ pool") พร้อมปุ่มกลับไปหน้ารายการ — render แทนหน้าแก้ไขทุกครั้งที่ id ไม่ resolve ไม่ว่าจะจาก URL ผิดหรือ pool ถูกลบในอีกแท็บหนึ่งระหว่างที่ navigate มา
 
-**เครื่องมือสำหรับ dev:** แท็บ `DevDebugSheet` แสดง response ดิบของ `GET /api-system/platform/database-pools/:id` (หรือ placeholder ในโหมดสร้าง เพราะยังไม่มีอะไรให้ fetch)
+**เครื่องมือสำหรับ dev:** แท็บ `DevDebugSheet` แสดง response ดิบของ `GET /api-system/backstage/database-pools/:id` (หรือ placeholder ในโหมดสร้าง เพราะยังไม่มีอะไรให้ fetch)
 
 ## 5. Dialog
 
@@ -97,16 +97,16 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 6. สถานะที่ persist ใน UI
 
-หน้ารายการ persist ห้า key `localStorage` ทั้งหมดขึ้นต้นด้วย `*_database_pools(_database_pool)`: `search_database_pools`, `filters_database_pools`, `page_database_pools`, `perpage_database_pool` (เอกพจน์ ต่างจากพี่น้องตัวอื่น — ยืนยันตามที่เขียนไว้จริงใน source ไม่ใช่การพิมพ์ผิดที่หน้านี้ใส่เพิ่มเข้ามาเอง) และ `sort_database_pools` การเรียงเริ่มต้นคือ `created_at:desc` — ตาม comment ของโค้ดเอง `updated_at` ถูกปฏิเสธไม่ให้เป็นค่าเริ่มต้นเพราะ pool ส่วนใหญ่ไม่เคยถูกแก้ไขหลังสร้าง ซึ่งจะทำให้ลำดับรายการดูสุ่มตอนเปิดหน้าครั้งแรก
+หน้ารายการ persist ห้า key `localStorage` ทั้งหมดขึ้นต้นด้วย `*_database_pools(_database_pool)`: `search_database_pools`, `filters_database_pools`, `page_database_pools`, `perpage_database_pool` (เอกพจน์ ต่างจากพี่น้องตัวอื่น — ยืนยันตามที่เขียนไว้จริงใน source ไม่ใช่การพิมพ์ผิดที่หน้านี้ใส่เพิ่มเข้ามาเอง) และ `sort_database_pools` ค่า per-page ที่เก็บไว้ถูกอ่านผ่าน `readStoredPerpage('perpage_database_pool', 10)` (`src/utils/pageRange.ts`) ซึ่งรับเฉพาะจำนวนเต็ม 1 ถึง 100 ไม่งั้น fallback เป็น 10 — เพิ่มมาเพราะ gateway ตอบ `400 INVALID_PERPAGE` กับค่าอื่นแล้ว (carmen-backstage commit `caf5b2dd`) การเรียงเริ่มต้นคือ `created_at:desc` — ตาม comment ของโค้ดเอง `updated_at` ถูกปฏิเสธไม่ให้เป็นค่าเริ่มต้นเพราะ pool ส่วนใหญ่ไม่เคยถูกแก้ไขหลังสร้าง ซึ่งจะทำให้ลำดับรายการดูสุ่มตอนเปิดหน้าครั้งแรก
 
 หน้าแก้ไขไม่ persist อะไรลง `localStorage` เลย สถานะฝั่ง client เดียวที่รอดข้ามการ re-render คือ diff ของการเปลี่ยนแปลงที่ยังไม่บันทึกใน memory (`formData` เทียบกับ `savedFormData`) ควบคุมโดย hook ที่แชร์กัน `useUnsavedChanges` (prompt "ออกจากหน้านี้หรือไม่" ของเบราว์เซอร์เมื่อมีการแก้ไขที่ยังไม่บันทึก)
 
 ## 7. แหล่งอ้างอิง
 
-- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — อ่านครบ (467 บรรทัด)
+- `../carmen-backstage/src/pages/DatabasePoolManagement.tsx` — อ่านครบ (468 บรรทัด)
 - `../carmen-backstage/src/pages/DatabasePoolEdit.tsx` — อ่านครบ (672 บรรทัด)
 - `../carmen-backstage/src/services/databasePoolService.ts` — REST client
 - `../carmen-backstage/src/utils/databasePool.ts` — `poolDsn()`, `isDerivedName()`
-- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:80` — `defaultSearchFields` ตรวจไขว้กับ comment ของ frontend ที่อ้างถึง
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/database-pool/database-pool.service.ts:83` — `defaultSearchFields` ตรวจไขว้กับ comment ของ frontend ที่อ้างถึง
 - `../carmen-backstage-e2e/tests/` — ตรวจดูตรง ๆ **ไม่มีโฟลเดอร์ `database-pools`** ยืนยันคำกล่าวอ้าง "ไม่มี e2e suite" ของ[หน้าหลัก](/th/platform/database-pools) §1
-- ไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้ (`assets/screenshots/platform/database-pools/`) — เลื่อนออกไปตามแผน ตรงกับทุกโมดูลที่เขียนใหม่ในชุดนี้
+- ไม่มี asset ภาพหน้าจอสำหรับโมดูลนี้ (`assets/screenshots/backstage/database-pools/`) — เลื่อนออกไปตามแผน ตรงกับทุกโมดูลที่เขียนใหม่ในชุดนี้

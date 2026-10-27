@@ -2,7 +2,7 @@
 title: Broadcasts — แบบจำลองข้อมูล (Data Model)
 description: ตาราง field ของ tb_broadcast_notification และ tb_user_broadcast_action หลังการปรับใหญ่ระบบ notification — enum scope/doc_type/event, doc_version เป็น optimistic lock จริง
 published: true
-date: 2026-09-06T23:45:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, broadcasts, data-model
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -14,7 +14,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 > **ตาราง:** `tb_broadcast_notification` (หนึ่ง row ต่อหนึ่ง broadcast แบบ `system_all`/`bu`) + `tb_user_broadcast_action` (read state รายผู้ใช้แบบ lazy, unique ต่อ broadcast×user) &nbsp;·&nbsp; **ทางแยกของการกำหนดเป้าหมาย:** การส่งแบบ `system_users` (`userIds`) ข้ามทั้งสองตารางและ fan out ลง `tb_notification` (row ส่วนบุคคลหนึ่งตัวต่อผู้รับ) — มองไม่เห็นจากหน้า List/Edit ฝั่งแอดมิน &nbsp;·&nbsp; **เป็น enum ไม่ใช่ varchar:** `scope` (`enum_broadcast_scope`), `doc_type`/`event` (`enum_notification_doc_type`/`enum_notification_event`, ใช้ร่วมกับ `tb_notification`) แทนที่คอลัมน์ `category`/`type` แบบ varchar เดิม &nbsp;·&nbsp; **ไม่มีคอลัมน์ severity:** ป้าย Info/Warning/Critical/Maintenance/Other… ของผู้ส่งอยู่ใน `metadata.severity` เท่านั้น; `event` ถูก hardcode เป็น `info` ทุก broadcast &nbsp;·&nbsp; **`end_at` บังคับแล้ว** และเป็นตัวขับ `status` ที่คำนวณได้ (ไม่เคยเป็นคอลัมน์ที่เก็บจริง) &nbsp;·&nbsp; **`doc_version` เป็น optimistic lock จริง** แล้ว ทั้ง `PATCH` และ `DELETE` ตรวจสอบมัน &nbsp;·&nbsp; **Endpoint:** `POST /api/notifications/broadcasts/system` / `/bu` (ส่ง) บวก `GET`/`GET :id`/`PATCH :id`/`DELETE :id` — `/api` **ไม่ใช่** `/api-system`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -24,13 +24,13 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 การส่งแบบ **`system_users`** (รายการ `userIds` แบบระบุชัด) ข้ามตาราง broadcast ทั้งสองไปเลยและ fan out ลง `tb_notification` — หนึ่ง row **ต่อ id ผู้รับที่มีอยู่จริง** (id ที่ไม่รู้จักถูกทิ้งเงียบ ๆ) นี่ไม่ใช่ของเก่าที่กำลังถูกเลิกใช้ — มันคือวิธีเดียวที่โมดูลนี้รองรับให้แจ้งเตือนรายชื่อที่เลือกเองได้ และมันยังเป็น target mode เดียวที่หน้าแอดมินฝั่งผู้ส่งอย่าง **List** และ **Edit** มองไม่เห็น ค้นหาไม่ได้ แก้ไม่ได้ หรือลบภายหลังไม่ได้เลย — `GET .../broadcasts` (§6) query เฉพาะ `tb_broadcast_notification` เท่านั้น subtitle ของหน้า Compose เองก็บอกไว้ตรง ๆ: *"ประกาศที่ส่งถึงผู้ใช้ที่ระบุเจาะจงจะไม่แสดงที่นี่ — ถูกบันทึกเป็นการแจ้งเตือนรายบุคคล"*
 
-เส้นทาง persistence คือ backend-gateway (`api/notifications/broadcasts/*`, `KeycloakGuard` + `PlatformPermissionGuard`) → RPC → micro-notification ฝั่ง notification แบ่งงานเป็นสอง service: **`BroadcastService`** ดูแลเส้นทางสร้าง (resolve `bu_code`, เขียน row, upsert ของ read-state และตัวช่วย resolve ผู้รับที่ live push ใช้) และ **`BroadcastAdminService`** ดูแล surface list/get/update/delete ฝั่งผู้ส่ง รวมถึงการคำนวณ status **`NotificationWriteService`** คือจุดเข้าเดียวสำหรับเขียนของ `notifications.create`: มันส่งต่อให้ `BroadcastService` สำหรับ audience ที่ไม่ใช่ `users` และเขียน row ของ `tb_notification` โดยตรง ใน transaction เดียว สำหรับ audience แบบ `users`
+เส้นทาง persistence คือ backend-gateway (`api/notifications/broadcasts/*`, `KeycloakGuard` + `BackstagePermissionGuard`) → RPC → micro-notification ฝั่ง notification แบ่งงานเป็นสอง service: **`BroadcastService`** ดูแลเส้นทางสร้าง (resolve `bu_code`, เขียน row, upsert ของ read-state และตัวช่วย resolve ผู้รับที่ live push ใช้) และ **`BroadcastAdminService`** ดูแล surface list/get/update/delete ฝั่งผู้ส่ง รวมถึงการคำนวณ status **`NotificationWriteService`** คือจุดเข้าเดียวสำหรับเขียนของ `notifications.create`: มันส่งต่อให้ `BroadcastService` สำหรับ audience ที่ไม่ใช่ `users` และเขียน row ของ `tb_notification` โดยตรง ใน transaction เดียว สำหรับ audience แบบ `users`
 
 ## 2. เอนทิตี
 
 ### 2.1 `tb_broadcast_notification`
 
-ข้อความ broadcast แบบ `system_all`/`bu` หนึ่งข้อความ Schema บรรทัด 369
+ข้อความ broadcast แบบ `system_all`/`bu` หนึ่งข้อความ Schema บรรทัด 475
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -60,7 +60,7 @@ dateCreated: 2026-06-10T16:00:00.000Z
 
 ### 2.2 `tb_user_broadcast_action`
 
-State รายผู้ใช้แบบ lazy สำหรับ broadcast แบบ `system_all`/`bu` หนึ่งตัว Schema บรรทัด 403 **ไม่เปลี่ยนแปลง** จากก่อนปรับใหญ่
+State รายผู้ใช้แบบ lazy สำหรับ broadcast แบบ `system_all`/`bu` หนึ่งตัว Schema บรรทัด 509 **ไม่เปลี่ยนแปลง** จากก่อนปรับใหญ่
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |
@@ -79,7 +79,7 @@ Row ถูกเขียนโดยแค่สองเส้นทางใ�
 
 ### 2.3 `tb_notification` (อ้างอิง — ทางแยกของการส่งแบบระบุผู้รับ)
 
-ตารางการแจ้งเตือนส่วนบุคคล (schema บรรทัด 332) **ถูกปรับรูปโดยการปรับใหญ่ครั้งเดียวกัน**: `type` (varchar), `category` (varchar) และ `is_sent` (boolean) ถูก **drop ทั้งหมด**; `doc_type`/`event` (enum สองตัวเดียวกับที่ broadcast ใช้) และ timestamp ใหม่ `pushed_at` ถูกเพิ่มเข้ามา
+ตารางการแจ้งเตือนส่วนบุคคล (schema บรรทัด 438) **ถูกปรับรูปโดยการปรับใหญ่ครั้งเดียวกัน**: `type` (varchar), `category` (varchar) และ `is_sent` (boolean) ถูก **drop ทั้งหมด**; `doc_type`/`event` (enum สองตัวเดียวกับที่ broadcast ใช้) และ timestamp ใหม่ `pushed_at` ถูกเพิ่มเข้ามา
 
 | Field | Type | หมายเหตุ |
 |---|---|---|
@@ -146,9 +146,9 @@ REST surface (backend-gateway) ทั้งหมดอยู่ใต้ `/api/
 ไม่มี Bruno collection สำหรับ broadcast endpoint เลย (ตรวจสอบแล้วว่ายังไม่มี) — annotation ของ Swagger บน gateway controller คือเอกสาร contract ที่ใกล้เคียงที่สุด
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_notification` (บรรทัด 332), `tb_broadcast_notification` (บรรทัด 369), `tb_user_broadcast_action` (บรรทัด 403), enum (บรรทัด 112–131)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — การเพิ่ม enum, backfill และการ drop คอลัมน์
-- `../carmen-turborepo-backend/apps/micro-notification/src/notification/broadcast.service.ts` (สร้าง, resolve ผู้รับ), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (จุดเขียนเดียว), `schedule.worker.ts` (push ของ due-notification, เฉพาะ `tb_notification`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_notification` (บรรทัด 438), `tb_broadcast_notification` (บรรทัด 475), `tb_user_broadcast_action` (บรรทัด 509), enum (บรรทัด 148–167)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260810000000_notification_redesign_additive/`, `20260811000000_notification_redesign_drop_legacy/migration.sql` — การเพิ่ม enum, backfill และการ drop คอลัมน์
+- `../micro-notification/src/notification/broadcast.service.ts` (สร้าง, resolve ผู้รับ), `broadcast-admin.service.ts` (list/get/update/delete, `deriveStatus`), `notification-write.service.ts` (จุดเขียนเดียว), `schedule.worker.ts` (push ของ due-notification, เฉพาะ `tb_notification`)
 
 **รอง (รูปร่างฝั่ง gateway + consumer):**
 - `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` — ทั้งหกเส้นทางของ broadcast, payload builder, TCP forwarding
