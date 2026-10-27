@@ -49,7 +49,7 @@ Nav (`scripts/nav-overrides.yaml`): Tenant Seeds, Dashboard Templates, new AI gr
 Checklist: 219 → 267 rows, 100%.
 Wiki.js pushes: 15 pages had `description` > 255 chars (DB varchar(255)) and failed to push; shortened.
 
-Code findings worth tickets: seat release/restore UI shown to `cluster.update` holders but backend refuses non-cluster-admins; `interface.pos.micros` seed replaced with no migration; `gl_run_due`/`pos_simphony_pull` missing from SPA CronJobType + DTO enum; skipped cron runs counted as retries; `GET report-templates/forms` no permission decorator; TenantSeed "Showing N of M" never shows; system-widget cache per-instance; `doc_version` optional on AI provider / dashboard template updates; e2e smoke specs still use `/platform/...` paths.
+Code findings worth tickets: seat release/restore UI shown to `cluster.update` holders but backend refuses non-cluster-admins; `interface.pos.micros` seed replaced with no migration; `gl_run_due`/`pos_simphony_pull` missing from SPA CronJobType + DTO enum; skipped cron runs counted as retries; TenantSeed "Showing N of M" never shows; system-widget cache per-instance; `doc_version` optional on AI provider / dashboard template updates; e2e smoke specs still use `/platform/...` paths.
 
 ## Inventory book — branch `docs/resync-inventory-2026-10-27` (worktree `../carmen-wiki-inventory-2026-10-27`)
 
@@ -102,3 +102,14 @@ row (external → `interface_export_external`), routing `total_amount`; Backstag
 module count 148 → 181, profile heading level, super-admins three columns,
 `user_platform.*` / current `platform_role.*` → `user_backstage.*` / `backstage_role.*`;
 5 pages still citing `prisma-shared-schema-platform` as current.
+
+## Jira tickets — 2026-10-28
+
+All code findings above were re-verified against origin/main and filed as Jira epic
+CI-2453 with 24 children CI-2454..CI-2477 (label `wiki-finding`). Not filed:
+`hasMovementInOpenPeriod` (now called by micro-cluster `checkCalculationMethodChange`)
+and `config_user-locations` (deleted) — fixed in code, wiki corrected in PR #27;
+`GET report-templates/forms` unguarded on purpose (BE `685da259b`) and
+`guardHiddenPrices` absent from submit/review/reject (payloads carry no price keys) —
+not bugs, wiki now says so. The PO e2e "Send to Vendor" lag claim was wrong: the
+button label is "Send to vendor" and the selector matches; wiki corrected.
