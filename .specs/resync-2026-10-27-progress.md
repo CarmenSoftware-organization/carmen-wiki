@@ -73,3 +73,32 @@ Checklist: 313 → 381 rows, 326 Done / 54 Partial / 1 Not yet, 86%.
 Code findings worth tickets (documented on pages, not fixed): role/permission + app-config controllers still KeycloakGuard-only; `approve` skips PR verify rules; `guardHiddenPrices` not on reject/review/submit; PO `canSendEmail` ignores hidden prices; SR `buildViewScope` returns no filter with no view key; `approved ≤ requested` unenforced; COA form toggles not in DTO; COA delete guard reads absent `is_used`; POS explosion ignores `deduct_from_stock`; recipe in-use guard ignores `tb_pos_item.recipe_id`; RFQ `has_submitted` overstates; JV UI statuses `submitted/voided` vs backend `in_review/void`; count surplus with no cost priced ฿0; `hasMovementInOpenPeriod` has no caller; `doc_version` guard skipped when version omitted; e2e 401/402 still expect "Send to Vendor", 159-pl expects "Delete".
 
 Not done (by decision): TH mirrors; screenshots; e2e case mirroring.
+
+## TH round — 2026-10-27 (branch `docs/resync-th-2026-10-27`)
+
+Owner said "continue" after PRs #23 + #24 merged (main `f78fec4`). All 287 EN pages
+changed by those PRs were mirrored into `th/` by 9 agents (one per module group),
+using `git diff 27fbefa f78fec4 -- <EN page>` per page plus a side-by-side read:
+261 full mirrors, 10 Backstage sub-page stubs corrected in place (clusters,
+business-units, users, report-templates — kept as stubs per the standing deferral),
+16 pages created in Thai (AI Providers ×3, Dashboard Templates ×4, Tenant Seed ×3,
+Sales Consumption, Import POS, Chart of Account Mapping, Ask AI, Interface,
+AP invoice from GRN). TH twins carry `date: '2026-10-27T15:00:00.000Z'`; `dateCreated`
+left untouched (two agents had aligned 18 TH `dateCreated` values to EN; reverted).
+Whole-branch check (`thcheck.py`): twin exists, 7 frontmatter keys, TH description
+≤ 200 chars, tags equal, `## ` and mermaid counts equal except stubs, no `/en/` links,
+no stale `platform` tokens — all 287 OK.
+
+EN defects found while translating, fixed in both locales: recipe recommended-price
+formula + "no POS feed" sentence + stale `actual_food_cost_percentage` bullet +
+operation-dashboard tile source; dashboard duplicated note and unescaped `|`;
+`tb_stock_out_detail.total_cost` stamped at commit (`posted-cost.helper.ts`), not
+always 0; price-list Prisma line numbers; SR fulfiller `issued_qty ≤ approved_qty`
+now enforced (`SR_ISSUED_QTY_EXCEEDS_APPROVED`); costing `getCalculationMethod`
+cite `:449-454`; GRN frontmatter blank lines, duplicate `GRN_POST_009`, AP-posting
+reference line; gl-posting drift paragraph restored; system-config interface page
+now exists, activity-log cite `:922-927`, period-end link, `interface_accounting`
+row (external → `interface_export_external`), routing `total_amount`; Backstage
+module count 148 → 181, profile heading level, super-admins three columns,
+`user_platform.*` / current `platform_role.*` → `user_backstage.*` / `backstage_role.*`;
+5 pages still citing `prisma-shared-schema-platform` as current.
