@@ -1,6 +1,6 @@
 ---
 title: Super Admins
-description: The platform's god-mode allowlist — SuperAdminManagement (/backstage/super-admins), gated by superAdminOnly with no RBAC permission key at all, and its two-column tb_backstage_super_admin table.
+description: The platform's god-mode allowlist — SuperAdminManagement (/backstage/super-admins), gated by superAdminOnly with no RBAC permission key at all, and its three-column tb_backstage_super_admin table.
 published: true
 date: 2026-10-27T00:00:00.000Z
 tags: book/platform, super-admins
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # Super Admins
 
 > **At a Glance**
-> **Screen:** `SuperAdminManagement` (`/backstage/super-admins`) — a card-based roster (one `<ul>`/`<li>` per person), not a `DataTable` &nbsp;·&nbsp; **The gate:** **no RBAC permission key at all** — the nav entry and the route are both `superAdminOnly: true`, checked against `isSuperAdmin` (derived from `effectivePermissions.is_super_admin`), never against a permission string &nbsp;·&nbsp; **Nav:** `feature: 'super_admins'`, `dividerBefore: true` — the divider marks where the sidebar stops being day-to-day configuration and starts being "who else can reach configuration" &nbsp;·&nbsp; **Backend enforcement:** all three endpoints (`GET`/`POST`/`DELETE /api-system/backstage/super-admins`) sit behind `BackstageSuperAdminGuard`, which re-resolves `is_super_admin` from the database on every single request — no cache anywhere in the chain &nbsp;·&nbsp; **Table:** `tb_backstage_super_admin` — two meaningful columns (`user_id`, `is_active`) beyond the audit columns, documented in full below (§5) rather than on a separate `data-model` page &nbsp;·&nbsp; **e2e suite:** `super-admins` (1 spec, HEAD `bb8f671`, 2026-06-11) — predates the 2026-09-02 card-roster rewrite and fails at the shared test fixture itself, not merely in individual assertions (§6)
+> **Screen:** `SuperAdminManagement` (`/backstage/super-admins`) — a card-based roster (one `<ul>`/`<li>` per person), not a `DataTable` &nbsp;·&nbsp; **The gate:** **no RBAC permission key at all** — the nav entry and the route are both `superAdminOnly: true`, checked against `isSuperAdmin` (derived from `effectivePermissions.is_super_admin`), never against a permission string &nbsp;·&nbsp; **Nav:** `feature: 'super_admins'`, `dividerBefore: true` — the divider marks where the sidebar stops being day-to-day configuration and starts being "who else can reach configuration" &nbsp;·&nbsp; **Backend enforcement:** all three endpoints (`GET`/`POST`/`DELETE /api-system/backstage/super-admins`) sit behind `BackstageSuperAdminGuard`, which re-resolves `is_super_admin` from the database on every single request — no cache anywhere in the chain &nbsp;·&nbsp; **Table:** `tb_backstage_super_admin` — three meaningful columns (`user_id`, `is_active`, `current_business_unit_id`) beyond the audit columns, documented in full below (§5) rather than on a separate `data-model` page &nbsp;·&nbsp; **e2e suite:** `super-admins` (1 spec, HEAD `bb8f671`, 2026-06-11) — predates the 2026-09-02 card-roster rewrite and fails at the shared test fixture itself, not merely in individual assertions (§6)
 
 ![Super Admins screen](/screenshots/platform/super-admins/index.png)
 

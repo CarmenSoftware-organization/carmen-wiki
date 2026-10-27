@@ -1,8 +1,8 @@
 ---
 title: การย้ายเทแนนต์ — โมเดลข้อมูล (Data Model)
-description: ไม่มี entity สถานะ migration ที่ persist — ทุกสถานะบนหน้าจอนี้ถูก derive สด ๆ จาก tb_business_unit.db_schema บวกแถว tb_database_pool ที่ผูกไว้ ด้วยการเรียก Prisma CLI ไปยัง tenant connection ที่ resolve แล้ว และ parse text output ของมัน
+description: ไม่มี entity สถานะ migration ที่ persist — สถานะบนหน้าจอ derive สดจาก tb_business_unit.db_schema กับ tb_database_pool ที่ผูกไว้ ผ่าน Prisma CLI ไปยัง tenant connection แล้ว parse output
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, tenant-migrations, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,15 +11,15 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # การย้ายเทแนนต์ — โมเดลข้อมูล (Data Model)
 
 > **At a Glance**
-> **ไม่มีตารางเฉพาะ** ไม่มีสิ่งใดใน `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` ที่ track สถานะ, การรัน, หรือประวัติของ migration เลย — ทุกสถานะที่โมดูลนี้แสดงคำนวณสดตอนขอ โดยการรัน Prisma CLI กับฐานข้อมูล tenant เป้าหมายแล้ว parse text output ของมัน (§2) &nbsp;·&nbsp; **การ resolve connection** อ่านสองตารางที่มีอยู่แล้ว ไม่ใช่ตารางเฉพาะ migration: `tb_business_unit.db_schema` บวกแถว `tb_database_pool` ที่ผูกไว้ (host/port/database/username/รหัสผ่านที่ถอดรหัสแล้ว) (§3) &nbsp;·&nbsp; **บัญชีว่า migration ไหน apply ไปแล้วหรือยังอยู่ในตาราง `_prisma_migrations` ของ Prisma เอง ภายใน tenant schema แต่ละตัว** — ไม่ได้อยู่ในฐานข้อมูลแพลตฟอร์มที่ wiki เล่มนี้บันทึกไว้ที่อื่น และ codebase นี้ไม่ query มันตรง ๆ นอกจากผ่าน CLI `prisma migrate` เอง &nbsp;·&nbsp; **ไม่มี optimistic lock ไม่มีประวัติการรันที่ persist** — concurrency ถูกบังคับด้วย in-memory `Set`/boolean flag เท่านั้น ซึ่งหายไปทุกครั้งที่ process restart (§5)
+> **ไม่มีตารางเฉพาะ** ไม่มีสิ่งใดใน `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` ที่ track สถานะ, การรัน, หรือประวัติของ migration เลย — ทุกสถานะที่โมดูลนี้แสดงคำนวณสดตอนขอ โดยการรัน Prisma CLI กับฐานข้อมูล tenant เป้าหมายแล้ว parse text output ของมัน (§2) &nbsp;·&nbsp; **การ resolve connection** อ่านสองตารางที่มีอยู่แล้ว ไม่ใช่ตารางเฉพาะ migration: `tb_business_unit.db_schema` บวกแถว `tb_database_pool` ที่ผูกไว้ (host/port/database/username/รหัสผ่านที่ถอดรหัสแล้ว) (§3) &nbsp;·&nbsp; **บัญชีว่า migration ไหน apply ไปแล้วหรือยังอยู่ในตาราง `_prisma_migrations` ของ Prisma เอง ภายใน tenant schema แต่ละตัว** — ไม่ได้อยู่ในฐานข้อมูลแพลตฟอร์มที่ wiki เล่มนี้บันทึกไว้ที่อื่น และ codebase นี้ไม่ query มันตรง ๆ นอกจากผ่าน CLI `prisma migrate` เอง &nbsp;·&nbsp; **ไม่มี optimistic lock ไม่มีประวัติการรันที่ persist** — concurrency ถูกบังคับด้วย in-memory `Set`/boolean flag เท่านั้น ซึ่งหายไปทุกครั้งที่ process restart (§5)
 
 > **แหล่งข้อมูลอ้างอิง:** อ่านสิ่งเหล่านี้ก่อนอัปเดตหน้านี้
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `tb_business_unit` (บรรทัด 176), `tb_database_pool` (บรรทัด 1382)
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_business_unit` (บรรทัด 213), `tb_database_pool` (บรรทัด 1713)
 > - `../carmen-turborepo-backend/apps/micro-business/src/authen/tenant_migration/tenant_migration.service.ts` — `resolveConnection()`, `status()`, `deployResolved()`, `runBuStream()`, `deployAllStream()`, `resolve()`
 > - `../carmen-turborepo-backend/apps/micro-business/src/tenant/tenant.service.ts` — `resolveConnectionForBusinessUnit()`
 > - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `resolveTenantUrl()`, `buildTenantUrl()`
 >
-> ยืนยันกับ `carmen-turborepo-backend` HEAD `937cf5ac4` (2026-09-06) และ `carmen-backstage` HEAD `157a65e` (2026-09-04)
+> ตรวจสอบกับ `carmen-turborepo-backend` origin/main `c9d788829` และ `carmen-backstage` origin/main `8405788ff` (2026-10-27) สถานะ dashboard-views ที่แสดงข้างสถานะ Prisma (หน้าลงจอด §3.2c) ก็ derive สดจาก API `/migrations/tenant` ของ micro-data เช่นกัน และไม่ได้เก็บใน platform schema ด้วย
 
 ## 1. ภาพรวม
 
@@ -50,7 +50,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `tb_database_pool.is_active` ที่ join มาเป็น false | `Database pool '{name}' used by business unit {code} is inactive` |
 | `tb_database_pool.password` ถอดรหัสไม่สำเร็จ (`decryptSecret()`, `@repo/secret-crypto`) | `Failed to decrypt the database pool password (check SECRET_ENCRYPTION_KEY...)` |
 
-ฟิลด์ที่เกี่ยวข้อง, `tb_business_unit` (`schema.prisma:176`):
+ฟิลด์ที่เกี่ยวข้อง, `tb_business_unit` (`schema.prisma:213`):
 
 | ฟิลด์ | ชนิด Prisma | Nullable | บทบาทที่นี่ |
 |---|---|---|---|
@@ -60,7 +60,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | `db_schema` | `String? @db.VarChar` | **ใช่** | ชื่อ schema Postgres ของ tenant เองภายใน pool นั้น |
 | ความสัมพันธ์ `tb_database_pool` | `tb_database_pool?` | — | `onDelete: NoAction` — แถว pool ไม่เคยถูก cascade-delete; pool ที่มี dependent อยู่ยัง soft-delete ได้ ซึ่งคือกรณี "has been deleted" ข้างต้นพอดี |
 
-ฟิลด์ที่เกี่ยวข้อง, `tb_database_pool` (`schema.prisma:1382`) — เป้าหมาย connection ที่แพลตฟอร์มจัดการร่วมกัน ให้หลาย BU ชี้มาได้:
+ฟิลด์ที่เกี่ยวข้อง, `tb_database_pool` (`schema.prisma:1713`) — เป้าหมาย connection ที่แพลตฟอร์มจัดการร่วมกัน ให้หลาย BU ชี้มาได้:
 
 | ฟิลด์ | ชนิด Prisma | Nullable | บทบาทที่นี่ |
 |---|---|---|---|
@@ -81,23 +81,23 @@ URL ที่ได้ (`buildTenantUrl()`, `@repo/db-connection-utils`): `postg
 |---|---|---|
 | BU ยังไม่มี `database_pool_id` หรือ `db_schema` | `resolveConnection` throw "not linked to a database pool" / "has no database schema configured"; บนตาราง fleet จะโผล่เป็น error ต่อแถวตอน Check (ไม่มีการตรวจล่วงหน้าเหมือน `hasDbConnection` ของการ์ดต่อ BU) | `tenant.service.ts` |
 | pool ที่ BU ผูกไว้ถูก soft-delete หรือ `is_active: false` | error path เดียวกัน "has been deleted" / "is inactive" — pool ที่ถูก retire ทำให้ migration ของทุก BU ที่ยังชี้มาที่นี่พังเงียบ ๆ จนกว่าจะถูก repoint | `tenant.service.ts` |
-| `prisma migrate deploy` ล้มเหลวระหว่าง batch (`/deploy/all/stream`) | BU ที่ล้มเหลวถูกรายงานผ่าน `bu-complete` พร้อม `error`; loop เดินต่อไป BU ถัดไป — migration ที่ค้างจริง ๆ ในตาราง `_prisma_migrations` ของ tenant นั้นถูกทิ้งไว้ตามที่ Prisma CLI ทิ้งไว้เป๊ะ ตั้งแต่ PR #297 ผู้ปฏิบัติงานล้างมันได้จากไอคอนประแจ Resolve บนแถวนั้น (หรือจากการ์ดต่อ BU) โดยไม่ต้องออกจากแอป ([หน้าลงจอด](/th/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:560-586` |
+| `prisma migrate deploy` ล้มเหลวระหว่าง batch (`/deploy/all/stream`) | BU ที่ล้มเหลวถูกรายงานผ่าน `bu-complete` พร้อม `error`; loop เดินต่อไป BU ถัดไป — migration ที่ค้างจริง ๆ ในตาราง `_prisma_migrations` ของ tenant นั้นถูกทิ้งไว้ตามที่ Prisma CLI ทิ้งไว้เป๊ะ ตั้งแต่ PR #297 ผู้ปฏิบัติงานล้างมันได้จากไอคอนประแจ Resolve บนแถวนั้น (หรือจากการ์ดต่อ BU) โดยไม่ต้องออกจากแอป ([หน้าลงจอด](/th/platform/tenant-migrations) §3.2a) | `tenant_migration.service.ts:559-587` |
 | ความล้มเหลวในการ resolve connection มาถึง `/deploy/stream` | ตกไปยัง mapping ข้อความที่ล้าสมัยของ gateway จนได้ HTTP 500 แทนที่จะเป็น 422 ตามเอกสาร — ตัวข้อความยังถูกต้อง มีแค่ status code ที่ผิด (ยืนยันว่าล้าสมัยตั้งแต่ commit `af2437074`, [หน้าลงจอด](/th/platform/tenant-migrations) §4.4) | `tenant-migrations.controller.ts` |
-| `TENANT_MIGRATION_API_ENABLED` ไม่ได้ตั้งค่า | ทุก endpoint 403 รวมถึง `status` — แยกไม่ออกจากปัญหา permission จาก UI นอกจากข้อความตัวอักษรล้วน ๆ | `config.env.ts:222` |
+| `TENANT_MIGRATION_API_ENABLED` ไม่ได้ตั้งค่า | ทุก endpoint 403 รวมถึง `status` — แยกไม่ออกจากปัญหา permission จาก UI นอกจากข้อความตัวอักษรล้วน ๆ | `config.env.ts:209` |
 
 ## 6. คำแนะนำ
 
 - **แก้ regex ของ `resolvePreStreamErrorStatus()`** (หรือดีกว่านั้น ให้ `deployStream`/`_streamDeploy` ส่ง `ErrorCode` ต้นทางผ่านไปยัง pre-start error ของ stream แทนการ derive status จาก message text ซ้ำอีกครั้ง) เพื่อให้ความล้มเหลวในการ resolve connection บน stream path คืน 422 เดียวกับที่ endpoint `/deploy` แบบไม่ stream คืนอยู่แล้ว
 - **อัปเดต comment `db_connection` ที่ล้าสมัย** ใน `../carmen-backstage/src/services/tenantMigrationService.ts` ให้บรรยายกลไก pool/schema เพื่อไม่ให้คนอ่านคนถัดไปไปตามหา column ที่ถูกถอดออกไปหลายเดือนแล้ว
-- ~~**ต่อ `resolve()` เข้ากับ UI**~~ — **ทำแล้วใน `../carmen-backstage` PR #297 (2026-09-16)** ในรูปแบบที่ข้อเสนอแนะนี้ขอไว้เป๊ะ: ไอคอนประแจสำหรับ super-admin เท่านั้นบนแถวที่อยู่ใน error state อยู่แล้ว บวก dialog เดียวกันบนการ์ดต่อ BU สิ่งที่ยังควรทดสอบคืออันตรายหนึ่งเดียวที่ dialog ป้องกันไม่ได้ — การเลือก `applied` ให้ migration ที่ SQL ไม่เคยรัน ซึ่งทิ้ง tenant schema ให้ล้าหลังเงียบ ๆ ตลอดไป
+- ~~**ต่อ `resolve()` เข้ากับ UI**~~ — **ทำแล้วใน `../carmen-backstage` PR #297 (2026-09-16)** ในรูปแบบที่ข้อเสนอแนะนี้ขอไว้เป๊ะ: ไอคอนประแจบนแถวที่อยู่ใน error state อยู่แล้ว (ตอนนี้ gate ด้วย `tenant_migration.apply` แทน super-admin) บวก dialog เดียวกันบนการ์ดต่อ BU สิ่งที่ยังควรทดสอบคืออันตรายหนึ่งเดียวที่ dialog ป้องกันไม่ได้ — การเลือก `applied` ให้ migration ที่ SQL ไม่เคยรัน ซึ่งทิ้ง tenant schema ให้ล้าหลังเงียบ ๆ ตลอดไป
 - **พิจารณาบันทึกผลการรันล่าสุดแบบ persist** (bu id, ชื่อ migration, ผลลัพธ์, timestamp) หากคาดหวังให้หน้าจอนี้ตอบคำถาม "การพยายาม deploy ล่าสุดของ BU X เกิดอะไรขึ้น" ย้อนหลังได้ — ทุกวันนี้คำตอบนั้นมีอยู่แค่ใน application log กับตาราง `_prisma_migrations` ของ tenant เอง
 
 ## 7. แหล่งอ้างอิง
 
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma:176` (`tb_business_unit`), `:1382` (`tb_database_pool`)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:213` (`tb_business_unit`), `:1713` (`tb_database_pool`)
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/tenant_migration/tenant_migration.service.ts` — `resolveConnection`, `status`, `deploy`, `deployResolved`, `deployStream`, `runBuStream`, `deployAllStream`, `resolve`, `listActiveConnectionsWithSkips`
 - `../carmen-turborepo-backend/apps/micro-business/src/tenant/tenant.service.ts` — `resolveConnectionForBusinessUnit`, `BusinessUnitConnectionSource`
 - `../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts` — `buildTenantUrl`, `resolveTenantUrl`
-- `../carmen-turborepo-backend/apps/backend-gateway/src/platform/tenant-migrations/tenant-migrations.controller.ts` — `resolvePreStreamErrorStatus()`
-- `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:222` — `TENANT_MIGRATION_API_ENABLED`, `TENANT_DEPLOY_TOKEN`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/tenant-migrations/tenant-migrations.controller.ts` — `resolvePreStreamErrorStatus()`
+- `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209-210` — `TENANT_MIGRATION_API_ENABLED`, `TENANT_DEPLOY_TOKEN`
 - [Tenant Migrations](/th/platform/tenant-migrations) — หน้าลงจอดของโมดูลที่ data model นี้รองรับ

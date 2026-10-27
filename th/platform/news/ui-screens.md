@@ -1,8 +1,8 @@
 ---
 title: News — หน้าจอ UI (UI Screens)
-description: การ์ด masthead NewsroomSummary + list NewsManagement (thumbnail, Target, Tags, filter สถานะ/tag, ส่งออก CSV, bulk publish/archive/delete) และฟอร์ม NewsEdit แบบ masthead — MarkdownEditor, ImageUpload, Tags, Publish rail — พร้อมการ validate และคีย์ลัด
+description: การ์ด NewsroomSummary, list NewsManagement (thumbnail, Target, Tags, filter, ส่งออก CSV, bulk action) และฟอร์ม NewsEdit — MarkdownEditor, ImageUpload, Tags, Publish rail — พร้อม validate และคีย์ลัด
 published: true
-date: 2026-09-23T10:06:26.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, news, ui
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -86,7 +86,7 @@ dropdown มี **Edit** (นำทางไป route edit) ถูกห่อ�
 | `filters_news` | JSON string array | ตัวเลือก filter สถานะ |
 | `tagfilters_news` | JSON string array | ตัวเลือก filter tag |
 | `page_news` | number string | หน้าปัจจุบัน |
-| `perpage_news` | number string | ขนาดหน้า |
+| `perpage_news` | number string | ขนาดหน้า — อ่านกลับมาใช้เฉพาะเมื่อเป็นจำนวนเต็มตั้งแต่ 1 ถึง 100 (`readStoredPerpage()`, ตั้งแต่ `caf5b2dd`, 2026-10-06) ค่าอื่นจะ fallback เป็นค่าเริ่มต้น 10 เพราะ backend v4.0.0 ตอบ `400` กับ `perpage` อื่น |
 | `sort_news` | string | Sort (`column:dir`, ค่าเริ่มต้น `published_at:desc`) |
 
 หน้า edit ไม่จดจำสถานะ UI ใด ๆ

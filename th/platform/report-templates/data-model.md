@@ -1,8 +1,8 @@
 ---
 title: Report Templates — แบบจำลองข้อมูล (Data Model)
-description: เอนทิตี tb_report_template, payload XML ของ dialog/content, การผูก source, ขอบเขต BU และการเปลี่ยนชื่อ kind→template_type บวกคอลัมน์ is_default/doc_version เมื่อ 2026-07-23
+description: tb_report_template และ tb_report_template_version — XML ของ dialog/content/export ชื่อ EN/TH การผูก source ขอบเขต BU และวิธีคิดต้นทุน สวิตช์ run/export template_type is_default และ doc_version
 published: true
-date: 2026-09-06T21:00:00.000Z
+date: '2026-10-27T15:00:00.000Z'
 tags: book/platform, report-templates, data-model
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -11,10 +11,10 @@ dateCreated: 2026-06-10T17:00:00.000Z
 # Report Templates — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
-> **ตาราง:** `tb_report_template` (หลัก) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** (migration `20260723120000_print_form_default`) บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`; ดู §7 Cross-link) &nbsp;·&nbsp; **Payload JSON:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `doc_version`
+> **ตาราง:** `tb_report_template` (หลัก) และ `tb_report_template_version` (snapshot ต่อการเขียน, §2.2) &nbsp;·&nbsp; **ตารางพี่น้องเดิม:** `tb_print_template_mapping` — **ถูก drop เมื่อ 2026-07-23** (migration `20260723120000_print_form_default`) บทบาท `is_default` ของมันถูกดูดซับมาที่ตารางนี้แล้ว โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`; ดู §7 Cross-link) &nbsp;·&nbsp; **Payload JSON/XML:** `dialog` (XML, non-nullable), `content` (XML, non-nullable), `export_xml` (XML, nullable), `name_i18n` / `description_i18n` (`{en?, th?}`), `source_params` (`{ params: [...] }`), `signature_config` (`{ blocks: [...] }`) &nbsp;·&nbsp; **การผูก source:** `source_type` (String ธรรมดา: `view` / `function` / `procedure`) + `source_name` + `source_params` &nbsp;·&nbsp; **ขอบเขต BU:** `allow_business_unit` / `deny_business_unit` เก็บเป็น `Json?`; serialise เป็น string แบบ CSV ในฟอร์มของ SPA &nbsp;·&nbsp; **ขอบเขตต้นทุน:** `calculation_methods` (`enum_calculation_method[]`, ว่าง = ทุกวิธี) &nbsp;·&nbsp; **Flag วงจรชีวิต:** `is_standard`, `is_default` (เฉพาะ form template ใหม่เมื่อ 2026-07-23), `is_active`, `allow_run`, `allow_export`, `doc_version`
 
 > **Source of truth:** Prisma platform schema ฝั่ง backend อ่านไฟล์นี้ก่อนเสมอเมื่อเขียนหรืออัพเดทหน้านี้:
-> - `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
 >
 > ไฟล์ `generated/client/schema.prisma` เป็นสำเนาที่ generate อัตโนมัติ ไม่ใช่ไฟล์อ้างอิงหลัก
 
@@ -24,7 +24,7 @@ dateCreated: 2026-06-10T17:00:00.000Z
 
 เทมเพลตรายงานเป็น tenant-global — ไม่ scope ต่อ cluster และไม่มี FK ไป `tb_cluster` คอลัมน์ขอบเขต BU (`allow_business_unit`, `deny_business_unit`) เป็นรายการกรองแบบ opt-in ที่จำกัดว่า business unit ใดมองเห็นเทมเพลตได้; มันไม่ได้ผูก row เข้ากับ cluster ใดเป็นการเฉพาะ จุดนี้ทำให้ surface ของ report-templates ต่างจากหน้า [clusters](/th/platform/clusters) และ [business-units](/th/platform/business-units) ซึ่ง document ลำดับชั้น cluster/BU ไว้ BU code ที่อ้างอิงใน chip list ตรงกับค่า `tb_business_unit.code` แต่ไม่มี FK constraint — การอ้างอิงเป็น convention ระดับ application
 
-คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 เช่นกัน (carmen-backstage commit `de11377`) — ดู §7 Cross-link สำหรับ timeline การถูกลบฉบับเต็ม หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
+ตารางนี้ยังเติบโตในรอบ 2026-08 ถึง 2026-10: ชื่อ EN/TH (`name_i18n`, `description_i18n`), คอลัมน์ Export XML, สวิตช์ run/export, ขอบเขตวิธีคิดต้นทุน และตารางพี่น้อง `tb_report_template_version` ที่บันทึกทุกการเขียน (§2.2) คอลัมน์ `template_type` (เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default`, 2026-07-23) แยกการใช้งานสองแบบของตารางนี้ออกจากกัน: row แบบ `"list"` (เดิม `"report"`) คือรายงานเชิงวิเคราะห์แบบตารางที่ผู้ใช้มองเห็น; row แบบ `"form"` (เดิม `"print"`) คือ layout เอกสารเดี่ยว จนถึง 2026-07-23 ตาราง `tb_print_template_mapping` แยกต่างหากเคย map document type (PO, GRN, SR, …) เข้ากับ row แบบ `kind="print"` ที่นี่; ตอนนี้ตารางนั้น **ถูก drop แล้ว** หน้าที่ของมัน — การเลือก template default หนึ่งตัวที่ business unit จะได้สำหรับกลุ่มหนึ่ง ๆ — ตอนนี้ทำโดยคอลัมน์ `is_default` ของตารางนี้เอง กำหนดขอบเขตด้วย `report_group` และบังคับด้วย partial unique index (§2.1) โมดูล print-template-mapping ที่เคยเป็นเจ้าของตารางนี้ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 เช่นกัน (carmen-backstage commit `de11377`) — ดู §7 Cross-link สำหรับ timeline การถูกลบฉบับเต็ม หน้านี้ครอบคลุมเฉพาะ `tb_report_template`
 
 ## 2. เอนทิตี
 
@@ -38,13 +38,16 @@ dateCreated: 2026-06-10T17:00:00.000Z
 | `id` | `String @db.Uuid` | No | `gen_random_uuid()` | Primary key, UUID v4 |
 | `name` | `String @db.VarChar(255)` | No | — | ชื่อเทมเพลตที่อ่านเข้าใจได้; unique ในหมู่ live row (ร่วมกับ `deleted_at`) |
 | `description` | `String?` | Yes | — | คำอธิบาย free-text แบบ optional ของวัตถุประสงค์ของเทมเพลต |
+| `name_i18n` | `Json? @db.JsonB` | Yes | — | ชื่อที่แปลแล้ว `{ en?, th? }` `name` ยังเป็น unique key และถูกเขียนคู่ให้เท่ากับ `name_i18n.en`; service ปฏิเสธชื่อว่างตอน create และ update และ SPA ส่งทั้งสองทุกครั้งที่บันทึก |
+| `description_i18n` | `Json? @db.JsonB` | Yes | — | คำอธิบายที่แปลแล้ว `{ en?, th? }`; `description` ยังเป็นค่า EN ที่เป็นบันทึกหลัก |
 | `report_group` | `String @db.VarChar(100)` | No | — | key สำหรับจัดกลุ่ม ใช้จัดระเบียบเทมเพลตในหน้า list ของการจัดการ (เช่น `"Receiving"`, `"Inventory"`) |
 | `template_type` | `String @default("list") @db.Text` | No | `"list"` | หมวดของเทมเพลต: `"list"` (รายงานเชิงวิเคราะห์แบบตาราง เดิม `"report"`) หรือ `"form"` (layout เอกสารเดี่ยว เดิม `"print"`) เปลี่ยนชื่อจาก `kind` โดย migration `20260723120000_print_form_default` (2026-07-23); ค่าก็เปลี่ยนพร้อมกัน |
 | **— XML Payloads —** | | | | |
 | `dialog` | `String @db.Text` | No | — | string XML ที่นิยามฟอร์ม parameter ซึ่ง report runtime render ไม่เป็น nullable — string ว่าง `""` คือค่า "ไม่มี dialog" ที่ valid โครงสร้าง XML โดยละเอียด document ไว้ใน [XML Spec §2](/th/platform/report-templates/xml-spec) |
 | `content` | `String @db.Text` | No | — | string XML ที่นิยาม layout ผลลัพธ์ของรายงานซึ่ง report runtime render ไม่เป็น nullable — `""` valid สำหรับเทมเพลตที่สร้างใหม่ แท็บ Content ใน editor ยังรับการอัพโหลดไฟล์ `.frx` / `.xml` / `.txt` ด้วย (การ migrate ไฟล์ FastReport รุ่นเก่า) โครงสร้างโดยละเอียดอยู่ใน [XML Spec §3](/th/platform/report-templates/xml-spec) |
+| `export_xml` | `String? @db.Text` | Yes | — | เอกสาร `<Export>` ที่ map dataset ของรายงานเป็นคอลัมน์ CSV สำหรับ action "Export data" `NULL` = ไม่มีการ map export; service เก็บ string ว่าง/ช่องว่างล้วนเป็น `NULL` รูปแบบ: [XML Spec §4](/th/platform/report-templates/xml-spec) |
 | **— Go Builder —** | | | | |
-| `builder_key` | `String? @db.VarChar` | Yes | — | ผูก row ของเทมเพลตเข้ากับ key ใน registry ของ Go report.Definition เมื่อถูกตั้งค่า runtime ฝั่ง Go ใช้ key นี้ resolve นิยามรายงานแทนการ execute `source_type`/`source_name` โดยตรง |
+| `builder_key` | `String @db.VarChar(100)` | No | `""` | **แก้ไขเมื่อ 2026-10-27 — ไม่เป็น nullable อีกต่อไป** (string ว่าง = ไม่ได้ผูก) ผูก row ของเทมเพลตเข้ากับ key ใน registry ของ Go report.Definition เมื่อถูกตั้งค่า runtime ฝั่ง Go ใช้ key นี้ resolve นิยามรายงานแทนการ execute `source_type`/`source_name` โดยตรง |
 | **— Source Binding (legacy) —** | | | | |
 | `view_name` | `String? @db.VarChar` | Yes | — | คอลัมน์ legacy ที่คงไว้เพื่อ backward compatibility ให้ใช้ `source_type` + `source_name` แทน registry ฝั่ง Go fallback ไปใช้ `view_name` เมื่อ `source_name` ว่าง SPA โหลด `source_name` เป็น `template.source_name \|\| template.view_name` |
 | **— Source Binding —** | | | | |
@@ -54,11 +57,16 @@ dateCreated: 2026-06-10T17:00:00.000Z
 | **— Print Layout —** | | | | |
 | `orientation` | `String @db.VarChar(20)` | No | `"portrait"` | การวางแนวหน้ากระดาษสำหรับเทมเพลตแบบ print: `"portrait"` หรือ `"landscape"` แทนที่ convention เดิมที่ใช้ suffix ของชื่อแบบ `"Document Landscape"` |
 | `signature_config` | `Json @db.JsonB` | No | `{"blocks":[]}` | นิยาม block ลายเซ็นที่ render บน layout การพิมพ์ Shape: `{ "blocks": [{ "key": "Sig1Name", "label": "Requestor", "required": true }, ...] }` แทนที่พฤติกรรมเดิมที่ดึง `Sig1Name`…`Sig5Name` จาก workflow stage ที่ active |
+| **— Costing scope —** | | | | |
+| `calculation_methods` | `enum_calculation_method[]` | No | `[]` | วิธีคิดต้นทุนที่เทมเพลตรองรับ: `average`, `fifo`, `average_per_location` ว่าง = รองรับทุกวิธี micro-report ปฏิเสธการรันสำหรับ business unit ที่วิธีของมันไม่อยู่ในรายการ (`calculation_method_unsupported`); form template ได้รับการยกเว้น SPA ล้างค่านี้สำหรับ `template_type = "form"` |
+| **— Run / export switches —** | | | | |
+| `allow_run` | `Boolean` | No | `true` | แสดงปุ่ม Run Report การรันแบบโต้ตอบของ `list` template ถูกปฏิเสธเมื่อเป็น `false` (micro-report `run_disabled`); schedule ไม่ได้รับผลกระทบ (ตรวจเฉพาะผู้เรียกจากเว็บ) ไม่ส่งสำหรับ form template |
+| `allow_export` | `Boolean` | No | `false` | แสดงปุ่ม Export data; micro-report ปฏิเสธ endpoint export เมื่อเป็น `false` (`export_disabled`) `has_export` ในรายการเทมเพลตของ BU เป็น true เฉพาะเมื่อ `allow_export` เปิด **และ** `export_xml` ไม่ว่าง |
 | **— Lifecycle —** | | | | |
 | `is_standard` | `Boolean` | No | `true` | ทำเครื่องหมายว่าเทมเพลตเป็นเทมเพลตมาตรฐาน (system-provided) โดยปกติเทมเพลตมาตรฐานเป็น read-only สำหรับ operator ปลายทาง |
 | `is_default` | `Boolean` | No | `false` | **ใหม่เมื่อ 2026-07-23** มีความหมายเฉพาะเมื่อ `template_type = "form"`: เทมเพลตตัวเดียวที่ live ต่อ `report_group` ที่ใช้เมื่อ business unit ยังไม่ได้เลือกเอง บังคับด้วย partial unique index ด้านล่าง ไม่ใช่แค่ logic ฝั่ง application — นี่คือคอลัมน์ที่ดูดซับ `tb_print_template_mapping.is_default` เมื่อตารางนั้นถูก drop |
 | **— BU Scope —** | | | | |
-| `allow_business_unit` | `Json? @db.JsonB` | Yes | — | รายการ optional ของ BU code ที่มองเห็นเทมเพลตนี้ได้ `NULL` = มองเห็นได้ทุก BU SPA อ่านค่านี้เป็น array (หรือ scalar) แล้ว normalise เป็น string คั่นด้วย comma สำหรับฟิลด์ chip-input ผ่าน `toCsv()` |
+| `allow_business_unit` | `Json? @db.JsonB` | Yes | — | รายการ optional ของ BU code ที่มองเห็นเทมเพลตนี้ได้ `NULL` หรือว่าง = มองเห็นได้ทุก BU **เก็บตามที่ได้รับ:** SPA ส่ง string คั่นด้วย comma (row ที่บันทึกจากหน้า Edit จึงเก็บเป็น JSON string) ขณะที่ seed และผู้เขียนผ่าน API อาจเก็บเป็น array; SPA อ่านได้ทั้งสองแบบ (array หรือ scalar) แล้ว normalise เป็น string CSV ผ่าน `toCsv()` และ `ParseBuList` ของ micro-report รับได้ทั้งสองรูป (เทียบแบบไม่สนตัวพิมพ์) ถูกละเว้นสำหรับ `form` template |
 | `deny_business_unit` | `Json? @db.JsonB` | Yes | — | รายการ optional ของ BU code ที่ถูกตัดออกจากการมองเห็นเทมเพลตนี้อย่างชัดเจน `NULL` = ไม่มีการ deny การ normalise ด้วย `toCsv()` แบบเดียวกับ `allow_business_unit` |
 | `is_active` | `Boolean` | No | `true` | เมื่อเป็น `false` เทมเพลต inactive และถูกซ่อนจาก list การเลือก |
 | **— Audit —** | | | | |
@@ -79,9 +87,31 @@ dateCreated: 2026-06-10T17:00:00.000Z
 **Index:**
 - `@@index([report_group])` — map `"idx_report_template_report_group"` — รองรับการ list เทมเพลตแบบกรองหรือเรียงตามกลุ่ม
 
+### 2.2 `tb_report_template_version`
+
+หนึ่ง snapshot ที่แก้ไม่ได้ต่อการเขียนหนึ่งครั้งของเทมเพลต เพิ่มในรอบ 2026-10 (carmen-turborepo-backend commit `0aba9ec75` ตาราง + snapshot ตอน create/update, `3468a5bc7` endpoint list/get/restore) เขียนใน transaction เดียวกับการเขียนนั้น (`writeVersion`, `report-template-version.ts`); การ delete **ไม่**เขียน version
+
+| Field | Prisma Type | Nullable | คำอธิบาย |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key (`gen_random_uuid()`) |
+| `report_template_id` | `String @db.Uuid` | No | FK ไป `tb_report_template.id` |
+| `version` | `Int` | No | `doc_version` ของเทมเพลต **หลัง**การเขียน; unique ต่อเทมเพลต (`report_template_version_template_version_u`) |
+| `snapshot` | `Json @db.JsonB` | No | ฟิลด์ที่แก้ไขได้ (`SNAPSHOT_FIELDS`): `name`, `name_i18n`, `description`, `description_i18n`, `report_group`, `template_type`, `dialog`, `content`, `export_xml`, `allow_run`, `allow_export`, `builder_key`, `view_name`, `source_type`, `source_name`, `source_params`, `orientation`, `signature_config`, `is_standard`, `is_default`, `is_active`, `allow_business_unit`, `deny_business_unit`, `calculation_methods` |
+| `change_type` | `String @db.VarChar(20)` | No | `create` \| `update` \| `restore` \| `import` (`import` ถูกตั้งเมื่อ payload มี `change_type: "import"` ซึ่ง dialog Import ของ SPA ส่งมา) |
+| `restored_from_version` | `Int?` | Yes | เวอร์ชันต้นทางเมื่อ `change_type = "restore"` |
+| `note` | `String?` | Yes | ข้อความอิสระ; ไม่มี code path ปัจจุบันใดเขียน |
+| `created_at` / `created_by_id` | `DateTime` / `String? @db.Uuid` | No / Yes | เมื่อไรและโดยใคร |
+
+Index: `(report_template_id, created_at DESC)` (`idx_report_template_version_template_created`) **Restore** (`POST .../versions/:version_no/restore`, body `{ doc_version }`) คัดลอก snapshot กลับไปที่ row ที่ live ภายใต้ optimistic lock ปกติ และเขียน version `restore` ใหม่; มันจงใจไม่แตะ `is_default` (partial unique index อนุญาตหนึ่ง default ต่อกลุ่ม) ตรวจ `source_name` ซ้ำกับ pattern ของ identifier และคง `calculation_methods` ปัจจุบันไว้เมื่อ snapshot เก่ากว่าฟิลด์นั้น version ที่ไม่มีอยู่ตอบ `REPORT_TEMPLATE_VERSION_NOT_FOUND` (`report-template.service.ts` `restoreVersion`)
+
+เพราะ flow set-default บน [Report Form Groups](/th/platform/report-form-groups) เป็น `PUT` บางส่วนสองครั้ง การสลับ default แต่ละครั้งจึงเขียน version `update` **สอง**รายการ (หนึ่งต่อเทมเพลตที่ได้รับผล)
+
+การตรวจ `source_name` (ใหม่): service ปฏิเสธด้วย `COMMON_VALIDATION_FAILED` ทุก `source_name` ที่ไม่ใช่ identifier เปล่า (`^[A-Za-z_][A-Za-z0-9_]*$` ยาวไม่เกิน 63 ตัวอักษร) ตอน create, update และ restore เพราะ micro-report ใส่มันลงใน SQL โดยไม่ใส่ quote (`report-template-source-name.ts`, commit `bb2530c12`)
+
 ## 3. ความสัมพันธ์
 
 ```
+tb_report_template  1 ─── M  tb_report_template_version  (report_template_id; Prisma @relation)
 tb_report_template  self-FK  created_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  updated_by_id  → tb_user.id  (audit; no Prisma @relation)
 tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @relation)
@@ -112,7 +142,7 @@ tb_report_template  self-FK  deleted_by_id  → tb_user.id  (audit; no Prisma @r
 
 ## 5. คอลัมน์ JSON
 
-คอลัมน์สี่ตัวบน `tb_report_template` ถือ payload แบบมีโครงสร้างที่ฐานข้อมูล validate ภายในไม่ได้ — ชั้น application เป็นเจ้าของ contract เหล่านั้น สองตัว (`source_params`, `signature_config`) เป็นคอลัมน์ `Json @db.JsonB`; อีกสองตัว (`dialog`, `content`) เป็นคอลัมน์ `String @db.Text` ที่เก็บ string XML รายละเอียดต่อ subsection ด้านล่างครอบคลุม shape ของแต่ละคอลัมน์
+คอลัมน์ห้าตัวบน `tb_report_template` ถือ payload แบบมีโครงสร้างที่ฐานข้อมูล validate ภายในไม่ได้ — ชั้น application เป็นเจ้าของ contract เหล่านั้น สองตัว (`source_params`, `signature_config`) เป็นคอลัมน์ `Json @db.JsonB`; อีกสามตัว (`dialog`, `content` และ `export_xml` แบบ optional) เป็นคอลัมน์ `String @db.Text` ที่เก็บ string XML (`export_xml` บันทึกไว้ที่ [XML Spec §4](/th/platform/report-templates/xml-spec); `name_i18n` / `description_i18n` และรายการ BU ก็เป็น JsonB เช่นกัน แต่เรียบง่ายพอที่จะครอบคลุมใน §2.1) รายละเอียดต่อ subsection ด้านล่างครอบคลุม shape ของแต่ละคอลัมน์
 
 ### 5.1 `dialog` (payload XML)
 
@@ -180,19 +210,19 @@ Shape:
 
 แต่ละ block นิยามเส้นลายเซ็นหนึ่งเส้นบนเอกสารที่พิมพ์ ฟิลด์ `key` ตรงกับ naming convention แบบ `Sig1Name`…`Sig5Name` รุ่นเก่าที่เคยใช้ในการ lookup ลายเซ็นจาก workflow stage; `label` คือชื่อบทบาทที่อ่านเข้าใจได้ซึ่งพิมพ์เหนือเส้นลายเซ็น สิ่งนี้แทนที่พฤติกรรมเดิมที่ดึงชื่อลายเซ็นจากนิยาม workflow stage ที่ active ณ เวลาพิมพ์
 
-`signature_config` ไม่ปรากฏใน interface `ReportTemplateFormData` ปัจจุบันของ SPA — มันถูกจัดการแยกจากฟอร์ม edit หลัก
+`signature_config` ไม่ได้เป็นส่วนหนึ่งของ interface `ReportTemplateFormData` ของ SPA — ฟอร์ม edit ไม่มี control สำหรับมัน การบันทึกจากหน้า edit ปกติจึงไม่ส่งมัน (การ update ของ backend คง `signature_config` ที่ถูกละไว้ตามเดิม) มันเดินทางผ่านการ backup/import แบบ JSON และ snapshot ของเวอร์ชันเท่านั้น
 
 ## 6. ความแตกต่างจาก shape ของ carmen-backstage SPA
 
-interface `ReportTemplate` ใน `../carmen-backstage/src/services/reportTemplateService.ts` (บรรทัด 19–44) และ interface `ReportTemplateFormData` ใน `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` (บรรทัด 44–60) ถูกเทียบกับ Prisma model `tb_report_template` ที่น่าสังเกตคือ TS interface `ReportTemplate` อยู่ใน `src/services/reportTemplateService.ts` ไม่ใช่ `src/types/index.ts` ที่ interface ของโมดูล Platform ตัวอื่น (`Cluster`, `BusinessUnit`, `User`) อยู่ — นักพัฒนาที่ค้นหา TS shape ฉบับ canonical ควรดูในไฟล์ service
+interface `ReportTemplate` ใน `../carmen-backstage/src/services/reportTemplateService.ts` (บรรทัด 21–59) และ interface `ReportTemplateFormData` ใน `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` (บรรทัด 84–106) ถูกเทียบกับ Prisma model `tb_report_template` ที่น่าสังเกตคือ TS interface `ReportTemplate` อยู่ใน `src/services/reportTemplateService.ts` ไม่ใช่ `src/types/index.ts` ที่ interface ของโมดูล Platform ตัวอื่น (`Cluster`, `BusinessUnit`, `User`) อยู่ — นักพัฒนาที่ค้นหา TS shape ฉบับ canonical ควรดูในไฟล์ service
 
 **แก้ไขแล้วเมื่อ 2026-07-23 (ไม่ใช่ความแตกต่างอีกต่อไป):** `kind`/`template_type` และ `is_default` ตอนนี้ตรงกันทั้งสองฝั่ง `ReportTemplateFormData` มี `template_type: '' | 'form' | 'list'` (จำเป็น เปิดเผยเป็น select) และ `is_default: boolean` — รายการที่ 1 ของ sync ครั้งก่อน ("`kind` ไม่มีในฟอร์ม") ล้าสมัยแล้ว ฟิลด์นี้ไม่เพียงมีอยู่แต่ยังจำเป็นตอน submit ด้วย
 
 | # | รายการ | Prisma มี | SPA คาดหวัง | หมายเหตุ |
 | - | ---- | ---------- | ----------- | ----- |
-| 1 | `orientation` | `String @db.VarChar(20)` | ไม่มีทั้งใน `ReportTemplate` และ `ReportTemplateFormData` | ยังไม่ปรากฏใน SPA ณ 2026-07-29 default เป็น `"portrait"` ที่ระดับฐานข้อมูล |
-| 2 | `signature_config` | `Json @db.JsonB` | ไม่มีทั้งใน `ReportTemplate` และ `ReportTemplateFormData` | ยังไม่ปรากฏในฟอร์ม edit ของ SPA |
-| 3 | `view_name` | `String? @db.VarChar` | ไม่อยู่ใน service interface `ReportTemplate` | คอลัมน์ legacy; ถูกเข้าถึงโดยนัยเฉพาะใน load path ของฟอร์ม Edit (`template.source_name \|\| template.view_name`) ในฐานะ fallback |
+| 1 | `orientation` | `String @db.VarChar(20)` | optional บน service type `ReportTemplate`; ไม่อยู่ใน `ReportTemplateFormData` | ยังไม่มี control ในฟอร์ม ณ 2026-10-27 default เป็น `"portrait"` ที่ระดับฐานข้อมูล; เดินทางผ่าน backup, import และ snapshot ของเวอร์ชัน |
+| 2 | `signature_config` | `Json @db.JsonB` | optional บน service type `ReportTemplate`; ไม่อยู่ใน `ReportTemplateFormData` | ยังไม่มี control ในฟอร์ม เดินทางผ่าน backup และ import (Import เติม `{ blocks: [] }` เมื่อไฟล์มี `{}` ตามที่ seeder ของ micro-report เขียน) |
+| 3 | `view_name` | `String? @db.VarChar` | optional บน service type `ReportTemplate` | คอลัมน์ legacy; load path ของฟอร์ม Edit ถอยกลับไปใช้ (`template.source_name \|\| template.view_name`) dialog Import ตัดมันออกจาก payload (DTO ไม่รับ) แต่ backup และ snapshot ของเวอร์ชันยังพกมัน |
 | 4 | `allow_business_unit` / `deny_business_unit` | `Json? @db.JsonB` | `unknown` บน service interface `ReportTemplate`; `string` ใน `ReportTemplateFormData` | ฟอร์ม Edit normalise ค่า JSON (array หรือ scalar) เป็น string คั่นด้วย comma ผ่าน `toCsv()` สำหรับฟิลด์ chip-input ถูก disable และล้างค่าฝั่ง client เมื่อ `template_type = 'form'` — form template ไม่ถูกกำหนดขอบเขต BU แบบนี้ |
 | 5 | `created_by_id` / `updated_by_id` | `String? @db.Uuid` (id ดิบ) | `created_by_id?: string` / `updated_by_id?: string` บน `ReportTemplate` | id ดิบมีอยู่ใน service interface SPA ยังอ่าน `created_by_name` / `updated_by_name` จาก API response ด้วย (backend resolve ให้) แต่ค่าเหล่านี้ถูกถือใน state variable `MetadataFields` ที่แยกออกมา ไม่อยู่ใน type `ReportTemplate` |
 | 6 | `source_params` | `Json @db.JsonB` (non-nullable) | `source_params?: ReportSourceParams` (optional) บน service interface | service interface ทำเครื่องหมาย optional เพื่อรองรับ API response บางส่วน; default ของ Prisma รับประกันว่าคอลัมน์ใน DB มีค่าเสมอ |
@@ -202,15 +232,15 @@ interface `ReportTemplate` ใน `../carmen-backstage/src/services/reportTempla
 ## 7. แหล่งข้อมูลอ้างอิง
 
 **หลัก (source of truth):**
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 806 — แก้จาก "บรรทัด 734" ของ sync ครั้งก่อน ไฟล์ขยายขึ้นเหนือ model นี้ตั้งแต่ sync ครั้งล่าสุด)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-platform/prisma/migrations/20260723120000_print_form_default/migration.sql` — data migration ที่มากับการเปลี่ยนชื่อ `kind`→`template_type`, การเพิ่ม `is_default`, unique index และการ drop `tb_print_template_mapping`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `model tb_report_template` (บรรทัด 1027) และ `model tb_report_template_version` (บรรทัด 1124)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260723120000_print_form_default/migration.sql` — data migration ที่มากับการเปลี่ยนชื่อ `kind`→`template_type`, การเพิ่ม `is_default`, unique index และการ drop `tb_print_template_mapping`
 
 **รอง (shape ฝั่ง consumer):**
-- `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` — interface `ReportTemplateFormData` (บรรทัด 44–60); interface `SourceParamRow` (บรรทัด 38–42); load path รวม `toCsv` (บรรทัด 196–262); save path รวมการประกอบ payload `source_params`/`template_type` (บรรทัด 302–368)
+- `../carmen-backstage/src/pages/ReportTemplateEdit.tsx` — interface `ReportTemplateFormData` (บรรทัด 84–106); interface `SourceParamRow` (บรรทัด 78–82); load path รวม `toCsv` (`fetchTemplate`, บรรทัด 255–330); save path รวมการประกอบ payload `source_params`/`template_type`/i18n (`handleSubmit`, บรรทัด 384–485)
 - `../carmen-backstage/src/pages/ReportTemplateManagement.tsx` — view list ของเทมเพลตรายงาน
 - `../carmen-backstage/src/pages/ReportFormGroupManagement.tsx` — หน้าจอ Form Groups ที่แก้ไข `is_default` ต่อ `report_group`
 - `../carmen-backstage/src/constants/reportGroups.ts` — `FORM_REPORT_GROUPS` รายการ code คงที่ 12 ตัวที่ SPA จำกัด `report_group` ไว้สำหรับ form template
-- `../carmen-backstage/src/services/reportTemplateService.ts` — interface `ReportTemplate` (บรรทัด 19–44); type `ReportSourceType`, `ReportSourceParam`, `ReportSourceParams` (บรรทัด 5–17); `setGroupDefault` (บรรทัด 89–107)
+- `../carmen-backstage/src/services/reportTemplateService.ts` — interface `ReportTemplate` (บรรทัด 21–59); type `ReportSourceType`, `CalculationMethod`, `ReportSourceParam`, `ReportSourceParams` (บรรทัด 5–19); `setGroupDefault` (บรรทัด 118–137); `listVersions` / `getVersion` / `restoreVersion` (บรรทัด 139–158)
 - `../carmen-backstage/src/types/index.ts` — ไม่มี type `ReportTemplate` นิยามไว้ที่นี่; type อยู่ในไฟล์ service
 
 **Cross-link:**
