@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service ที่ UI คือ Backstage SPA ทั้งห้า route gate ด้วยสิทธิ์ backstage sql_workbench.read/manage; execute รัน SQL อะไรก็ได้
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -71,7 +71,7 @@ view, stored procedure และ function ที่สร้างที่น�
 | "Database is busy" | Connection pool หมด; ลองซ้ำหนึ่งครั้งแล้วหลัง 500 ms | ลองใหม่ทีหลัง; ตรวจสอบ load พร้อมกัน |
 | คอลัมน์ `BigInt` ส่งคืนเป็น string ในผลลัพธ์ | คาดหวัง — JSON ไม่สามารถพา `bigint` แบบดั้งเดิม | Cast ใน SQL ถ้าจำเป็นต้องจัดการเชิงตัวเลขปลายทาง |
 | รายงาน error หลัง drop | View / procedure ที่ผูกถูกลบจาก catalog | สร้าง object ใหม่หรืออัปเดต binding ของรายงาน |
-| 403 ตอน `execute`, `save` หรือ `DELETE db-objects` | ผู้เรียกไม่มี `sql_workbench.manage` | Grant ผ่านระบบ permission ของ backstage — ดู [Backstage RBAC](/th/backstage/rbac) |
+| 403 ตอน `execute`, `save` หรือ `DELETE db-objects` | ผู้เรียกไม่มี `sql_workbench.manage` | Grant ผ่านระบบ permission ของ backstage — ดู [Backstage Roles](/th/backstage/rbac) |
 | 403 ตอน `GET db-objects` หรือ `db-objects/definition` | ผู้เรียกไม่มี `sql_workbench.read` | เช่นเดียวกัน; `.read` คือ grant สำหรับเรียกดูอย่างเดียว |
 | `save` / list / get-definition / drop สำเร็จสำหรับผู้เรียกที่ authenticated ใครก็ได้ | **เป็นเรื่องในอดีตเท่านั้น — แก้แล้วเมื่อ 2026-08-20 โดย `525597688`** ถ้าพบอาการนี้วันนี้ แสดงว่าคุณอยู่บน build ที่เก่ากว่า commit นั้น | อัปเกรด อย่าถือว่าเป็นพฤติกรรมที่คาดหวัง |
 

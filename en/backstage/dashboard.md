@@ -2,7 +2,7 @@
 title: Dashboard
 description: The signed-in home hub (/dashboard) — a unified recent-activity stream across six domains plus a sticky per-domain active/total counts rail. No requiredPermission of its own; every domain silently drops out of both if the session can't read it.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -39,7 +39,7 @@ The same six domains (in the same order) each contribute an **active** count and
 |---|---|
 | `navGroup.organization` | Tenant Migrations, Tenant Seed Data, Data Import (the three other rows in this group — Clusters, Business Units, Users — *are* covered) |
 | `navGroup.licenseManagement` | Licenses, License Feature Groups, License Features — the whole group |
-| `navGroup.content` | Report Form Groups, Dashboard Templates, Broadcasts (Report Templates and News, the group's other two rows, *are* covered) |
+| `navGroup.content` | Form Groups, Dashboard Templates, Broadcasts (Report Templates and News, the group's other two rows, *are* covered) |
 | `navGroup.analytics` | Usage Analytics, Activity Events — the whole group |
 | `navGroup.scheduling` | Scheduled Jobs — the whole group |
 | `navGroup.backstage` | Backstage Config, Email Settings, Backstage Roles, Backstage Users, Super Admins, Feature Flags (Applications, the group's other row, *is* covered) |
@@ -48,7 +48,7 @@ The same six domains (in the same order) each contribute an **active** count and
 
 Also outside the Dashboard's reach entirely: the **cluster-admin** persona (`/cluster-admin/...`), which is not part of `ALL_BACKSTAGE_NAV_ITEMS` at all and has no dashboard-equivalent landing page of its own.
 
-Broadcasts is worth a specific correction: this page previously said it "has no list endpoint at all," which was true when Broadcasts was a fire-and-forget compose-only screen, but is no longer true — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) has existed since the 2026-08-10/11 notification redesign that gave Broadcasts its own admin list/edit surface (see [Broadcasts](/en/backstage/broadcasts)). Dashboard's `ACTIVITY_SOURCES` simply has not been updated to add it as a seventh domain — a real gap now, not an architectural impossibility. Report Form Groups was always a view over the Report Templates resource, not a domain of its own, so its absence is by design rather than a gap. None of these rows' activity or counts appear anywhere on this page — a change to a role, a super-admin grant, a tenant migration, a cronjob, or a form-group default will not surface in the Activity Stream or the Counts Rail no matter how recent.
+Broadcasts is worth a specific correction: this page previously said it "has no list endpoint at all," which was true when Broadcasts was a fire-and-forget compose-only screen, but is no longer true — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) has existed since the 2026-08-10/11 notification redesign that gave Broadcasts its own admin list/edit surface (see [Broadcasts](/en/backstage/broadcasts)). Dashboard's `ACTIVITY_SOURCES` simply has not been updated to add it as a seventh domain — a real gap now, not an architectural impossibility. Form Groups was always a view over the Report Templates resource, not a domain of its own, so its absence is by design rather than a gap. None of these rows' activity or counts appear anywhere on this page — a change to a role, a super-admin grant, a tenant migration, a cronjob, or a form-group default will not surface in the Activity Stream or the Counts Rail no matter how recent.
 
 ## 5. Roles and Personas
 

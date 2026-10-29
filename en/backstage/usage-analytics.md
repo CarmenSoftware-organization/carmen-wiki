@@ -2,7 +2,7 @@
 title: Usage Analytics
 description: The UI-telemetry dashboard at /analytics (module slug usage-analytics) — every StatCard, the daily chart, and both Top Lists defined against tb_activity_event, plus the activity_event.read/activity_event.detail permission seam that gates its drill-down.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -172,7 +172,7 @@ A source comment above Backstage Admin's grant states the reasoning for Support 
 
 - [Activity Events](/en/backstage/activity-events) — the raw per-event explorer this page's Top Pages drill-down opens, gated by `activity_event.detail` (§4.1–§4.2). It shares this page's `analyticsService.ts` and reads from the same `tb_activity_event` table.
 - [Feature Flags](/en/backstage/feature-flags) — owns the `usage_analytics` feature key that gates this page after the permission check (§4.1).
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog and role-bundle definitions referenced in §4.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog and role-bundle definitions referenced in §4.
 - [Business Units](/en/backstage/business-units) and [Applications](/en/backstage/applications) — supply the two filter dropdowns (§3.1); this page does not own either list.
 
 ## 6. Reference Sources

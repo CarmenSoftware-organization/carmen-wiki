@@ -2,7 +2,7 @@
 title: Clusters
 description: Cluster module overview — the top-level tenant grouping that owns business units and licensed users, now backed by a dated licence ledger rather than static caps.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 # Clusters
 
-The **Clusters** module is the entry point for the largest organizational container in Carmen Blue. A cluster groups business units (BUs) and the users assigned to them. Licence limits — how many BUs a cluster may have, and how many named users it may cover — used to live as static columns on the cluster/BU rows; as of the 2026-07-29→2026-09-04 licensing rework they are now the *effective* rows of a dated purchase ledger (see §3). Routes and mutating actions in this module are gated by `cluster.*` permission keys **and** a `clusters` feature flag (see [Backstage RBAC](/en/backstage/rbac) and [Permissions](/en/backstage/clusters/permissions)).
+The **Clusters** module is the entry point for the largest organizational container in Carmen Blue. A cluster groups business units (BUs) and the users assigned to them. Licence limits — how many BUs a cluster may have, and how many named users it may cover — used to live as static columns on the cluster/BU rows; as of the 2026-07-29→2026-09-04 licensing rework they are now the *effective* rows of a dated purchase ledger (see §3). Routes and mutating actions in this module are gated by `cluster.*` permission keys **and** a `clusters` feature flag (see [Backstage Roles](/en/backstage/rbac) and [Permissions](/en/backstage/clusters/permissions)).
 
 > **At a Glance**
 > **Module purpose:** Tenant container that groups business units (BUs) and the users assigned to them, and links out to the licence ledger that now holds the BU-count and seat caps &nbsp;·&nbsp; **Audience:** Developers and QA working on the Backstage SPA; operator access requires `cluster.*` permission grants ([rbac](/en/backstage/rbac)) plus the `clusters` feature flag being enabled &nbsp;·&nbsp; **Key entities/tables:** `tb_cluster` (fields: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **no licence-cap column any more**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join with per-cluster role `admin`/`user` — **no longer carries a `parent_bu_id`**), `tb_cluster_license` (the cluster's BU-quota purchase ledger) &nbsp;·&nbsp; `tb_cluster_note` (new 2026-10-26 — internal staff notes and files) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete`, plus `activity_log.read` (View History) and the new `cluster_note.view`/`cluster_note.manage` (Notes tab) &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** No — gated by permission, not a super-admin-only flag (per `../carmen-backstage/src/components/nav/backstageNav.ts`)
@@ -60,7 +60,7 @@ A cluster typically represents a customer organization or a hotel group that has
 
 ## 4. Roles and Personas
 
-Access is permission-based ([Backstage RBAC](/en/backstage/rbac)): each route carries a `requiredPermission` key plus a `feature` key on `PrivateRoute`, and mutating buttons are additionally wrapped in `<Can>` gates — some cluster-scoped via a `clusterId` prop.
+Access is permission-based ([Backstage Roles](/en/backstage/rbac)): each route carries a `requiredPermission` key plus a `feature` key on `PrivateRoute`, and mutating buttons are additionally wrapped in `<Can>` gates — some cluster-scoped via a `clusterId` prop.
 
 | Surface | Gate type | Key | Scoped? |
 |---|---|---|---|

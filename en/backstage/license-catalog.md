@@ -2,7 +2,7 @@
 title: License Catalog
 description: One screen, two tabs, two nav rows — the sellable feature catalog (Features) and the curated modules sold from it (shown as Modules on screen, called bundles in the code and below) — each with its own permission pair and feature flag.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, license-catalog
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -66,7 +66,7 @@ This module has no dedicated Permissions sub-page — both permission pairs are 
 
 ### 4.1 Frontend route gate matrix
 
-All routes resolve through `PrivateRoute`, which checks `requiredPermission` first (failure → `<Forbidden>`, in place) and the `feature` flag strictly afterward (failure → `NotFound` on `hide`, `ComingSoon` on `inactive`) — see [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) for the shared resolver.
+All routes resolve through `PrivateRoute`, which checks `requiredPermission` first (failure → `<Forbidden>`, in place) and the `feature` flag strictly afterward (failure → `NotFound` on `hide`, `ComingSoon` on `inactive`) — see [Backstage Roles — Permissions](/en/backstage/rbac/permissions) for the shared resolver.
 
 | Route | Permission | Feature flag | Component | Source |
 |---|---|---|---|---|
@@ -107,7 +107,7 @@ Consequence: a session holding `license_feature_group.read` + `license_feature_g
 ## 5. Related Modules
 
 - [Licenses](/en/backstage/licenses) — the *consumer* of this module's bundles: a subscription's "Purchased Groups" card picks from the bundles curated here, and its own group picker depends on the cross-module endpoint documented in §4.3.
-- [Backstage RBAC](/en/backstage/rbac) — owns the permission-catalog UI (`/backstage/category-permissions`) where `license_feature.*`/`license_feature_group.*` are visible alongside every other resource; this module does not define or edit permission keys itself.
+- [Backstage Roles](/en/backstage/rbac) — owns the permission-catalog UI (`/backstage/category-permissions`) where `license_feature.*`/`license_feature_group.*` are visible alongside every other resource; this module does not define or edit permission keys itself.
 - [Feature Flags](/en/backstage/feature-flags) — a different screen entirely (`feature_flag.manage`) that this module's own source comments explicitly warn not to conflate with the `state` values documented in §3.3.
 
 ## 6. Reference Sources

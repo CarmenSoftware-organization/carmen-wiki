@@ -2,7 +2,7 @@
 title: Broadcasts — Permissions
 description: Four broadcast.* keys (read/send/update/delete) gate the module's List/Compose/Edit screens and their matching REST endpoints; content locks once aired.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -113,4 +113,4 @@ The pre-redesign wiki's "email fan-out side-effect (when SMTP is enabled)" claim
 
 **References:** `../carmen-backstage/src/App.tsx` (route guards) · `src/components/nav/backstageNav.ts` (nav entry) · `src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/broadcastColumns.tsx` (row-action gates) · `src/pages/BroadcastCompose.tsx` (`canSendSystem`/`canSend`, `<Can>`) · `src/pages/BroadcastEdit.tsx` (`contentEditable`, `<Can permission="broadcast.update">`) · `src/utils/permissions.ts` (`PERMISSIONS.BROADCAST.SEND`) · `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (all six guarded routes) · `apps/backend-gateway/src/auth/guards/backstage-permission.guard.ts`, `src/auth/services/backstage-permission.service.ts` (the coarse platform-or-any-cluster check, unchanged since PR from 2026-06-10) · `../micro-notification/src/notification/broadcast-admin.service.ts` (`content_locked`/`conflict` rules) · `../micro-notification/src/notification/schedule.worker.ts` (the targeted-only push worker) · `packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts`, `seed.backstage-role-permission.data.ts` (the four keys and their role assignment) · `packages/error-catalog/src/catalog.ts` (`COMMON_BUSINESS_UNIT_NOT_FOUND`, 404).
 
-**Cross-links:** [Broadcasts landing](/en/backstage/broadcasts) &nbsp;·&nbsp; [Data Model](/en/backstage/broadcasts/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/broadcasts/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Business Units](/en/backstage/business-units)
+**Cross-links:** [Broadcasts landing](/en/backstage/broadcasts) &nbsp;·&nbsp; [Data Model](/en/backstage/broadcasts/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/broadcasts/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Business Units](/en/backstage/business-units)

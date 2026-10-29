@@ -2,7 +2,7 @@
 title: Tenant Imports
 description: TenantImportWizard at /tenant-imports, gated by the manage-not-read key data_import.manage — loads Preconfig.xlsx master data into one business unit's tenant database.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -123,7 +123,7 @@ The middle regex matches the connection-failure wording that existed **before** 
 - [Business Units](/en/backstage/business-units) — owns `tb_business_unit` and the `PUT /api-system/business-units/:id` endpoint Company Profile writes through (§3.5); the ordinary edit page's Technical tab and this wizard's picker both read `businessUnitService.getAll()`.
 - [Clusters](/en/backstage/clusters) — the `cluster.read`/`cluster.update` keys referenced by contrast throughout §1 and §3.5; not used by this module itself.
 - [Tenant Migrations](/en/backstage/tenant-migrations) — the sibling Organization-group module whose fleet-wide `/deploy/stream` endpoint carries the same class of stale connection-error regex (§4.4 there), introduced by the identical `af2437074` schema-pool refactor.
-- [Backstage RBAC](/en/backstage/rbac) — the platform permission catalog `data_import.manage` and `cluster.update` both live in; this module defines no permission keys of its own beyond `data_import.manage`.
+- [Backstage Roles](/en/backstage/rbac) — the platform permission catalog `data_import.manage` and `cluster.update` both live in; this module defines no permission keys of its own beyond `data_import.manage`.
 
 ## 6. Reference Sources
 

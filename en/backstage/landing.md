@@ -2,7 +2,7 @@
 title: Landing
 description: The public marketing page at / — redirects an authenticated session straight to Dashboard, and shows a hardcoded module index that has drifted from the real sidebar.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -44,7 +44,7 @@ Direct comparison of `Landing.tsx`'s `groups` array against `ALL_BACKSTAGE_NAV_I
 |---|---|---|---|
 | Organization | Clusters, Business Units, Users, Tenant Migrations | + Tenant Seed Data, Data Import (the Tenant Migrations, Tenant Seed Data and Data Import rows are drawn as sub-rows under Business Units) | missing 2 of 6 |
 | License Management | *(group does not exist on Landing)* | Licenses, License Feature Groups, License Features | missing 3 of 3 — whole group absent |
-| Content | Report Templates, News, Broadcasts | Report Templates, Report Form Groups, Dashboard Templates, News, Broadcasts | missing 2 of 5 (Form Groups, Dashboard Templates) — the dead Print Mapping row was finally removed on 2026-09-07 |
+| Content | Report Templates, News, Broadcasts | Report Templates, Form Groups, Dashboard Templates, News, Broadcasts | missing 2 of 5 (Form Groups, Dashboard Templates) — the dead Print Mapping row was finally removed on 2026-09-07 |
 | Analytics | *(group does not exist on Landing)* | Usage Analytics, Activity Events | missing 2 of 2 — whole group absent |
 | Scheduling | *(group does not exist on Landing)* | Scheduled Jobs | missing 1 of 1 — whole group absent |
 | Backstage | Applications, Roles & Access, Super Admins | + Backstage Config, Email Settings, Backstage Users (+ Backstage Roles inside "Roles & Access"), Feature Flags | missing 4 of 7 |
@@ -54,8 +54,8 @@ Direct comparison of `Landing.tsx`'s `groups` array against `ALL_BACKSTAGE_NAV_I
 In prose:
 
 - **Print Mapping is no longer listed** — the dead row this page flagged in its 2026-09-06 revision (the print-template-mapping module was deleted on 2026-07-24, commit `de11377`, but Landing's hardcoded copy kept the item) was removed from `Landing.tsx`'s Content group on 2026-09-07 (commit `344be13`, PR #283, which also dropped the `pages.landing.itemPrintMapping`/`descPrintMapping` i18n keys). Content now lists three items, all of which exist.
-- **Report Form Groups and Dashboard Templates are missing from Content** — Report Form Groups shipped the same week as the Print Mapping removal (2026-07-24), but PR #283 only deleted the dead row; it did not add the missing one. Dashboard Templates arrived later and is also absent.
-- **The Backstage group is missing four of its current seven rows**: Backstage Users (part of [Backstage RBAC](/en/backstage/rbac)), and two rows added since this page's own last review — Backstage Config and Email Settings (both `navGroup.backstage`) — plus Feature Flags, whose own nav entry carries a permission (`feature_flag.manage`) but deliberately no `feature` key of its own, per `backstageNav.ts`'s comment: "a switch that could hide itself could never be restored from the UI." Feature Flags now has its own wiki module — [Feature Flags](/en/backstage/feature-flags).
+- **Form Groups and Dashboard Templates are missing from Content** — Form Groups shipped the same week as the Print Mapping removal (2026-07-24), but PR #283 only deleted the dead row; it did not add the missing one. Dashboard Templates arrived later and is also absent.
+- **The Backstage group is missing four of its current seven rows**: Backstage Users (part of [Backstage Roles](/en/backstage/rbac)), and two rows added since this page's own last review — Backstage Config and Email Settings (both `navGroup.backstage`) — plus Feature Flags, whose own nav entry carries a permission (`feature_flag.manage`) but deliberately no `feature` key of its own, per `backstageNav.ts`'s comment: "a switch that could hide itself could never be restored from the UI." Feature Flags now has its own wiki module — [Feature Flags](/en/backstage/feature-flags).
 - **Four entire groups the current sidebar organizes work into — License Management, Analytics, Scheduling and AI — have no representation on Landing at all.** These are all modules added after this page's last review: Licenses, License Feature Groups, and License Features (License Management); Usage Analytics and Activity Events (Analytics); Scheduled Jobs (Scheduling); Purchase Request AI Providers (AI).
 - **The Database group is also entirely absent**: SQL Workbench, Backstage Migrations and Database Pools.
 
@@ -69,7 +69,7 @@ No authentication and no permission grant of any kind is required to view this p
 
 - [Dashboard](/en/backstage/dashboard) — where an authenticated session is redirected to, both from this page and from Login, and whose own route guard (not Landing) is what actually separates a platform-authority session from a membership-only cluster admin (§1); the real, permission-filtered module surface that this page's static index is meant to preview.
 - [Changelog](/en/backstage/changelog) — the other fully public route, linked from the hero's "See what's new" and sharing the `VersionStamp` component with this page's footer.
-- [Report Form Groups](/en/backstage/report-form-groups), [Backstage RBAC](/en/backstage/rbac), [SQL Workbench](/en/backstage/sql-workbench) — three of the many real screens missing from this page's index (§4); see §4's table for the full accounting, including the four groups (License Management, Analytics, Scheduling, AI) that have no representation on Landing at all.
+- [Form Groups](/en/backstage/report-form-groups), [Backstage Roles](/en/backstage/rbac), [SQL Workbench](/en/backstage/sql-workbench) — three of the many real screens missing from this page's index (§4); see §4's table for the full accounting, including the four groups (License Management, Analytics, Scheduling, AI) that have no representation on Landing at all.
 
 ## 7. Reference Sources
 

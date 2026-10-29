@@ -2,7 +2,7 @@
 title: พูลฐานข้อมูล (Database Pools)
 description: ทะเบียน CRUD ของ Postgres connection pool ที่แชร์ระดับแพลตฟอร์ม (tb_database_pool) — แหล่งเดียวของ credential ฐานข้อมูล tenant หลัง db_connection ถูกลบ แทนด้วย database_pool_id + db_schema
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, database-pools
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -65,7 +65,7 @@ Controller ฝั่ง gateway (`BackstageDatabasePoolsController`, `apps/backe
 - [Business Units](/th/backstage/business-units) — business unit ทุกตัวที่กำลังชี้มาที่ pool หนึ่งผ่าน `database_pool_id` คือความสัมพันธ์ `tb_business_unit[]` ของ pool นั้น หน้าแก้ไข BU แท็บ Technical เป็นหน้าจอเดียวนอกโมดูลนี้ที่อ่านชื่อของ pool (ไม่เคยอ่าน credential) และเป็นหน้าจอที่ตั้งค่า `db_schema` — อีกครึ่งหนึ่งของ connection ของ tenant ที่ resolve แล้ว
 - [Tenant Migrations](/th/backstage/tenant-migrations) — โมดูลที่ `resolveConnection()`/`resolveConnectionForBusinessUnit()` ของมัน dereference `database_pool_id` ของ BU เป็น Postgres connection string จริงเพื่อรัน `prisma migrate` ต่อกับมัน pool ที่ถูกปิดหรือ soft-delete เป็นหนึ่งในเหตุผลที่บันทึกไว้ว่าการ resolve นี้ล้มเหลว
 - [Backstage Migrations](/th/backstage/backstage-migrations) (`/backstage/migrations`) — ใช้กลุ่ม sidebar `navGroup.database` ร่วมกับโมดูลนี้ แต่ย้าย migration ของฐานข้อมูลแพลตฟอร์มเอง ไม่ใช่ของ tenant — คนละเส้นทางข้อมูลกัน
-- [Backstage RBAC](/th/backstage/rbac) — โมเดล permission เบื้องหลัง `database_pool.read`/`database_pool.manage` รวมถึงวิธีที่ session ที่ไม่มี `.manage` ยังเปิด (แต่ submit ไม่ได้) ฟอร์มสร้างใหม่ได้ ตาม §4
+- [Backstage Roles](/th/backstage/rbac) — โมเดล permission เบื้องหลัง `database_pool.read`/`database_pool.manage` รวมถึงวิธีที่ session ที่ไม่มี `.manage` ยังเปิด (แต่ submit ไม่ได้) ฟอร์มสร้างใหม่ได้ ตาม §4
 
 ## 6. แหล่งอ้างอิง
 

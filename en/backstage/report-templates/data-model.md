@@ -2,7 +2,7 @@
 title: Report Template — Data Model
 description: tb_report_template and tb_report_template_version: dialog/content/export XML, EN/TH names, source binding, BU and costing-method scope, run/export switches, template_type, is_default and doc_version.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, report-templates, data-model
 editor: markdown
 dateCreated: 2026-05-19T18:30:00.000Z
@@ -104,7 +104,7 @@ One immutable snapshot row per write to a template. Added in the 2026-10 rounds 
 
 Index: `(report_template_id, created_at DESC)` (`idx_report_template_version_template_created`). **Restore** (`POST .../versions/:version_no/restore`, body `{ doc_version }`) copies the snapshot back onto the live row under the usual optimistic lock and writes a new `restore` version; it deliberately leaves `is_default` untouched (the partial unique index allows one default per group), re-validates `source_name` against the identifier pattern, and keeps the current `calculation_methods` when the snapshot predates that field. A missing version answers `REPORT_TEMPLATE_VERSION_NOT_FOUND` (`report-template.service.ts` `restoreVersion`).
 
-Because the set-default flow on [Report Form Groups](/en/backstage/report-form-groups) is two partial `PUT`s, each default switch writes **two** `update` versions (one per affected template).
+Because the set-default flow on [Form Groups](/en/backstage/report-form-groups) is two partial `PUT`s, each default switch writes **two** `update` versions (one per affected template).
 
 `source_name` validation (new): the service rejects, with `COMMON_VALIDATION_FAILED`, any `source_name` that is not a bare identifier (`^[A-Za-z_][A-Za-z0-9_]*$`, at most 63 characters) on create, update and restore, because micro-report interpolates it unquoted into SQL (`report-template-source-name.ts`, commit `bb2530c12`).
 
@@ -245,7 +245,7 @@ All core identity fields (`id`, `name`, `description`, `report_group`, `template
 
 **Cross-links:**
 - [report-templates](/en/backstage/report-templates) — module landing page
-- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-backstage commit `de11377`); used to own `tb_print_template_mapping`, dropped by the same `20260723120000_print_form_default` migration that added `is_default` here. Its job is now served by `template_type = "form"` + `report_group` + `is_default` on this table, surfaced by the standalone [Report Form Groups](/en/backstage/report-form-groups) module
+- **Print Template Mapping** — removed from the product 2026-07-24 (carmen-backstage commit `de11377`); used to own `tb_print_template_mapping`, dropped by the same `20260723120000_print_form_default` migration that added `is_default` here. Its job is now served by `template_type = "form"` + `report_group` + `is_default` on this table, surfaced by the standalone [Form Groups](/en/backstage/report-form-groups) module
 - [business-units](/en/backstage/business-units) — BU codes referenced in the allow/deny chip lists correspond to `tb_business_unit.code`
 - [clusters](/en/backstage/clusters) — sibling Platform surface; report templates are tenant-global and not cluster-scoped
 - [Permissions](/en/backstage/report-templates/permissions) — access control for the report-templates admin surface

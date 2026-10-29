@@ -2,7 +2,7 @@
 title: SQL Workbench
 description: คอนโซล admin (/sql-workbench) ที่รัน SQL ใด ๆ และ browse/สร้าง/drop view, procedure, function ของฐานข้อมูล tenant ที่เลือก — ออกแบบใหม่เป็น workbench สามช่องพร้อม result grid แบบ virtual scroll
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -64,7 +64,7 @@ route `/sql-workbench` ถือ `requiredPermission="sql_workbench.read"` แ�
 - [Query Dataset](/th/inventory/system-config/query-dataset) — เอกสารของ Inventory book สำหรับ backend service ตัวเดียวกันนี้จากฝั่ง API/data-shape: catalog projection, สัญญาของ `execute`/`save`/`db-objects`, และข้อค้นพบ validator `allowDangerous` อ่านหน้านั้นสำหรับ request/response shape ฝั่ง backend; หน้านี้ครอบคลุมหน้าจอ carmen-backstage ที่เรียกมันแล้วตอนนี้ ทั้งสองหน้าอธิบายการบังคับใช้ห้า route เดียวกันแล้ว (หมายเหตุข้ามหนังสือ, §4).
 - [Business Units](/th/backstage/business-units) — เป็นแหล่งของรายการ BU ที่ switcher ค้นหา (โหลดผ่าน helper `fetchAllBusinessUnits`, `src/utils/fetchAllBusinessUnits.ts` ซึ่งเดินทีละหน้าแทนการขอ `perpage=-1`) และ `db_connection` ของแต่ละ BU ซึ่งเป็นสิ่งที่ทำให้ฐานข้อมูล tenant เข้าถึงได้เลย
 - [Report Templates](/th/backstage/report-templates) — ผู้บริโภคปลายทางที่ตั้งใจไว้ของ view/function ที่สร้างที่นี่ ผ่านการผูก data source `source_name`/`source_params`; picker Browse-in-BU ของ editor Report Templates อ่าน view/function/procedure ของ schema tenant ผ่าน endpoint ของตัวเอง (`GET /api-system/report-templates/db-objects` ซึ่งกั้นด้วย `sql_workbench.read` เช่นกัน) ดังนั้นสิ่งที่บันทึกที่นี่จึงปรากฏที่นั่นตามชื่อ; ไม่มีการเชื่อมอื่นระหว่างสองโมดูล
-- [Backstage RBAC](/th/backstage/rbac) — เป็นเจ้าของ permission key `sql_workbench.read`/`.manage` และการ assign role bundle ที่สรุปไว้ใน §4
+- [Backstage Roles](/th/backstage/rbac) — เป็นเจ้าของ permission key `sql_workbench.read`/`.manage` และการ assign role bundle ที่สรุปไว้ใน §4
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

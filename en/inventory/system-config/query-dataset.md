@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service whose UI is the Backstage SPA. All five routes gated by sql_workbench.read/manage backstage permissions; execute runs any SQL. system_admin.query_dataset key removed 2026-09-21.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -71,7 +71,7 @@ No UI exists *in Carmen Blue* (see Implementation status) — these are the unde
 | "Database is busy" | Connection pool exhausted; one retry already attempted after 500 ms | Retry later; investigate concurrent load |
 | `BigInt` column returns as string in result | Expected — JSON cannot natively carry `bigint` | Cast in SQL if numeric handling needed downstream |
 | Report errors after drop | Bound view / procedure removed from catalog | Re-create the object or update the report binding |
-| 403 on `execute`, `save` or `DELETE db-objects` | Caller lacks `sql_workbench.manage` | Grant via the backstage permission system — see [Backstage RBAC](/en/backstage/rbac) |
+| 403 on `execute`, `save` or `DELETE db-objects` | Caller lacks `sql_workbench.manage` | Grant via the backstage permission system — see [Backstage Roles](/en/backstage/rbac) |
 | 403 on `GET db-objects` or `db-objects/definition` | Caller lacks `sql_workbench.read` | Same; `.read` is the browse-only grant |
 | `save` / list / get-definition / drop succeed for any authenticated caller | **Historical only — fixed 2026-08-20 by `525597688`.** If you observe this today, you are on a build older than that commit | Upgrade; do not treat it as expected behaviour |
 

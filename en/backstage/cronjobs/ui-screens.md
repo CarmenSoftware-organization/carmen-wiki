@@ -1,18 +1,18 @@
 ---
-title: Cronjobs — UI Screens
+title: Scheduled Jobs — UI Screens
 description: CronJobManagement's list, filters, and summary stats; CronJobEdit's basics/schedule/execution/type-config cards; and CronScheduleField's six-mode schedule builder.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs — UI Screens
+# Scheduled Jobs — UI Screens
 
 > **Screens:** `CronJobManagement` (list, `/cronjobs`) &nbsp;·&nbsp; `CronJobEdit` — one component for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **No tabs, no wizard** — four stacked cards on the edit form &nbsp;·&nbsp; **Sub-component:** `CronScheduleField`, a six-mode cron builder, plus six per-job-type config field components (`jobConfig/`) &nbsp;·&nbsp; **Dialogs:** Delete-job confirm (ownership-aware message) &nbsp;·&nbsp; **Persisted UI state:** one `localStorage` key (`perpage_cronjob`) &nbsp;·&nbsp; **Concurrency:** `doc_version` optimistic lock, sent only when the GET that loaded the form returned one &nbsp;·&nbsp; **Screenshots:** `assets/screenshots/platform/cronjobs/` (`index.png`, `ui-screens.png`)
 
-![Cronjobs — UI Screens screen](/screenshots/platform/cronjobs/ui-screens.png)
+![Scheduled Jobs — UI Screens screen](/screenshots/platform/cronjobs/ui-screens.png)
 
 ## 1. Overview
 
@@ -155,5 +155,5 @@ One `localStorage` key: `perpage_cronjob`, the list page's rows-per-page choice,
 - `../carmen-backstage/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`.
 - `../carmen-backstage/src/components/Can.tsx` — permission-gated render helper referenced throughout.
 - [Data Model](/en/backstage/cronjobs/data-model) — the field table and scheduler mechanics this page's screen tour points back to throughout.
-- [Cronjobs landing page](/en/backstage/cronjobs) §4 — the permission gates behind every button referenced here.
+- [Scheduled Jobs landing page](/en/backstage/cronjobs) §4 — the permission gates behind every button referenced here.
 - Verified against `carmen-backstage` HEAD `157a65e` (2026-09-04).

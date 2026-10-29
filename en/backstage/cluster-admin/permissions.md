@@ -2,7 +2,7 @@
 title: Cluster Admin — Permissions
 description: No RBAC permission key anywhere in this module — gated instead by cluster membership via isClusterAdminOf, checked before the feature flag on every route, and re-enforced independently by the backend on every write.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cluster-admin, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -86,4 +86,4 @@ This is the same "backend enforces independently of the frontend's key" shape [L
 - **Route reachability is not itself a permission model** — `ClusterProfile`/`BusinessUnitForm`'s `canEdit = !accessLost` (§2) means every cluster admin of a given cluster can write everything this module's screens expose for it; do not test for a finer-grained write permission that does not exist in source today.
 
 **References:** all paths `../carmen-backstage` (HEAD `8405788f`) unless noted. `src/App.tsx:625-652` (routes) · `src/components/{AuthedRoute,ClusterAdminRoute}.tsx` (guards) · `src/components/nav/clusterAdminNav.ts` (nav) · `src/context/AuthContext.tsx` (`isClusterAdminOf`, `adminScope`, `hasClusterAdminScope`) · `src/pages/clusterAdmin/{ClusterProfile,BusinessUnitForm,ClusterUsers,ClusterAdminLicenses}.tsx` (in-page gates) · `../carmen-turborepo-backend/apps/micro-cluster/src/common/cluster-admin-authz.service.ts` (backend mirror, HEAD `c9d788829`) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_me-admin-clusters/backstage_me-admin-clusters.controller.ts` and `packages/prisma-shared-schema-backstage/prisma/check.api-system-permission-coverage.ts` (the deliberately ungated self-scope read).
-**Cross-links:** [Cluster Admin landing](/en/backstage/cluster-admin) &nbsp;·&nbsp; [UI Screens](/en/backstage/cluster-admin/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Licenses — Permissions](/en/backstage/licenses/permissions) &nbsp;·&nbsp; [Dashboard](/en/backstage/dashboard) &nbsp;·&nbsp; [Profile](/en/backstage/profile)
+**Cross-links:** [Cluster Admin landing](/en/backstage/cluster-admin) &nbsp;·&nbsp; [UI Screens](/en/backstage/cluster-admin/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Licenses — Permissions](/en/backstage/licenses/permissions) &nbsp;·&nbsp; [Dashboard](/en/backstage/dashboard) &nbsp;·&nbsp; [Profile](/en/backstage/profile)

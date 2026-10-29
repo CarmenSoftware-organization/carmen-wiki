@@ -2,7 +2,7 @@
 title: Backstage Users
 description: Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts, the privilege-registry screen split out of RBAC and Users.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -72,7 +72,7 @@ This module's own write-side gating is unusually clean compared to two other mod
 ## 5. Related Modules
 
 - [Users](/en/backstage/users) — owns the `tb_user` account this module attaches roles to: identity, activation, and cluster/BU membership are all edited there, never here. See §2 for the exact division and §3.3 for the email-verification columns this module surfaces on the Users module's own behalf.
-- [Backstage RBAC](/en/backstage/rbac) — owns the catalog and the roles themselves (`tb_backstage_role`, `tb_backstage_permission`), the `Scope` union this module's `BackstageUserScope`/`Scope` types mirror, and documented this module at a summary level before this page existed; this page is now the fuller treatment.
+- [Backstage Roles](/en/backstage/rbac) — owns the catalog and the roles themselves (`tb_backstage_role`, `tb_backstage_permission`), the `Scope` union this module's `BackstageUserScope`/`Scope` types mirror, and documented this module at a summary level before this page existed; this page is now the fuller treatment.
 - [Super Admins](/en/backstage/super-admins) — a separate, `superAdminOnly`-gated bypass flag (`tb_backstage_super_admin`), not a role in `tb_backstage_role` and not something this screen shows or grants.
 - Clusters — the `cluster_id` a scoped assignment resolves against; both Grant Access and Add Role read the cluster list purely to populate a scope picker (`cluster.read`, best-effort — a failed fetch degrades the picker to raw ids rather than blocking the grant).
 

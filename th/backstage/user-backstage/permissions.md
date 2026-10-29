@@ -2,7 +2,7 @@
 title: ผู้ใช้แพลตฟอร์ม — สิทธิ์ (Permissions)
 description: user_backstage.read กั้นทั้งสอง route; user_backstage.manage กั้นทุกจุดที่เขียนได้ — แต่หน้า detail ส่วนใหญ่ยังต้องมี user.read ของโมดูล Users ด้วย
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -76,4 +76,4 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - **เมื่อตรวจสอบคำเตือนผู้ถือสิทธิ์ที่ไม่ active หรือ badge "Email not verified" ให้แน่ใจว่ากำลังดูสถานะจริง ไม่ใช่ failure mode ในกรณีที่ 1** — ทั้งคู่เป็นข้อเท็จจริงที่ถูกต้อง (§3.4/§3.3 ของ [หน้า landing](/th/backstage/user-backstage)) เฉพาะเมื่อการดึงข้อมูลบัญชีสำเร็จจริงเท่านั้น
 
 **References:** path ทั้งหมดคือ `../carmen-backstage` (HEAD `157a65e`) ยกเว้นที่ขึ้นต้นด้วย `../carmen-turborepo-backend` (HEAD `937cf5ac4`) `src/App.tsx:497-512` (routes) · `src/components/nav/backstageNav.ts:48` (nav) · `src/pages/UserBackstageManagement.tsx` (gate ของหน้ารายการ, บรรทัด 390,417,586) · `src/pages/UserBackstageEdit.tsx` (gate ของหน้า detail และลำดับการโหลด, บรรทัด 134-160,265-271,302) · `src/pages/userBackstageEdit/RoleGrantList.tsx:126` · `src/components/UserPicker.tsx`, `src/hooks/useUserSearch.ts` (พฤติกรรม error การค้นหาแบบ inline) · `src/context/AuthContext.tsx:354-358`, `src/utils/permissions.ts:56` (ทางลัด super-admin) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/user-backstage-roles/user-backstage-roles.controller.ts` (บรรทัด 88-90,135-137,180-182,233-235,280-282) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-user/backstage-user.controller.ts:128-130,264-266` (`user.read` บน endpoint ของโมดูล Users ที่โมดูลนี้พึ่ง) · `../carmen-turborepo-backend/apps/micro-business/src/authen/user_backstage_role/user_backstage_role.service.ts:198-216` (race ของการมอบสิทธิ์ซ้ำ, กรณีที่ 5)
-**Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/backstage/user-backstage) &nbsp;·&nbsp; [UI Screens](/th/backstage/user-backstage/ui-screens) &nbsp;·&nbsp; [Users](/th/backstage/users) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Backstage Config](/th/backstage/backstage-config) &nbsp;·&nbsp; [Email Settings](/th/backstage/email-settings)
+**Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/backstage/user-backstage) &nbsp;·&nbsp; [UI Screens](/th/backstage/user-backstage/ui-screens) &nbsp;·&nbsp; [Users](/th/backstage/users) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Backstage Config](/th/backstage/backstage-config) &nbsp;·&nbsp; [Email Settings](/th/backstage/email-settings)

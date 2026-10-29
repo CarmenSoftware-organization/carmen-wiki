@@ -2,7 +2,7 @@
 title: แฟล็กฟีเจอร์ (Feature Flags)
 description: หน้าเดียวที่ตั้งการมองเห็นของทุกฟีเจอร์ (active/inactive/hide) ทั้ง Backstage และ Cluster-admin — ตั้งใจไม่มี feature key ของตัวเอง เพราะสวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -96,7 +96,7 @@ filter ของ `buildBackstageNav()` เอง (`backstageNav.ts:91-98`) ค�
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Backstage Config](/th/backstage/backstage-config) และ[data model](/th/backstage/backstage-config/data-model) ของมัน — ตาราง `tb_backstage_config` ที่ใช้ร่วมกันซึ่งแถวของคีย์นี้อาศัยอยู่ รวมถึงกลไกฝั่งเขียนแบบทั่วไป (การตรวจสอบ, คอลัมน์ `doc_version` ที่ไม่ถูกบังคับใช้, การแข่งกันของแถวซ้ำที่ยังไม่ถูกลบ) ที่โมดูลนี้สืบทอดมาโดยไม่เปลี่ยนแปลง
-- [Backstage RBAC](/th/backstage/rbac) — permission catalog ที่ `feature_flag.manage` และ role bundle ที่ seed ไว้ทั้งสี่ตัวใน §4.1 ถูกนิยามและดูได้แบบเต็ม
+- [Backstage Roles](/th/backstage/rbac) — permission catalog ที่ `feature_flag.manage` และ role bundle ที่ seed ไว้ทั้งสี่ตัวใน §4.1 ถูกนิยามและดูได้แบบเต็ม
 - ทุกโมดูลอื่นในวิกินี้ — แต่ละหน้าระบุ feature key ที่ gate แถวเมนูของตัวเอง หน้านี้คือจุดที่ผู้อ่านจะได้เรียนรู้ว่าการตั้งคีย์นั้นเป็น `active`/`inactive`/`hide` ทำอะไรจริง ๆ
 
 ## 6. แหล่งอ้างอิง

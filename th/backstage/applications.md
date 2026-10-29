@@ -2,7 +2,7 @@
 title: แอปพลิเคชัน (Applications)
 description: ภาพรวมโมดูล Applications — API client ที่ลงทะเบียนของแพลตฟอร์ม, identity แบบ x-app-id และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับรายการ api_name แบบระบุชัด
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 # แอปพลิเคชัน (Applications)
 
-โมดูล **Applications** จัดการ **API client** ที่ลงทะเบียนของแพลตฟอร์ม — caller ที่เป็น machine ของ backend gateway เรคคอร์ดของ application คือ identity บวกการมอบสิทธิ์เข้าถึง: UUID ของเรคคอร์ดคือค่า header `x-app-id` ที่ client ส่งมากับทุก request และ grant ของมันคือ "allow all APIs" หรือรายการ key `api_name` แบบระบุชัดที่เลือกจาก catalog ที่ backend generate ขึ้น ขณะที่ [Backstage RBAC](/th/backstage/rbac) ตอบคำถามว่า "*คน* คนนี้ทำอะไรได้บ้าง" Applications ตอบว่า "*โปรแกรม* ตัวนี้เรียกอะไรได้บ้าง"
+โมดูล **Applications** จัดการ **API client** ที่ลงทะเบียนของแพลตฟอร์ม — caller ที่เป็น machine ของ backend gateway เรคคอร์ดของ application คือ identity บวกการมอบสิทธิ์เข้าถึง: UUID ของเรคคอร์ดคือค่า header `x-app-id` ที่ client ส่งมากับทุก request และ grant ของมันคือ "allow all APIs" หรือรายการ key `api_name` แบบระบุชัดที่เลือกจาก catalog ที่ backend generate ขึ้น ขณะที่ [Backstage Roles](/th/backstage/rbac) ตอบคำถามว่า "*คน* คนนี้ทำอะไรได้บ้าง" Applications ตอบว่า "*โปรแกรม* ตัวนี้เรียกอะไรได้บ้าง"
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** ลงทะเบียน machine client และมอบสิทธิ์เข้าถึง API ให้พวกมัน — `allow_all` หรือรายการ `api_names` แบบระบุชัดที่เลือกจาก catalog ที่จัดกลุ่มตามโมดูล &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Backstage SPA และการบังคับใช้ `AppIdGuard` ของ backend gateway &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_application` (ตัว client: `name`, `allow_all`, `device` บวกคอลัมน์สถานะบริการ `status`/`status_message`/`status_until` และคอลัมน์ app-secret `require_secret`/`secret_*`), `tb_application_api` (grant row แบบ 1:N หนึ่ง `api_name` ต่อ row), `tb_application_bypass_user` (ผู้ใช้ที่ยังเข้าถึงได้ระหว่าง maintenance/read-only) &nbsp;·&nbsp; **Identity:** `id` ของเรคคอร์ด (UUID) **คือ** ค่า `x-app-id` — ไม่มี field app-id แยกต่างหาก &nbsp;·&nbsp; **Permission key** (`../carmen-backstage/src/components/nav/backstageNav.ts`): `application.read` (list/nav) + `application.create`/`application.update`/`application.delete` บวก `application.secret.manage` / `application.secret.reveal` สำหรับการ์ด app-secret &nbsp;·&nbsp; **Feature-flag key:** `applications` (ตรวจหลัง permission gate บนทั้งสาม route และ sidebar entry) &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ &nbsp;·&nbsp; **หน้าย่อย:** 3
@@ -64,7 +64,7 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงโมดูลนี้ถูก gate ด้วย permission ผ่าน [Backstage RBAC](/th/backstage/rbac) ทั้งด้วย route guard และ gate `<Can>` ภายในหน้า:
+การเข้าถึงโมดูลนี้ถูก gate ด้วย permission ผ่าน [Backstage Roles](/th/backstage/rbac) ทั้งด้วย route guard และ gate `<Can>` ภายในหน้า:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -85,7 +85,7 @@ catalog ที่เลือกได้นั้น **derive มาจาก g
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
-- [Backstage RBAC](/th/backstage/rbac) — คู่เทียบฝั่งการเข้าถึงของมนุษย์ ใช้ไวยากรณ์ key `resource.action` เดียวกัน แต่ catalog และเส้นทางการบังคับใช้ต่างกัน: key ของ RBAC อยู่ใน `tb_backstage_permission` และ gate session ของผู้ใช้; `api_name` มาจากการสแกน `AppIdGuard` และ gate caller ที่ใช้ `x-app-id` key `application.*` ที่ gate *หน้าจอของโมดูลนี้เอง* ก็เป็น key ของ RBAC — มนุษย์ต้องมี grant ของ RBAC เพื่อจัดการ grant ของ machine
+- [Backstage Roles](/th/backstage/rbac) — คู่เทียบฝั่งการเข้าถึงของมนุษย์ ใช้ไวยากรณ์ key `resource.action` เดียวกัน แต่ catalog และเส้นทางการบังคับใช้ต่างกัน: key ของ RBAC อยู่ใน `tb_backstage_permission` และ gate session ของผู้ใช้; `api_name` มาจากการสแกน `AppIdGuard` และ gate caller ที่ใช้ `x-app-id` key `application.*` ที่ gate *หน้าจอของโมดูลนี้เอง* ก็เป็น key ของ RBAC — มนุษย์ต้องมี grant ของ RBAC เพื่อจัดการ grant ของ machine
 - [users](/th/backstage/users) — application ไม่มี binding กับผู้ใช้; การอ้างอิง `tb_user` เพียงอย่างเดียวบนตาราง application คือคอลัมน์ audit actor ตระกูล `tb_application_role` ที่มีเฉพาะใน schema (ซึ่ง join กับผู้ใช้จริง) ไม่เกี่ยวข้องกับโมดูลนี้ — ดูส่วนความแตกต่างใน [Data Model](/th/backstage/applications/data-model)
 
 ## 6. แหล่งข้อมูลอ้างอิง

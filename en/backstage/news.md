@@ -2,7 +2,7 @@
 title: News
 description: News module overview — markdown announcements with optional image, tags, a draft → published → archived lifecycle, global or per-BU targeting, and bulk publish/archive/delete — authored in the admin SPA and delivered through anonymous public endpoints.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -53,7 +53,7 @@ The `published_at <= now()` filter means an author can **schedule** an article b
 
 ## 4. Roles and Personas
 
-Access is permission-gated through [Backstage RBAC](/en/backstage/rbac) (the four `news.*` keys are seeded in `seed.backstage-permission.ts`), with route guards and in-page `<Can>` gates:
+Access is permission-gated through [Backstage Roles](/en/backstage/rbac) (the four `news.*` keys are seeded in `seed.backstage-permission.ts`), with route guards and in-page `<Can>` gates:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -74,7 +74,7 @@ As in Applications, `news.delete` has **no SPA route that requires it** — dele
 
 - [Business Units](/en/backstage/business-units) — targeting references `tb_business_unit.id` values: validated as live BUs at write time, stored FK-free in JSONB. The targeting multi-select loads the full BU list from that module's API.
 - [Broadcasts](/en/backstage/broadcasts) — the **push** counterpart to News's **pull**: a broadcast pushes a notification to all users, chosen users, or one business unit (immediately or scheduled), while a news article sits in `tb_news` waiting to be fetched from the public feed. Use Broadcasts to interrupt, News to inform.
-- [Backstage RBAC](/en/backstage/rbac) — defines and resolves the four `news.*` permission keys gating the SPA surfaces.
+- [Backstage Roles](/en/backstage/rbac) — defines and resolves the four `news.*` permission keys gating the SPA surfaces.
 - [Applications](/en/backstage/applications) — the `x-app-id` axis: every `/api/news` call must come from an application granted the corresponding `news.*` `api_name` (or `allow_all`). The anonymous `/api/public/news` controller checks neither tokens nor app ids.
 
 ## 6. Reference Sources

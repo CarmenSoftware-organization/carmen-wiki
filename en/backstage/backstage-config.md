@@ -2,7 +2,7 @@
 title: Backstage Config
 description: One screen, eleven cards, ten config keys: invitations, sign-up, email verification, password reset, notification email, license enforcement, expiry thresholds, Google sign-in, external API URL, migration API switch.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, backstage-config
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -139,7 +139,7 @@ Reading this screen's data does not require any of the finer-grained keys that g
 - Clusters, Business Units — also read the `expiry_thresholds` window for their own "expiring soon" badges and quota counters (see the [Licenses](/en/backstage/licenses) module's data model for the shared threshold-consumption pattern).
 - Email Settings — owns `tb_email_sender_profile` (SMTP credentials) and the `email_routing` registry key (§3.5), edited from its own screen but written through this same generic `/api-system/backstage/configs` surface.
 - Feature Flags — owns the `feature_flags` registry key (§3.5) through its own dedicated, differently-permissioned endpoint pair, not this module's surface.
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog where `backstage_config.read`/`.manage`, `license.manage`, and every other key on this page are visible alongside every other platform resource.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog where `backstage_config.read`/`.manage`, `license.manage`, and every other key on this page are visible alongside every other platform resource.
 
 ## 6. Reference Sources
 

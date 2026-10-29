@@ -2,7 +2,7 @@
 title: การวิเคราะห์การใช้งาน (Usage Analytics)
 description: แดชบอร์ด UI telemetry ที่ /analytics (slug usage-analytics) — StatCard, กราฟรายวัน และ Top List ทั้งสองชุด นิยามจาก tb_activity_event พร้อมช่องว่างสิทธิ์ activity_event.read/detail ที่คุม drill-down
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, usage-analytics
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -172,7 +172,7 @@ permission catalog seed action ของ resource `activity_event` ไว้แ�
 
 - [Activity Events](/th/backstage/activity-events) — หน้า explorer แสดง event ดิบรายบุคคลที่การ drill-down จาก Top Pages ของหน้านี้พาไป ถูก gate ด้วย `activity_event.detail` (§4.1–§4.2) ใช้ `analyticsService.ts` ร่วมกันและอ่านจากตาราง `tb_activity_event` เดียวกัน
 - [Feature Flags](/th/backstage/feature-flags) — เจ้าของ feature key `usage_analytics` ที่ gate หน้านี้หลังผ่านการตรวจสิทธิ์แล้ว (§4.1)
-- [Backstage RBAC](/th/backstage/rbac) — permission catalog และนิยาม role bundle ที่อ้างถึงใน §4
+- [Backstage Roles](/th/backstage/rbac) — permission catalog และนิยาม role bundle ที่อ้างถึงใน §4
 - [Business Units](/th/backstage/business-units) และ [Applications](/th/backstage/applications) — เป็นแหล่งข้อมูลของ dropdown ตัวกรองสองตัว (§3.1) หน้านี้ไม่ได้เป็นเจ้าของ list ทั้งสอง
 
 ## 6. แหล่งอ้างอิง

@@ -2,7 +2,7 @@
 title: Licenses — Permissions
 description: subscription.read gates viewing (including opening an edit page read-only); subscription.manage alone gates every mutation. license.manage is a different module's key, not this one's.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, licenses, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -21,7 +21,7 @@ The module's one genuinely distinctive shape is that **`subscription.read` alone
 
 ## 2. Gate matrix
 
-All routes resolve through `PrivateRoute`, which checks `requiredPermission` first (failure → `<Forbidden>`, in place, URL unchanged) and the `feature` flag strictly afterward (failure → `NotFound` on `hide`, `ComingSoon` on `inactive`) — see [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) for the shared resolver.
+All routes resolve through `PrivateRoute`, which checks `requiredPermission` first (failure → `<Forbidden>`, in place, URL unchanged) and the `feature` flag strictly afterward (failure → `NotFound` on `hide`, `ComingSoon` on `inactive`) — see [Backstage Roles — Permissions](/en/backstage/rbac/permissions) for the shared resolver.
 
 | Route | Permission | Feature | Source |
 |---|---|---|---|
@@ -122,4 +122,4 @@ This is deliberate, proven three separate ways, not an inconsistency to flag as 
 - **When this module gets more than a smoke e2e spec**, the read/manage-independence cases in §4 (particularly edge cases 1 and 2) are the highest-value ones to encode first, since they are the module's one genuinely non-obvious gating shape.
 
 **References:** all paths `../carmen-backstage` unless noted. `src/App.tsx:187-270` (routes + legacy redirects) · `src/components/nav/backstageNav.ts:24` (sidebar entry) · `src/pages/licenses/{SubscriptionForm,LicensePurchaseForm}.tsx` (`canEdit`/`canEditFields` computation, `<Can>` gates) · `src/pages/licenses/ClusterLicenseDetail.tsx:46-59` (`canManage`, single source of truth passed to all three tabs) · `src/pages/BackstageConfigManagement.tsx:74-75`, `src/pages/backstageConfig/LicenseEnforcementCard.tsx:14,109` (`license.manage` — a different module's key, §1) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/{backstage_cluster-licenses,backstage_business-unit-licenses,backstage_subscriptions}/*.controller.ts` (backend enforcement, §2).
-**Cross-links:** [Licenses landing](/en/backstage/licenses) &nbsp;·&nbsp; [Data Model](/en/backstage/licenses/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/licenses/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [cluster-admin](/en/backstage/cluster-admin) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config)
+**Cross-links:** [Licenses landing](/en/backstage/licenses) &nbsp;·&nbsp; [Data Model](/en/backstage/licenses/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/licenses/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [cluster-admin](/en/backstage/cluster-admin) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config)

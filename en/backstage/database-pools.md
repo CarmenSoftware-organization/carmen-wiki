@@ -2,7 +2,7 @@
 title: Database Pools
 description: CRUD registry of shared, platform-managed Postgres connection targets (tb_database_pool) — the single source of tenant database credentials since tb_business_unit.db_connection was physically dropped in favor of database_pool_id + db_schema.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, database-pools
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -65,7 +65,7 @@ The gateway controller (`BackstageDatabasePoolsController`, `apps/backend-gatewa
 - [Business Units](/en/backstage/business-units) — every pool's `tb_business_unit[]` relation is the set of BUs currently pointing at it via `database_pool_id`; the BU edit page's Technical tab is the only other screen in the platform that reads a pool's `name` (never its credentials), and is the screen where `db_schema` — the other half of a resolved tenant connection — is set.
 - [Tenant Migrations](/en/backstage/tenant-migrations) — the module whose `resolveConnection()`/`resolveConnectionForBusinessUnit()` actually dereferences a BU's `database_pool_id` into a live Postgres connection string to run `prisma migrate` against; an inactive or soft-deleted pool is one of the documented ways that resolution fails.
 - [Backstage Migrations](/en/backstage/backstage-migrations) (`/backstage/migrations`) — shares this module's `navGroup.database` sidebar group, but migrates the platform's own shared database, not a tenant's; unrelated data paths.
-- [Backstage RBAC](/en/backstage/rbac) — the permission model behind `database_pool.read`/`database_pool.manage`, including how a session that lacks `.manage` still opens (but cannot submit) the create form, per §4.
+- [Backstage Roles](/en/backstage/rbac) — the permission model behind `database_pool.read`/`database_pool.manage`, including how a session that lacks `.manage` still opens (but cannot submit) the create form, per §4.
 
 ## 6. Reference Sources
 

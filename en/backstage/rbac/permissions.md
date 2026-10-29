@@ -1,14 +1,14 @@
 ---
-title: Backstage RBAC — Permissions
+title: Backstage Roles — Permissions
 description: Route-guard matrix for the whole SPA, how route/sidebar/in-page gates compose, the permission-resolution algorithm, and edge cases for testers.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
 ---
 
-# Backstage RBAC — Permissions
+# Backstage Roles — Permissions
 
 > **At a Glance**
 > **Gate:** every guarded route carries `requiredPermission="resource.action"` (or `requireSuperAdmin`) plus, since the last sync, an optional `feature="<key>"` prop on `PrivateRoute` &nbsp;·&nbsp; **Resolution order (`hasPermission`, used by every gate):** bootstrap → super-admin → platform keys → cluster keys — unchanged since the last sync &nbsp;·&nbsp; **Bootstrap exception:** total user count 0 or 1 ⇒ login skips the ≥1-permission gate and `hasPermission` returns `true` &nbsp;·&nbsp; **Login also admits a cluster-admin-only session** (no platform permission at all) outside bootstrap — a separate `login()`-time OR-branch, distinct from `hasPermission` (see §4) &nbsp;·&nbsp; **On failure:** the `Forbidden` page (`src/pages/Forbidden.tsx`) renders in place inside `<Layout>` (sidebar stays visible, URL unchanged); a direct `/403` route also renders it &nbsp;·&nbsp; **In-page gates:** `<Can>` wraps Add/Edit/Delete on most management list and edit pages (`.create`/`.update`/`.delete` keys, cluster-scoped for Clusters/Business Units); the Roles list/edit gate Add/Edit/Delete with `backstage_role.*` keys (renamed from `role.*` on 2026-08-20), and the Backstage Users detail page gates on `user_backstage.manage` &nbsp;·&nbsp; **Permission Catalog's route carries no key at all** — see §2.1
@@ -51,12 +51,12 @@ Two routes are authenticated-only with no key requirement: `/dashboard` and `/pr
 | `/users` | `user.read` / `user.create` / `user.update` | Distinct from `user_backstage.*`, which gates role assignment, not user CRUD |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |
-| `/report-form-groups` | `report_template.read` (mutations via `report_template.update`/`.create`) | New 2026-07-23; reuses Report Templates' keys, no new ones; standalone top-level module documented at [Report Form Groups](/en/backstage/report-form-groups) |
+| `/report-form-groups` | `report_template.read` (mutations via `report_template.update`/`.create`) | New 2026-07-23; reuses Report Templates' keys, no new ones; standalone top-level module documented at [Form Groups](/en/backstage/report-form-groups) |
 | `/news` | `news.read` / `news.create` / `news.update` | |
 | `/broadcasts/new` | `broadcast.send` | Single route; no list page |
 | `/sql-workbench` | `sql_workbench.read` | Documented as [SQL Workbench](/en/backstage/sql-workbench), one of the book's standalone pages (not a sub-page of another module) |
 
-**Removed 2026-07-23/24:** `/print-template-mapping*` and its `print_template_mapping.*` keys no longer exist — the module was deleted from carmen-backstage on 2026-07-24 (commit `de11377`) and the permission-catalog rows it used were dropped the day before from carmen-turborepo-backend's seed (commit `c135bb21e`, 2026-07-23); `template_type` plus the standalone [Report Form Groups](/en/backstage/report-form-groups) module now serve the same need.
+**Removed 2026-07-23/24:** `/print-template-mapping*` and its `print_template_mapping.*` keys no longer exist — the module was deleted from carmen-backstage on 2026-07-24 (commit `de11377`) and the permission-catalog rows it used were dropped the day before from carmen-turborepo-backend's seed (commit `c135bb21e`, 2026-07-23); `template_type` plus the standalone [Form Groups](/en/backstage/report-form-groups) module now serve the same need.
 
 Three routes are fully public (no `PrivateRoute` at all): `/` (landing), `/login`, and `/changelog`. Source: `../carmen-backstage/src/App.tsx` (the full `<Routes>` block). No route anywhere in the SPA passes a `.delete` key as `requiredPermission` — delete actions live inside list pages, where every management list gates them in-page with `<Can permission="*.delete">` (§3), **now including Roles** (§2.1) — the previous sync's "only the Roles list still exposes Delete to anyone holding its `.read` guard" is stale.
 
@@ -155,4 +155,4 @@ The `EffectivePermissions` snapshot is fetched at login and again on every `Auth
 **Stale e2e, not evidence:** `../carmen-backstage-e2e/tests/permission-catalog/permission-catalog.spec.ts` navigates to `/backstage/permissions`, a route that no longer exists (moved to `/backstage/category-permissions` on 2026-08-20) — every test in that spec is broken against current source. `../carmen-backstage-e2e/tests/roles/role-crud.spec.ts` (and its `pages/RoleEditPage.ts` page object) drives the permission picker as a **checkbox** ("toggle the `cluster.read` permission checkbox", "confirm the checkbox is checked") — the current `PermissionGrid` (2026-08-20, `carmen-backstage` commit `42eeafe`) uses `aria-pressed` toggle `<button>`s, not checkbox inputs, so those selectors no longer match. `pages/RoleManagementPage.ts`'s own doc comment ("The Name cell is a `<button>`... not a link") also contradicts current source, where the Name cell renders as a `<Link>`. All three e2e files are dated `bb8f671` (2026-06-11), predating every change on this page. Per the resync ruling, the implementation wins; these suites need maintenance out of scope for this sync.
 
 **References:** `../carmen-backstage/src/App.tsx` (route guards) · `src/components/PrivateRoute.tsx` (guard) · `src/pages/Forbidden.tsx` (the 403 page) · `src/components/nav/backstageNav.ts` (sidebar array, `buildBackstageNav()`, `NAV_RESOURCE_ORDER`/`resourceRank()`) · `src/components/Can.tsx` · `src/context/AuthContext.tsx` (`login`, `hasPermission`, `hasBackstageAuthority`, `hasClusterAdminScope`) · `src/utils/permissions.ts` (`checkPermission`, `checkBackstageAuthority`) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-permissions/backstage-permissions.controller.ts` (`backstage_role.read` enforcement on the catalog endpoint).
-**Cross-links:** [Backstage RBAC landing](/en/backstage/rbac) &nbsp;·&nbsp; [Data Model](/en/backstage/rbac/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/rbac/ui-screens)
+**Cross-links:** [Backstage Roles landing](/en/backstage/rbac) &nbsp;·&nbsp; [Data Model](/en/backstage/rbac/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/rbac/ui-screens)

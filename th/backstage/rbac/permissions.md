@@ -1,14 +1,14 @@
 ---
-title: Backstage RBAC — สิทธิ์ (Permissions)
+title: Backstage Roles — สิทธิ์ (Permissions)
 description: เมทริกซ์ route-guard ของทั้ง SPA, การประกอบกันของ gate ระดับ route/sidebar/ภายในหน้า และอัลกอริทึมการ resolve permission พร้อมกรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, rbac, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
 ---
 
-# Backstage RBAC — สิทธิ์ (Permissions)
+# Backstage Roles — สิทธิ์ (Permissions)
 
 > **At a Glance**
 > **Gate:** ทุก route ที่ถูก guard มี `requiredPermission="resource.action"` (หรือ `requireSuperAdmin`) บวก prop `feature="<key>"` แบบ optional ตั้งแต่ sync ครั้งก่อนบน `PrivateRoute` &nbsp;·&nbsp; **ลำดับการ resolve (`hasPermission` ที่ gate ทุกตัวใช้):** bootstrap → super-admin → key ระดับแพลตฟอร์ม → key ระดับ cluster — ไม่เปลี่ยนแปลงตั้งแต่ sync ครั้งก่อน &nbsp;·&nbsp; **ข้อยกเว้น bootstrap:** จำนวนผู้ใช้รวม 0 หรือ 1 ⇒ login ข้าม gate ≥1-permission และ `hasPermission` คืน `true` &nbsp;·&nbsp; **login ยังรับ session แบบ cluster-admin เท่านั้นด้วย** (ไม่มี permission ระดับแพลตฟอร์มเลย) นอกกรณี bootstrap — เป็น OR-branch แยกต่างหากตอน `login()` ไม่ใช่ `hasPermission` (ดู §4) &nbsp;·&nbsp; **เมื่อไม่ผ่าน:** หน้า `Forbidden` (`src/pages/Forbidden.tsx`) render ในตำแหน่งเดิมภายใน `<Layout>` (sidebar ยังมองเห็นอยู่, URL ไม่เปลี่ยน); route `/403` โดยตรงก็ render หน้าเดียวกันนี้ &nbsp;·&nbsp; **Gate ภายในหน้า:** `<Can>` ห่อ Add/Edit/Delete บนหน้า list และ edit ของ management ส่วนใหญ่ (key `.create`/`.update`/`.delete` — เฉพาะ Clusters/Business Units เป็นแบบ cluster-scoped); list/edit ของ Roles gate Add/Edit/Delete ด้วย key `backstage_role.*` (เปลี่ยนชื่อจาก `role.*` เมื่อ 2026-08-20) และหน้า detail ของ Backstage Users ใช้ (`user_backstage.manage`) &nbsp;·&nbsp; **route ของ Permission Catalog ไม่มี key เลย** — ดู §2.1
@@ -51,12 +51,12 @@ dateCreated: 2026-06-10T15:00:00.000Z
 | `/users` | `user.read` / `user.create` / `user.update` | ต่างจาก `user_backstage.*` ซึ่ง gate การ assign role ไม่ใช่ CRUD ของผู้ใช้ |
 | `/applications` | `application.read` / `application.create` / `application.update` | |
 | `/report-templates` | `report_template.read` / `report_template.create` / `report_template.update` | |
-| `/report-form-groups` | `report_template.read` (mutation ผ่าน `report_template.update`/`.create`) | ใหม่เมื่อ 2026-07-23; reuse key ของ Report Templates ไม่มี key ใหม่; โมดูลระดับบนสุด standalone document ไว้ที่ [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/backstage/report-form-groups) |
+| `/report-form-groups` | `report_template.read` (mutation ผ่าน `report_template.update`/`.create`) | ใหม่เมื่อ 2026-07-23; reuse key ของ Report Templates ไม่มี key ใหม่; โมดูลระดับบนสุด standalone document ไว้ที่ [กลุ่มฟอร์ม (Form Groups)](/th/backstage/report-form-groups) |
 | `/news` | `news.read` / `news.create` / `news.update` | |
 | `/broadcasts/new` | `broadcast.send` | Route เดียว; ไม่มีหน้า list |
 | `/sql-workbench` | `sql_workbench.read` | บันทึกไว้ที่ [SQL Workbench](/th/backstage/sql-workbench) หนึ่งในหน้า standalone ของ book นี้ (ไม่ใช่หน้าย่อยของโมดูลอื่น) |
 
-**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — โมดูลถูกลบออกจาก carmen-backstage เมื่อ 2026-07-24 (commit `de11377`) และแถว permission catalog ที่มันใช้ถูกลบออกจาก seed ของ carmen-turborepo-backend ก่อนหน้าหนึ่งวัน (commit `c135bb21e`, 2026-07-23); ตอนนี้ `template_type` บวกโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/backstage/report-form-groups) แบบ standalone ทำหน้าที่แทน
+**ถูกลบเมื่อ 2026-07-23/24:** `/print-template-mapping*` และ key `print_template_mapping.*` ไม่มีอยู่แล้ว — โมดูลถูกลบออกจาก carmen-backstage เมื่อ 2026-07-24 (commit `de11377`) และแถว permission catalog ที่มันใช้ถูกลบออกจาก seed ของ carmen-turborepo-backend ก่อนหน้าหนึ่งวัน (commit `c135bb21e`, 2026-07-23); ตอนนี้ `template_type` บวกโมดูล [กลุ่มฟอร์ม (Form Groups)](/th/backstage/report-form-groups) แบบ standalone ทำหน้าที่แทน
 
 มีสาม route ที่เป็น public เต็มรูปแบบ (ไม่มี `PrivateRoute` เลย): `/` (landing), `/login` และ `/changelog` แหล่งที่มา: `../carmen-backstage/src/App.tsx` (block `<Routes>` ฉบับเต็ม) ไม่มี route ใดใน SPA ที่ส่ง key `.delete` เป็น `requiredPermission` — action ของการลบอยู่ภายในหน้า list ซึ่ง management list ทุกหน้า gate ภายในหน้าด้วย `<Can permission="*.delete">` (§3) **รวมถึง Roles ด้วยแล้วตอนนี้** (§2.1) — ข้อความเดิมที่ว่า "มีเพียงหน้า list ของ Roles ที่ยังเปิดเผย Delete" ล้าสมัยแล้ว
 
@@ -155,4 +155,4 @@ snapshot `EffectivePermissions` ถูก fetch ตอน login และอี�
 **e2e ล้าสมัย ไม่ใช่หลักฐาน:** `../carmen-backstage-e2e/tests/permission-catalog/permission-catalog.spec.ts` ไปที่ route `/backstage/permissions` ซึ่งไม่มีอยู่แล้ว (ย้ายเป็น `/backstage/category-permissions` เมื่อ 2026-08-20) — ทุกเทสต์ในสเปกนี้พังกับซอร์สปัจจุบัน `../carmen-backstage-e2e/tests/roles/role-crud.spec.ts` (และ page object `pages/RoleEditPage.ts`) ควบคุมตัวเลือก permission เป็น **checkbox** ("toggle the `cluster.read` permission checkbox") — `PermissionGrid` ปัจจุบัน (2026-08-20, `carmen-backstage` commit `42eeafe`) ใช้ปุ่ม toggle `aria-pressed` ไม่ใช่ checkbox แล้ว selector เดิมจึงไม่ match `pages/RoleManagementPage.ts` เองมี comment ระบุว่า "Name cell เป็น `<button>`... ไม่ใช่ link" ซึ่งขัดกับซอร์สปัจจุบันที่ Name cell เป็น `<Link>` ทั้งสามไฟล์นี้ลงวันที่ `bb8f671` (2026-06-11) ก่อนการเปลี่ยนแปลงทุกอย่างในหน้านี้ ตามหลักการของ resync นี้ implementation ชนะ; สเปกทั้งสามต้องการการดูแลรักษาซึ่งอยู่นอกขอบเขตของ sync ครั้งนี้
 
 **แหล่งข้อมูลอ้างอิง:** `../carmen-backstage/src/App.tsx` (route guard) · `src/components/PrivateRoute.tsx` (guard) · `src/pages/Forbidden.tsx` (หน้า 403) · `src/components/nav/backstageNav.ts` (array ของ sidebar, `buildBackstageNav()`, `NAV_RESOURCE_ORDER`/`resourceRank()`) · `src/components/Can.tsx` · `src/context/AuthContext.tsx` (`login`, `hasPermission`, `hasBackstageAuthority`, `hasClusterAdminScope`) · `src/utils/permissions.ts` (`checkPermission`, `checkBackstageAuthority`) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-permissions/backstage-permissions.controller.ts` (การบังคับ `backstage_role.read` บน endpoint ของ catalog)
-**Cross-link:** [หน้า landing ของ Backstage RBAC](/th/backstage/rbac) &nbsp;·&nbsp; [Data Model](/th/backstage/rbac/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/rbac/ui-screens)
+**Cross-link:** [หน้า landing ของ Backstage Roles](/th/backstage/rbac) &nbsp;·&nbsp; [Data Model](/th/backstage/rbac/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/rbac/ui-screens)

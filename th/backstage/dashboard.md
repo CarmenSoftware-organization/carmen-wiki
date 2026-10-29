@@ -2,7 +2,7 @@
 title: Dashboard
 description: หน้า home hub ของผู้ใช้ที่ signed-in (/dashboard) — activity stream รวม 6 โดเมน บวกแถบสรุปจำนวน active/total แบบ sticky ไม่มี requiredPermission ของตัวเอง โดเมนที่อ่านไม่ได้จะหายไปเงียบ ๆ
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/dashboard, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -39,7 +39,7 @@ Timeline ที่ render จัดกลุ่มตามวัน (แถว 
 |---|---|
 | `navGroup.organization` | Tenant Migrations, Tenant Seed Data, Data Import (อีกสามแถวในกลุ่มนี้ — Clusters, Business Units, Users — *มี* ครอบคลุมแล้ว) |
 | `navGroup.licenseManagement` | Licenses, License Feature Groups, License Features — ทั้งกลุ่ม |
-| `navGroup.content` | Report Form Groups, Dashboard Templates, Broadcasts (Report Templates และ News อีกสองแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
+| `navGroup.content` | Form Groups, Dashboard Templates, Broadcasts (Report Templates และ News อีกสองแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
 | `navGroup.analytics` | Usage Analytics, Activity Events — ทั้งกลุ่ม |
 | `navGroup.scheduling` | Scheduled Jobs — ทั้งกลุ่ม |
 | `navGroup.backstage` | Backstage Config, Email Settings, Backstage Roles, Backstage Users, Super Admins, Feature Flags (Applications อีกแถวของกลุ่ม *มี* ครอบคลุมแล้ว) |
@@ -48,7 +48,7 @@ Timeline ที่ render จัดกลุ่มตามวัน (แถว 
 
 นอกเหนือจากนี้ยังมี persona **cluster-admin** (`/cluster-admin/...`) ที่ Dashboard เข้าไม่ถึงเลย เพราะไม่ได้อยู่ใน `ALL_BACKSTAGE_NAV_ITEMS` เลยด้วยซ้ำ และไม่มีหน้า landing แบบ Dashboard เป็นของตัวเอง
 
-Broadcasts ควรได้รับการแก้ไขเฉพาะ: หน้านี้เคยบอกว่า "ไม่มี endpoint list เลย" ซึ่งเป็นจริงตอนที่ Broadcasts ยังเป็นหน้าจอ compose แบบ fire-and-forget อย่างเดียว แต่ไม่จริงอีกต่อไปแล้ว — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) มีอยู่มาตั้งแต่การออกแบบ notification ใหม่เมื่อ 2026-08-10/11 ที่ให้ Broadcasts มีพื้นผิว list/edit สำหรับแอดมินเป็นของตัวเอง (ดู [Broadcasts](/th/backstage/broadcasts)) `ACTIVITY_SOURCES` ของ Dashboard เพียงแต่ยังไม่ถูกอัปเดตให้เพิ่มมันเป็นโดเมนที่เจ็ด — เป็นช่องว่างจริงตอนนี้ ไม่ใช่ข้อจำกัดเชิงสถาปัตยกรรมอีกต่อไป Report Form Groups เป็นมุมมองหนึ่งของทรัพยากร Report Templates มาตั้งแต่แรก ไม่ใช่โดเมนของตัวเอง การขาดหายจึงเป็นการออกแบบ ไม่ใช่ช่องว่าง ไม่มีข้อใดในรายการเหล่านี้ปรากฏที่ Activity Stream หรือ Counts Rail เลย — การเปลี่ยน role, การให้สิทธิ์ super-admin, tenant migration, cronjob หรือ default ของ form-group จะไม่ปรากฏบนหน้านี้ไม่ว่าจะเพิ่งเกิดขึ้นแค่ไหนก็ตาม
+Broadcasts ควรได้รับการแก้ไขเฉพาะ: หน้านี้เคยบอกว่า "ไม่มี endpoint list เลย" ซึ่งเป็นจริงตอนที่ Broadcasts ยังเป็นหน้าจอ compose แบบ fire-and-forget อย่างเดียว แต่ไม่จริงอีกต่อไปแล้ว — `broadcastService.getAll()` (`GET /api/notifications/broadcasts`) มีอยู่มาตั้งแต่การออกแบบ notification ใหม่เมื่อ 2026-08-10/11 ที่ให้ Broadcasts มีพื้นผิว list/edit สำหรับแอดมินเป็นของตัวเอง (ดู [Broadcasts](/th/backstage/broadcasts)) `ACTIVITY_SOURCES` ของ Dashboard เพียงแต่ยังไม่ถูกอัปเดตให้เพิ่มมันเป็นโดเมนที่เจ็ด — เป็นช่องว่างจริงตอนนี้ ไม่ใช่ข้อจำกัดเชิงสถาปัตยกรรมอีกต่อไป Form Groups เป็นมุมมองหนึ่งของทรัพยากร Report Templates มาตั้งแต่แรก ไม่ใช่โดเมนของตัวเอง การขาดหายจึงเป็นการออกแบบ ไม่ใช่ช่องว่าง ไม่มีข้อใดในรายการเหล่านี้ปรากฏที่ Activity Stream หรือ Counts Rail เลย — การเปลี่ยน role, การให้สิทธิ์ super-admin, tenant migration, cronjob หรือ default ของ form-group จะไม่ปรากฏบนหน้านี้ไม่ว่าจะเพิ่งเกิดขึ้นแค่ไหนก็ตาม
 
 ## 5. บทบาทและ Persona
 

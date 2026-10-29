@@ -2,7 +2,7 @@
 title: Applications
 description: Application module overview — registered API clients of the platform, their x-app-id identity, and allow-all vs explicit api_name access grants.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/applications, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-06-10T12:30:00.000Z
 
 # Applications
 
-The **Applications** module manages the platform's registered **API clients** — the machine callers of the backend gateway. An application record is an identity plus an access grant: its record UUID is the `x-app-id` header value the client sends on every request, and its grant is either "allow all APIs" or an explicit list of `api_name` keys picked from a backend-generated catalog. Where [Backstage RBAC](/en/backstage/rbac) answers "what may this *person* do," Applications answers "what may this *program* call."
+The **Applications** module manages the platform's registered **API clients** — the machine callers of the backend gateway. An application record is an identity plus an access grant: its record UUID is the `x-app-id` header value the client sends on every request, and its grant is either "allow all APIs" or an explicit list of `api_name` keys picked from a backend-generated catalog. Where [Backstage Roles](/en/backstage/rbac) answers "what may this *person* do," Applications answers "what may this *program* call."
 
 > **At a Glance**
 > **Module purpose:** Register machine clients and grant them API access — `allow_all` or an explicit `api_names` list selected from a catalog grouped by module &nbsp;·&nbsp; **Audience:** Developers and QA working on the Backstage SPA and the backend gateway's `AppIdGuard` enforcement &nbsp;·&nbsp; **Key entities/tables:** `tb_application` (the client: `name`, `allow_all`, `device`, plus service-status columns `status`/`status_message`/`status_until` and app-secret columns `require_secret`/`secret_*`), `tb_application_api` (1:N grant rows, one `api_name` each), `tb_application_bypass_user` (users who keep access during maintenance/read-only) &nbsp;·&nbsp; **Identity:** record `id` (UUID) **is** the `x-app-id` value — there is no separate app-id field &nbsp;·&nbsp; **Permission key** (`../carmen-backstage/src/components/nav/backstageNav.ts`): `application.read` (list/nav) + `application.create`/`application.update`/`application.delete`, plus `application.secret.manage` / `application.secret.reveal` for the app-secret card &nbsp;·&nbsp; **Feature-flag key:** `applications` (checked on all three routes and the sidebar entry, after the permission gate) &nbsp;·&nbsp; **superAdminOnly:** No &nbsp;·&nbsp; **Sub-pages:** 3
@@ -64,7 +64,7 @@ The selectable catalog is **derived from those guards, not hand-maintained**: `s
 
 ## 4. Roles and Personas
 
-Access to the module is permission-gated through [Backstage RBAC](/en/backstage/rbac), with both route guards and in-page `<Can>` gates:
+Access to the module is permission-gated through [Backstage Roles](/en/backstage/rbac), with both route guards and in-page `<Can>` gates:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -85,7 +85,7 @@ Note that `application.delete` exists **only as an in-page gate** — no route r
 
 ## 5. Related Modules
 
-- [Backstage RBAC](/en/backstage/rbac) — the human-access counterpart. Same `resource.action` key grammar, different catalog and enforcement path: RBAC keys live in `tb_backstage_permission` and gate user sessions; `api_name`s come from the `AppIdGuard` scan and gate `x-app-id` callers. The `application.*` keys that gate *this module's screens* are themselves RBAC keys — a human needs RBAC grants to manage machine grants.
+- [Backstage Roles](/en/backstage/rbac) — the human-access counterpart. Same `resource.action` key grammar, different catalog and enforcement path: RBAC keys live in `tb_backstage_permission` and gate user sessions; `api_name`s come from the `AppIdGuard` scan and gate `x-app-id` callers. The `application.*` keys that gate *this module's screens* are themselves RBAC keys — a human needs RBAC grants to manage machine grants.
 - [users](/en/backstage/users) — applications have no user binding; the only `tb_user` references on the application tables are the audit actor columns. The schema-only `tb_application_role` family (which does join users) is unrelated to this module — see the [Data Model](/en/backstage/applications/data-model) divergences section.
 
 ## 6. Reference Sources

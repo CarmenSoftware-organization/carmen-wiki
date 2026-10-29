@@ -2,7 +2,7 @@
 title: การย้ายเทแนนต์ (Tenant Migrations)
 description: หน้าจอระดับ fleet ที่ตรวจและ apply schema migration (กับ dashboard view) ของฐานข้อมูล tenant ทั่วทุก business unit ดูต้องมี tenant_migration.read เปลี่ยนแปลงต้องมี tenant_migration.apply
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -139,7 +139,7 @@ schema tenant ของแต่ละ BU ยังมี dashboard view ที�
 
 - [Business Units](/th/backstage/business-units) — ทุกแถวบนหน้านี้คือ `business_unit` หนึ่งตัว หน้าย่อย [Tenant Migrations](/th/backstage/business-units/tenant-migrations) ที่นั่นครอบคลุมเฉพาะการ์ด `TenantMigrationCard` ต่อ BU ที่ฝังอยู่ ไม่ใช่หน้าจอระดับ fleet นี้
 - [Database Pools](/th/backstage/database-pools) — แถว `tb_database_pool` ที่ `database_pool_id` ของ BU ชี้ไป pool ที่ถูกปิดหรือ soft-delete ทำให้ connection ของ tenant นั้น resolve ไม่ได้ (§3.3, §4.4)
-- [Backstage RBAC](/th/backstage/rbac) — โมเดล permission เบื้องหลัง `tenant_migration.*` และ (`rbac/permissions.md`) ตาราง gate ระดับ route ที่มี `/tenant-migrations` อยู่ด้วย
+- [Backstage Roles](/th/backstage/rbac) — โมเดล permission เบื้องหลัง `tenant_migration.*` และ (`rbac/permissions.md`) ตาราง gate ระดับ route ที่มี `/tenant-migrations` อยู่ด้วย
 - [SQL Workbench](/th/backstage/sql-workbench) — คอนโซลฐานข้อมูลต่อ tenant อีกตัว เพิ่มมาในช่วงเดียวกัน §4.2 ข้างต้นเทียบช่องว่าง permission จริงของมันกับของโมดูลนี้ (ที่ bypass ไม่ได้)
 
 ## 6. แหล่งอ้างอิง

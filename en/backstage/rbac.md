@@ -1,23 +1,23 @@
 ---
-title: Backstage RBAC
+title: Backstage Roles
 description: Permission-based access control for the Backstage SPA — permission catalog, roles, scoped user assignments, and the super-admin bypass.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
 ---
 
-# Backstage RBAC
+# Backstage Roles
 
-The **Backstage RBAC** module is the access-control system of the Carmen Blue Backstage admin SPA. It replaces the legacy single-value role enum with a permission-based model: a backend-owned **permission catalog** defines `resource.action` keys, **roles** bundle those keys, **assignments** bind a role to a user at platform-wide or per-cluster scope, and a separate **super-admin flag** bypasses every check. Every route guard, sidebar entry, and in-page action gate in the SPA resolves against this system.
+The **Backstage Roles** module is the access-control system of the Carmen Blue Backstage admin SPA. It replaces the legacy single-value role enum with a permission-based model: a backend-owned **permission catalog** defines `resource.action` keys, **roles** bundle those keys, **assignments** bind a role to a user at platform-wide or per-cluster scope, and a separate **super-admin flag** bypasses every check. Every route guard, sidebar entry, and in-page action gate in the SPA resolves against this system.
 
 > **Permission key, feature key, superAdminOnly** (`src/components/nav/backstageNav.ts`): the **Backstage Roles** nav row (labelled "Backstage Roles", not "Roles") carries `permission: 'backstage_role.read'`, `feature: 'backstage_roles'`, no `superAdminOnly`. Permission Catalog has **no nav row at all** — see §1.
 
 > **At a Glance**
 > **Module purpose:** Permission-based access control — catalog defines `resource.action` keys, roles bundle keys, scoped assignments bind roles to users, super-admin flag bypasses all checks &nbsp;·&nbsp; **Audience:** Developers and QA working on the Backstage SPA and its authorization backend &nbsp;·&nbsp; **Key entities/tables:** `tb_backstage_permission`, `tb_backstage_role`, `tb_backstage_role_tb_permission`, `tb_user_tb_backstage_role` (scope via nullable `cluster_id`), `tb_backstage_super_admin` — all five carry `doc_version` (2026-07-16 platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Screens documented here:** Roles · Permission Catalog &nbsp;·&nbsp; **Screens summarized here, full module elsewhere:** [Super Admins](/en/backstage/super-admins) · [Backstage Users](/en/backstage/user-backstage) (see scope note below) &nbsp;·&nbsp; **Sub-pages:** 3 &nbsp;·&nbsp; **Permission keys renamed 2026-08-20:** `role.*` → `platform_role.*` (→ `backstage_role.*` on 2026-10-26, `318949a3`) everywhere, the standalone `rbac.read` key some earlier screens used was retired, and Permission Catalog's route moved from `/backstage/permissions` to `/backstage/category-permissions` (`carmen-backstage` commit `8df0b10`) &nbsp;·&nbsp; **Since 2026-09-02:** `RoleManagement`/`RoleEdit` measure a role's permission count against the **catalog size**, not the widest role, and `RoleEdit`'s permission picker became a per-resource-row grid with toggle buttons that also shows withheld actions (`carmen-backstage` PR #252/#253); `SuperAdminManagement` was rewritten a second time, from a `DataTable` into a people-roster list with a self-removal guard (`carmen-backstage` PR #244)
 
-![Backstage RBAC screen](/screenshots/platform/rbac/index.png)
+![Backstage Roles screen](/screenshots/platform/rbac/index.png)
 
 **Scope note (2026-09-05 resync):** this page documents the **Roles** screens and **Permission Catalog** in full. **Backstage Users** and **Super Admins** are covered here at a summary level only — both now have their own standalone Platform modules, [Backstage Users](/en/backstage/user-backstage) and [Super Admins](/en/backstage/super-admins), each with the independent nav row, permission key, and e2e suite noted below and each carrying the full line-by-line verification of its own screen. Facts stated below about them were confirmed against current source, but for the exhaustive treatment — screens, columns, endpoints — see their own module pages, not this one.
 

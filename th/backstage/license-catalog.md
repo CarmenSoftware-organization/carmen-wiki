@@ -2,7 +2,7 @@
 title: แคตตาล็อกไลเซนส์ (License Catalog)
 description: หน้าจอเดียว สองแท็บ สอง nav row — แคตตาล็อก feature ที่ขายได้ (Features) และโมดูลที่จัดไว้ล่วงหน้า (Modules บนจอ, bundles ในโค้ด) — แต่ละแท็บมีคู่ permission และ feature flag ของตัวเอง
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, license-catalog
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -66,7 +66,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ### 4.1 เมทริกซ์การกั้น route ฝั่ง frontend
 
-ทุก route ผ่าน `PrivateRoute` ซึ่งตรวจ `requiredPermission` ก่อน (ไม่ผ่าน → `<Forbidden>` อยู่กับที่) แล้วตรวจ flag `feature` ทีหลังเสมอ (ไม่ผ่าน → `NotFound` เมื่อเป็น `hide`, `ComingSoon` เมื่อเป็น `inactive`) — ดู [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) สำหรับ resolver ที่ใช้ร่วมกัน
+ทุก route ผ่าน `PrivateRoute` ซึ่งตรวจ `requiredPermission` ก่อน (ไม่ผ่าน → `<Forbidden>` อยู่กับที่) แล้วตรวจ flag `feature` ทีหลังเสมอ (ไม่ผ่าน → `NotFound` เมื่อเป็น `hide`, `ComingSoon` เมื่อเป็น `inactive`) — ดู [Backstage Roles — Permissions](/th/backstage/rbac/permissions) สำหรับ resolver ที่ใช้ร่วมกัน
 
 | Route | Permission | Feature flag | Component | แหล่งที่มา |
 |---|---|---|---|---|
@@ -107,7 +107,7 @@ path ทั้งหมดด้านล่างคือ `../carmen-turborepo
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Licenses](/th/backstage/licenses) — ผู้*บริโภค*ของ bundle ในโมดูลนี้: การ์ด "Purchased Groups" ของ subscription หนึ่งใบหยิบจาก bundle ที่จัดไว้ที่นี่ และตัวเลือกกลุ่มของมันเองพึ่งพา endpoint ข้ามโมดูลที่เอกสารไว้ใน §4.3
-- [Backstage RBAC](/th/backstage/rbac) — เป็นเจ้าของ UI แคตตาล็อกสิทธิ์ (`/backstage/category-permissions`) ที่ `license_feature.*`/`license_feature_group.*` ปรากฏอยู่ข้าง ๆ ทุก resource อื่น โมดูลนี้เองไม่ได้นิยามหรือแก้ permission key
+- [Backstage Roles](/th/backstage/rbac) — เป็นเจ้าของ UI แคตตาล็อกสิทธิ์ (`/backstage/category-permissions`) ที่ `license_feature.*`/`license_feature_group.*` ปรากฏอยู่ข้าง ๆ ทุก resource อื่น โมดูลนี้เองไม่ได้นิยามหรือแก้ permission key
 - [Feature Flags](/th/backstage/feature-flags) — คนละหน้าจอกันเลย (`feature_flag.manage`) ที่คอมเมนต์ในซอร์สของโมดูลนี้เตือนไว้ตรง ๆ ว่าอย่าเอาไปปนกับค่า `state` ที่เอกสารไว้ใน §3.3
 
 ## 6. แหล่งข้อมูลอ้างอิง

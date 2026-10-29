@@ -2,7 +2,7 @@
 title: Business Units
 description: Per-property/per-hotel entity edited on a seven-tab form (General/Location/Formats/Technical/Users/Licenses/Notes) covering identity, formats, database-pool assignment, and BU-scoped user and license rosters.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -67,7 +67,7 @@ The Technical tab's advanced cards extend the BU beyond plain configuration into
 
 ## 4. Roles and Personas
 
-Access is permission-based ([Backstage RBAC](/en/backstage/rbac)) — but with the single most important gotcha in this module:
+Access is permission-based ([Backstage Roles](/en/backstage/rbac)) — but with the single most important gotcha in this module:
 
 > **Key-reuse gotcha: the Business Units module has no permission keys of its own.** The `/business-units`, `/business-units/new`, and `/business-units/:id/edit` routes reuse the **`cluster.read` / `cluster.create` / `cluster.update`** keys, the sidebar entry filters on `cluster.read`, and the in-page Delete gate consumes `cluster.delete` — there are **no `business_unit.*` keys** in the catalog. `cluster.read` alone drives two sidebar entries — Clusters and Business Units — so a grant that opens the Clusters module also opens Business Units, and the two cannot be separated by permission alone (the `business_units` **feature flag**, §4 below, is the only per-module on/off switch). Tenant Migrations used to be a third entry on `cluster.read`; since the 2026-10 round it has its own `tenant_migration.read` key (`backstageNav.ts:17`). A `cluster.update` grant scoped to cluster X covers editing the BUs of cluster X. The cluster-side view of the same gotcha is in [clusters permissions](/en/backstage/clusters/permissions) §2.
 

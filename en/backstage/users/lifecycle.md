@@ -2,7 +2,7 @@
 title: User — Lifecycle
 description: Create, disable, hard/soft delete, password reset.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, users, lifecycle
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -19,7 +19,7 @@ This page covers every mutating operation that an admin performs on a user recor
 
 The product does not implement SSO, MFA, OAuth, or email-link password reset. All credential management is delegated to Keycloak; the SPA performs an admin-override password push via the `reset-password` endpoint and a pull-from-Keycloak sync via the `fetch-user` endpoint — there is no self-service reset link sent to the user's inbox.
 
-Mutation scope is split between three surfaces. This page (user edit screen) owns user identity (`tb_user` + `tb_user_profile` fields) and BU assignment (`tb_user_tb_business_unit`). Cluster assignment (`tb_cluster_user`) is read-only on this screen and is mutated from the cluster edit page; a user must have at least one cluster membership before a BU assignment can be made. Platform-admin access (RBAC role assignments) is mutated on the separate `/backstage/user-backstage` screen — see [Backstage RBAC](/en/backstage/rbac); §4 below covers how those assignments gate sign-in.
+Mutation scope is split between three surfaces. This page (user edit screen) owns user identity (`tb_user` + `tb_user_profile` fields) and BU assignment (`tb_user_tb_business_unit`). Cluster assignment (`tb_cluster_user`) is read-only on this screen and is mutated from the cluster edit page; a user must have at least one cluster membership before a BU assignment can be made. Platform-admin access (RBAC role assignments) is mutated on the separate `/backstage/user-backstage` screen — see [Backstage Roles](/en/backstage/rbac); §4 below covers how those assignments gate sign-in.
 
 ## 2. Create flow
 
@@ -43,7 +43,7 @@ Previously only `username` and `email` were required; `firstname`/`lastname` are
 
 There is no separate password field in `UserFormData`. The account is created without a credential in the SPA payload; the admin must use the "Change Password" button (§6) after creation, or the user's credential is managed entirely by Keycloak.
 
-There is also no access field: creating an account grants **no** Backstage access by itself. The new user holds zero RBAC role assignments, so the sign-in gate (§4) rejects them until an operator assigns a role on `/backstage/user-backstage`. (Historical: until 2026-06-10 the form carried a `platform_role` field whose value decided access — removed with the RBAC migration; see [Backstage RBAC](/en/backstage/rbac).)
+There is also no access field: creating an account grants **no** Backstage access by itself. The new user holds zero RBAC role assignments, so the sign-in gate (§4) rejects them until an operator assigns a role on `/backstage/user-backstage`. (Historical: until 2026-06-10 the form carried a `platform_role` field whose value decided access — removed with the RBAC migration; see [Backstage Roles](/en/backstage/rbac).)
 
 **Success:** On a successful `POST`, the SPA calls `navigate('/users/:id/edit', { replace: true })` (where `:id` is the newly created user's UUID), switching to the edit route for the new record. Because both routes render the same `UserEdit` component, React preserves its state across the navigation — `editing` was initialised to `true` on `/users/new` and nothing resets it — so the page stays in edit mode after create; only a fresh visit to `/users/:id/edit` (e.g. from the list) opens in view mode. A `toast.success('User created successfully')` appears.
 
@@ -71,7 +71,7 @@ There is also no access field: creating an account grants **no** Backstage acces
 
 **Effect on sign-in:** When `is_active` is `false` the user's row is present in the database but the downstream inventory application treats the account as blocked. The Platform SPA's `AuthContext` does not check `is_active` at login itself — the gate is enforced by the consuming applications.
 
-**Platform SPA sign-in gate (separate from `is_active`):** whether an account can sign in to the Backstage SPA is decided at login by its **effective permissions**, not by any field on the user row. `login()` fetches `GET /api/user/permission/backstage` and admits the session only if it holds at least one permission (platform- or cluster-scoped), carries the super-admin flag, or the bootstrap exception applies (total user count 0–1, the first-admin escape hatch); otherwise the partial session is torn down and the form shows "Access Denied. You are not authorized to access this platform." (Historical: until 2026-06-10 this gate was a `platform_role` allow-list — `ALLOWED_ROLES` — removed in `carmen-backstage` commit `5f629f2`.) The full walkthrough, including the `hasPermission` resolution order and tester edge cases, lives in [Backstage RBAC](/en/backstage/rbac) §3 and [RBAC Permissions](/en/backstage/rbac/permissions) §4–§5 — this page does not duplicate it.
+**Platform SPA sign-in gate (separate from `is_active`):** whether an account can sign in to the Backstage SPA is decided at login by its **effective permissions**, not by any field on the user row. `login()` fetches `GET /api/user/permission/backstage` and admits the session only if it holds at least one permission (platform- or cluster-scoped), carries the super-admin flag, or the bootstrap exception applies (total user count 0–1, the first-admin escape hatch); otherwise the partial session is torn down and the form shows "Access Denied. You are not authorized to access this platform." (Historical: until 2026-06-10 this gate was a `platform_role` allow-list — `ALLOWED_ROLES` — removed in `carmen-backstage` commit `5f629f2`.) The full walkthrough, including the `hasPermission` resolution order and tester edge cases, lives in [Backstage Roles](/en/backstage/rbac) §3 and [RBAC Permissions](/en/backstage/rbac/permissions) §4–§5 — this page does not duplicate it.
 
 **Independence from soft-delete:** `is_active = false` is a reversible flag; soft-delete stamps `deleted_at` and hides the row from the default list view. The two states are independent — a record can be inactive without being soft-deleted, or soft-deleted while still carrying `is_active = true`.
 

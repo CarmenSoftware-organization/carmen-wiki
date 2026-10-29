@@ -2,7 +2,7 @@
 title: Carmen Blue Backstage
 description: ภาพรวมผลิตภัณฑ์ Carmen Blue Backstage admin — จุดเริ่มต้นของ book จัดตามแถว Dashboard บวกเจ็ดกลุ่ม groupKey ของ sidebar (รวมแปดส่วน) บวก persona cluster-admin แยกต่างหาก
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -44,7 +44,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
 | [Report Templates](/th/backstage/report-templates) | แคตตาล็อกเทมเพลตรายงานแบบ XML — editor แบบแท็บ, การผูก data source กับฐานข้อมูล, การกำหนดขอบเขต BU แบบ allow/deny, default form ต่อ report group |
-| [Report Form Groups](/th/backstage/report-form-groups) | การ์ดหนึ่งใบต่อ `report_group` code ที่ตายตัว แต่ละใบแสดง form template พร้อม action ตั้งเป็น default — surface ที่เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป |
+| [Form Groups](/th/backstage/report-form-groups) | การ์ดหนึ่งใบต่อ `report_group` code ที่ตายตัว แต่ละใบแสดง form template พร้อม action ตั้งเป็น default — surface ที่เข้ามาแทนที่โมดูล print-template-mapping ที่ถูกลบไป |
 | [News](/th/backstage/news) | ประกาศแบบ markdown พร้อม lifecycle draft → published → archived กำหนดเป้าหมายแบบ global หรือราย BU |
 | [Broadcasts](/th/backstage/broadcasts) | push notification สาม target mode พร้อมการกำหนดเวลา แก้ไข และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม |
 
@@ -59,7 +59,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
-| [Cronjobs](/th/backstage/cronjobs) | คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตาราง Cronjob ที่ใช้ร่วมกัน — ประเภทงาน ใครเป็นคนรัน และจุดที่จะเห็นว่า run ไหนล้มเหลว |
+| [Scheduled Jobs](/th/backstage/cronjobs) | คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตาราง Cronjob ที่ใช้ร่วมกัน — ประเภทงาน ใครเป็นคนรัน และจุดที่จะเห็นว่า run ไหนล้มเหลว |
 
 ## 7. Backstage
 
@@ -68,7 +68,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 | [Backstage Config](/th/backstage/backstage-config) | หน้าจอเดียว เก้าการ์ด — คำเชิญ การสมัคร ตั้งรหัสผ่านใหม่ การบังคับใช้ license เกณฑ์เตือนใกล้หมดอายุ และอื่น ๆ |
 | [Email Settings](/th/backstage/email-settings) | โปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ และแผนที่เส้นทางที่ตัดสินว่าอีเมลขาออกทั้งห้าเส้นทางใช้โปรไฟล์ไหน |
 | [Applications](/th/backstage/applications) | API client ที่ลงทะเบียน — identity แบบ `x-app-id` และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับ `api_name` ที่ระบุชัด |
-| [Backstage RBAC](/th/backstage/rbac) | permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass |
+| [Backstage Roles](/th/backstage/rbac) | permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass |
 | [Backstage Users](/th/backstage/user-backstage) | มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว |
 | [Super Admins](/th/backstage/super-admins) | บัญชีดำ god-mode ของแพลตฟอร์ม — ทะเบียน add/remove ของผู้ใช้ที่ bypass ทุกการตรวจสอบ permission |
 | [Feature Flags](/th/backstage/feature-flags) | หน้าเดียวที่ตั้งค่าการมองเห็นของทุกฟีเจอร์ (active/inactive/hide) ทั้งฝั่ง Backstage และ Cluster-admin |

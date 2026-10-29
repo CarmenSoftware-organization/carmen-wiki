@@ -1,23 +1,23 @@
 ---
-title: งานตามกำหนดเวลา (Cronjobs)
+title: งานตามเวลา (Scheduled Jobs)
 description: คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตารางที่ใช้ร่วมกัน "CRONJOBS"."Cronjob" — งานหกประเภท ใครเป็นคนรัน (../micro-cronjobs) และจุดที่จะเห็นว่า run ไหนล้มเหลว
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# งานตามกำหนดเวลา (Cronjobs)
+# งานตามเวลา (Scheduled Jobs)
 
 > **At a Glance**
 > **จุดประสงค์โมดูล:** คอนโซลดูแลระดับแพลตฟอร์มบนตารางเดียวที่ใช้ร่วมกัน `"CRONJOBS"."Cronjob"` ซึ่งทั้งโมดูลนี้และ service อื่นเขียนงานตามกำหนดเวลาลงไปด้วยกัน &nbsp;·&nbsp; **หน้าจอ:** `CronJobManagement` (รายการ, `/cronjobs`) และ `CronJobEdit` ใช้ทั้งสร้าง (`/cronjobs/new`) และแก้ไข (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **Service เบื้องหลัง:** [`../micro-cronjobs`](#6-แหล่งอ้างอิง) (Go) — โปรเซส scheduler/worker แยกต่างหาก **ไม่มีการยืนยันตัวตนของตัวเอง** &nbsp;·&nbsp; **Sidebar:** `permission: 'cronjob.read'` อยู่กลุ่มของตัวเอง `navGroup.scheduling` — ไม่ถูกรวมเข้ากับ `navGroup.backstage` &nbsp;·&nbsp; **Feature flag:** `cronjobs` &nbsp;·&nbsp; **โมเดลสอง permission:** `cronjob.read` (permission **เดียว** ที่ frontend route guard เช็คบนทั้งสามเส้นทาง รวมถึง `/new` และ `/:id/edit`) กับ `cronjob.manage` (ทุกการกระทำที่เขียนข้อมูล — start/stop/run-now/edit/delete/create — บังคับด้วย `<Can>` **และ** เช็คซ้ำใน submit handler) &nbsp;·&nbsp; **การกำหนด role:** มีเฉพาะ role **Backstage Admin** เท่านั้นที่ถือ permission `cronjob.*` ใด ๆ &nbsp;·&nbsp; **ประเภทงาน:** 6 ประเภทที่สร้างได้จากคอนโซลนี้ — `report`, `notification`, `cleanup`, `dashboard_refresh`, `activity_rollup`, `activity_retention` — บวก 2 ประเภทที่ `micro-cronjobs` รันได้ด้วยแต่คอนโซลและ DTO ของ gateway ไม่รู้จัก คือ `gl_run_due` และ `pos_simphony_pull` (§3.1) &nbsp;·&nbsp; **e2e suite:** มีเพียง smoke spec แบบอ่านอย่างเดียว (`../carmen-backstage-e2e/tests/cronjobs/cronjobs-smoke.spec.ts`: หน้า render ที่ `/cronjobs`, มีลิงก์ใน sidebar) — ไม่ครอบคลุม start/stop/run/edit/delete &nbsp;·&nbsp; **หน้าย่อย:** 2
 
-![งานตามกำหนดเวลา (Cronjobs) screen](/screenshots/platform/cronjobs/index.png)
+![งานตามเวลา (Scheduled Jobs) screen](/screenshots/platform/cronjobs/index.png)
 
 ## 1. ภาพรวม
 
-**Cronjobs** คือหน้าต่างของแพลตฟอร์มที่มองเห็นงานเบื้องหลังที่ตั้งเวลาไว้ทุกงานใน Carmen Blue — หนึ่งหน้ารายการ (`CronJobManagement.tsx` อ่านแบบเต็ม) และหนึ่งฟอร์มสร้าง/แก้ไข (`CronJobEdit.tsx` อ่านแบบเต็ม) ทั้งคู่เข้าถึงได้ที่ `/cronjobs` ตัวหน้าจอเองไม่ทำอะไรนอกจากอ่าน/เขียนแถวข้อมูล — งานจริงที่แต่ละแถวอธิบายไว้ ไม่ว่าจะเป็นส่งรายงาน รีเฟรชแดชบอร์ด หรือลบ telemetry เก่า ล้วนถูกทำโดย Go service แยกต่างหาก คือ **`../micro-cronjobs`** ซึ่ง poll ตารางฐานข้อมูลเดียวกับที่คอนโซลนี้แก้ไข การเข้าใจโมดูลนี้จึงต้องเข้าใจทั้งสองฝั่ง คือคอนโซลให้ตั้งค่าอะไรได้บ้าง และ worker ทำอะไรกับค่านั้นจริง ๆ เมื่อบันทึกแล้ว — รวมถึงจุดสำคัญคือ run ที่ล้มเหลวจะไปโผล่ให้เห็นที่ไหน
+**Scheduled Jobs** คือหน้าต่างของแพลตฟอร์มที่มองเห็นงานเบื้องหลังที่ตั้งเวลาไว้ทุกงานใน Carmen Blue — หนึ่งหน้ารายการ (`CronJobManagement.tsx` อ่านแบบเต็ม) และหนึ่งฟอร์มสร้าง/แก้ไข (`CronJobEdit.tsx` อ่านแบบเต็ม) ทั้งคู่เข้าถึงได้ที่ `/cronjobs` ตัวหน้าจอเองไม่ทำอะไรนอกจากอ่าน/เขียนแถวข้อมูล — งานจริงที่แต่ละแถวอธิบายไว้ ไม่ว่าจะเป็นส่งรายงาน รีเฟรชแดชบอร์ด หรือลบ telemetry เก่า ล้วนถูกทำโดย Go service แยกต่างหาก คือ **`../micro-cronjobs`** ซึ่ง poll ตารางฐานข้อมูลเดียวกับที่คอนโซลนี้แก้ไข การเข้าใจโมดูลนี้จึงต้องเข้าใจทั้งสองฝั่ง คือคอนโซลให้ตั้งค่าอะไรได้บ้าง และ worker ทำอะไรกับค่านั้นจริง ๆ เมื่อบันทึกแล้ว — รวมถึงจุดสำคัญคือ run ที่ล้มเหลวจะไปโผล่ให้เห็นที่ไหน
 
 คอนโซลนี้ส่งต่อผ่าน `BackstageCronjobsController` / `BackstageCronjobsService` ของ `backend-gateway` (`../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/`) ซึ่งเรียก REST API ของ `micro-cronjobs` เอง (`CRONJOB_SERVICE_URL`) ผ่าน HTTP ธรรมดา `micro-cronjobs` ไม่มีการ login, session หรือ API key ของตัวเองเลย — comment ของ gateway controller เองระบุตรง ๆ ว่ามันคือ "ด่านเดียวระหว่างเบราว์เซอร์กับ service ที่ลบ job ให้ใครก็ได้" และ `CRONJOB_SERVICE_URL` ต้องไม่ถูกเปิดเผยให้ frontend เห็นเด็ดขาด การตรวจสิทธิ์ทุกจุดที่ tester สังเกตเห็นได้จากเบราว์เซอร์เกิดขึ้นที่ gateway เท่านั้น ไม่ใช่ที่ worker
 
@@ -25,7 +25,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 `"CRONJOBS"."Cronjob"` ไม่ได้เป็นของโมดูลนี้แต่เพียงผู้เดียว — มันคือ **ตารางที่ใช้ร่วมกัน** บางแถวถูกสร้างที่นี่ โดยผู้ปฏิบัติงาน ผ่านคอนโซลนี้ (`source_service` ว่างเปล่า แสดงเป็น "Backstage" ในคอลัมน์ Owner) บางแถวถูกสร้างโดย service อื่นในนามของ business unit — ที่เด่นชัดที่สุดคือ `reports.service.ts` ใน `backend-gateway` (`../carmen-turborepo-backend/apps/backend-gateway/src/application/reports/reports.service.ts`) ซึ่งเรียก endpoint `by-source` ของ `micro-cronjobs` โดยตรง (client `cronjobHttp` ของตัวเองเรียก `CRONJOB_SERVICE_URL` ตรง ๆ ข้าม gateway controller ของโมดูลนี้ไปเลย) ทุกครั้งที่ business unit ตั้งกำหนดการรายงานแบบทำซ้ำจากอีกส่วนของผลิตภัณฑ์ แถว "foreign-owned" เหล่านั้นยังคงมองเห็น แก้ไข และลบได้เต็มที่จากคอนโซลนี้ — ดู §3 ว่าสิ่งนี้หมายความว่าอะไร และไม่ได้หมายความว่าอะไร
 
-นี่คือเหตุผลที่โมดูลนี้อยู่ในกลุ่ม nav **ของตัวเอง** แทนที่จะอยู่ใน `navGroup.backstage` comment เหนือรายการ nav (`backstageNav.ts:39-40`) เขียนว่า "Scheduling — งานตามเวลา ไม่ใช่การตั้งค่าระบบ จึงเป็นกลุ่มของตัวเอง" ตรวจสอบแล้วในเชิงโครงสร้าง ไม่ใช่เชื่อตาม comment เฉย ๆ: `navGroup.scheduling` มีแค่แถวเดียว (`/cronjobs` grep ทั่วทั้งไฟล์ nav) อยู่ระหว่างกลุ่ม Analytics (Usage Analytics, Activity Events) กับกลุ่ม Backstage (Backstage Config, Email Settings, Applications, Backstage Roles, User Backstage, Super Admins, Feature Flags) — แยกตัวจากทั้งสองข้างจริง ไม่ได้ถูกรวมกับฝั่งไหนเลย เหตุผลนี้ยืนได้: ทุกอย่างใน `navGroup.backstage` ตัดสินว่า *ใครทำอะไรได้* หรือ *ตั้งค่าแพลตฟอร์มอย่างไร* ส่วน Cronjobs ตัดสินว่า *งานเบื้องหลังจะรันเมื่อไร* ซึ่งเป็นการตั้งค่าคนละประเภทกันจริง ๆ
+นี่คือเหตุผลที่โมดูลนี้อยู่ในกลุ่ม nav **ของตัวเอง** แทนที่จะอยู่ใน `navGroup.backstage` comment เหนือรายการ nav (`backstageNav.ts:39-40`) เขียนว่า "Scheduling — งานตามเวลา ไม่ใช่การตั้งค่าระบบ จึงเป็นกลุ่มของตัวเอง" ตรวจสอบแล้วในเชิงโครงสร้าง ไม่ใช่เชื่อตาม comment เฉย ๆ: `navGroup.scheduling` มีแค่แถวเดียว (`/cronjobs` grep ทั่วทั้งไฟล์ nav) อยู่ระหว่างกลุ่ม Analytics (Usage Analytics, Activity Events) กับกลุ่ม Backstage (Backstage Config, Email Settings, Applications, Backstage Roles, User Backstage, Super Admins, Feature Flags) — แยกตัวจากทั้งสองข้างจริง ไม่ได้ถูกรวมกับฝั่งไหนเลย เหตุผลนี้ยืนได้: ทุกอย่างใน `navGroup.backstage` ตัดสินว่า *ใครทำอะไรได้* หรือ *ตั้งค่าแพลตฟอร์มอย่างไร* ส่วน Scheduled Jobs ตัดสินว่า *งานเบื้องหลังจะรันเมื่อไร* ซึ่งเป็นการตั้งค่าคนละประเภทกันจริง ๆ
 
 ## 3. แนวคิดสำคัญ
 
@@ -34,7 +34,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - **"Run Now" คือการส่งงานออกไป ไม่ใช่การยืนยันผล** ปุ่ม execute (`POST /:id/execute`) ส่งงานให้ background goroutine แล้วคืนค่าทันที — toast ของคอนโซลเองบอกว่า "dispatched" (`toast.info`) ไม่ใช่ "succeeded" โดยตั้งใจ เพราะยังไม่รู้ผลลัพธ์ตอนที่ HTTP response กลับมา ดู §3.5 และ [Data Model](/th/backstage/cronjobs/data-model) §5 ว่าผลลัพธ์นั้นไปโผล่ที่ไหนในที่สุด
 - **ความเป็นเจ้าของมองเห็นได้ แต่ไม่ใช่การล็อก** งานที่ service อื่นสร้าง (มี `source_service`) สั่ง start, stop, run, แก้ไข หรือลบได้จากคอนโซลนี้เหมือนกับงานที่ backstage สร้างเองทุกประการ — เมธอด `update()`/`remove()`/`control()` ของ gateway ไม่มีการตรวจความเป็นเจ้าของเลย (ยืนยันจากการอ่าน `backstage_cronjobs.service.ts` — แต่ละเมธอดมี comment บอกไว้เอง) สิ่งเดียวที่คอนโซลทำเกี่ยวกับความเป็นเจ้าของคือให้ข้อมูล: คอลัมน์/badge Owner บนหน้ารายการ banner เตือนบนหน้าแก้ไข และข้อความยืนยันก่อนลบที่ต่างออกไป ("นี่คือการลบกำหนดการรายงานของ business unit นั้นถาวร" ไม่ใช่ "ลบ job นี้หรือไม่?" แบบทั่วไป)
 - **`cronjob.manage` คุมทุกการเขียนข้อมูล ส่วน `cronjob.read` คุมตัวหน้าเอง — รวมถึง route สร้าง/แก้ไขด้วย** `App.tsx:577-600` ใส่ `requiredPermission="cronjob.read"` บน**ทั้งสามเส้นทาง** (`/cronjobs`, `/cronjobs/new`, `/cronjobs/:id/edit`); `cronjob.manage` ถูกเช็คเฉพาะภายในหน้าเท่านั้น ผ่าน `<Can>` รอบทุกปุ่มที่เขียนข้อมูล และเช็คซ้ำใน `handleSave()` session ที่มีแค่สิทธิ์อ่านเปิดฟอร์มสร้างและกรอกข้อมูลได้ แต่ปุ่ม Save ไม่ถูก render และ submit handler จะ return ก่อนเรียก API ตารางสิทธิ์เต็ม: §4
-- **มีแค่ Backstage Admin เท่านั้นที่เข้าถึงโมดูลนี้ได้เลย** `seed.backstage-role-permission.data.ts:34` ให้ `cronjob.*` แก่ Backstage Admin คนเดียว; Support Manager, Support Staff และ Security Officer ไม่มีทั้งสอง key เลย ทั้งรายการ nav, route guard และ backend จึงสอดคล้องกัน: ไม่มีใครอื่นเห็น Cronjobs
+- **มีแค่ Backstage Admin เท่านั้นที่เข้าถึงโมดูลนี้ได้เลย** `seed.backstage-role-permission.data.ts:34` ให้ `cronjob.*` แก่ Backstage Admin คนเดียว; Support Manager, Support Staff และ Security Officer ไม่มีทั้งสอง key เลย ทั้งรายการ nav, route guard และ backend จึงสอดคล้องกัน: ไม่มีใครอื่นเห็น Scheduled Jobs
 
 ### 3.1 ประเภทงาน
 
@@ -86,7 +86,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | จุด | การ gate | Key |
 |---|---|---|
 | route `/cronjobs`, `/cronjobs/new`, `/cronjobs/:id/edit` | `PrivateRoute requiredPermission` + `feature` | `cronjob.read` + `cronjobs` (`App.tsx:577-600` — **permission เดียวกันบนทั้งสามเส้นทาง** `.manage` ไม่เคยถูกเช็คที่ระดับ route) |
-| รายการ Sidebar "Cronjobs" | filter ด้วย `permission` + `feature` | `cronjob.read` / `cronjobs` (`backstageNav.ts:41` กลุ่ม `navGroup.scheduling` ของตัวเอง) |
+| รายการ Sidebar "Scheduled Jobs" | filter ด้วย `permission` + `feature` | `cronjob.read` / `cronjobs` (`backstageNav.ts:41` กลุ่ม `navGroup.scheduling` ของตัวเอง) |
 | รายการ: ปุ่ม Add Job (header และ empty state) | `<Can>` | `cronjob.manage` |
 | รายการ: ไอคอน Start/Stop, Run Now, Edit, Delete ต่อแถว | ทั้ง cell action คืน `null` ถ้าไม่ `canManage` | `cronjob.manage` |
 | หน้าแก้ไข: ปุ่ม Save ใน unsaved-changes bar | `<Can>` | `cronjob.manage` |
@@ -106,7 +106,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - [Usage Analytics](/th/backstage/usage-analytics) — แดชบอร์ดที่อ่านตารางที่ `activity_rollup` ดูแล ไม่เกี่ยวข้องกับหน้าจอของโมดูลนี้เอง
 - [Report Templates](/th/backstage/report-templates) — โมดูลที่ใช้ตั้งกำหนดการรายงานแบบทำซ้ำของ business unit หนึ่ง กำหนดการเหล่านั้นลงในตาราง `"CRONJOBS"."Cronjob"` เดียวกับที่คอนโซลนี้บริหาร สร้างผ่าน `reports.service.ts` ของ `backend-gateway` ไม่ใช่ผ่านฟอร์มสร้างของโมดูลนี้เอง
 - [Database Pools](/th/backstage/database-pools) §4 — โมดูลพี่น้องที่รูปแบบ permission read/manage และพฤติกรรม "session อ่านอย่างเดียวเปิดฟอร์มได้แต่บันทึกไม่ได้" ของหน้านี้เลียนแบบมาโดยตรง
-- [Backstage RBAC](/th/backstage/rbac) — แคตตาล็อกสิทธิ์เบื้องหลัง `cronjob.read`/`cronjob.manage` และเหตุผลที่มีเฉพาะ Backstage Admin ที่ถือ key ใดก็ตามในสองตัวนี้
+- [Backstage Roles](/th/backstage/rbac) — แคตตาล็อกสิทธิ์เบื้องหลัง `cronjob.read`/`cronjob.manage` และเหตุผลที่มีเฉพาะ Backstage Admin ที่ถือ key ใดก็ตามในสองตัวนี้
 
 ## 6. แหล่งอ้างอิง
 

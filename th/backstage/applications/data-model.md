@@ -2,7 +2,7 @@
 title: Applications — แบบจำลองข้อมูล (Data Model)
 description: ตาราง tb_application, tb_application_api, tb_application_bypass_user (รวมคอลัมน์สถานะบริการและ app-secret), shape read/write ไม่สมมาตร, replace ของ PUT, api-catalog และ tb_application_role
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -184,4 +184,4 @@ REST surface ที่ `applicationService.ts` ใช้:
 - `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (ลอง nested ก่อน flat เป็นทางถอย; `updated` ถูกกำหนดด้วย `everEdited`) ที่ list ของโมดูลนี้ใช้ตั้งแต่ 2026-08-22
 - `../carmen-backstage/src/utils/docVersion.ts` — helper optimistic-lock `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` ที่ `ApplicationEdit.tsx` ใช้
 
-**Cross-link:** [หน้า landing ของ Applications](/th/backstage/applications) &nbsp;·&nbsp; [UI Screens](/th/backstage/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/th/backstage/applications/permissions) &nbsp;·&nbsp; [Backstage RBAC data-model](/th/backstage/rbac/data-model) (จุดเทียบของการเขียนแบบ delta)
+**Cross-link:** [หน้า landing ของ Applications](/th/backstage/applications) &nbsp;·&nbsp; [UI Screens](/th/backstage/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/th/backstage/applications/permissions) &nbsp;·&nbsp; [Backstage Roles data-model](/th/backstage/rbac/data-model) (จุดเทียบของการเขียนแบบ delta)

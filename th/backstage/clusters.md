@@ -2,7 +2,7 @@
 title: คลัสเตอร์ (Clusters)
 description: ภาพรวมโมดูล Clusters — กลุ่ม tenant ระดับบนสุดที่เป็นเจ้าของ business unit และ user ตามไลเซนส์ ปัจจุบันอ้างอิงจาก licence ledger แบบมีวันหมดอายุแทน cap แบบ static เดิม
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/clusters, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 # คลัสเตอร์ (Clusters)
 
-โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Blue โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Backstage RBAC](/th/backstage/rbac) และ [Permissions](/th/backstage/clusters/permissions))
+โมดูล **Clusters** เป็นจุดเริ่มต้นของ container ระดับองค์กรที่ใหญ่ที่สุดใน Carmen Blue โดย cluster หนึ่ง ๆ จะรวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้นเข้าด้วยกัน ลิมิตไลเซนส์ — จำนวน BU สูงสุดที่ cluster มีได้ และจำนวน named user ที่ครอบคลุม — แต่เดิมเป็นคอลัมน์ static บน record ของ cluster/BU แต่ตั้งแต่มีการปรับระบบไลเซนส์ระหว่าง 2026-07-29 ถึง 2026-09-04 ค่าเหล่านี้กลายเป็นแถวที่ "ชนะ" ของ ledger การซื้อแบบมีช่วงวันที่แทน (ดู §3) route และ action ที่แก้ไขข้อมูลในโมดูลนี้ถูก gate ด้วย permission key `cluster.*` **และ** feature flag `clusters` (ดู [Backstage Roles](/th/backstage/rbac) และ [Permissions](/th/backstage/clusters/permissions))
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** container ของ tenant ที่รวม business unit (BU) และ user ที่ผูกกับ BU เหล่านั้น และลิงก์ไปยัง licence ledger ที่ปัจจุบันเป็นที่เก็บ cap ของจำนวน BU และจำนวนที่นั่ง &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Backstage SPA; การเข้าถึงของ operator ต้องได้รับ grant permission `cluster.*` ([rbac](/th/backstage/rbac)) และ feature flag `clusters` ต้องเปิดอยู่ &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_cluster` (ฟิลด์: `code`, `name`, `alias_name`, `logo_file_token`, `avatar_file_token`, `is_active`, `doc_version`, soft-delete trio — **ไม่มีคอลัมน์ licence-cap อีกต่อไป**), `tb_business_unit` (1:N), `tb_cluster_user` (M:N join ที่ถือ role per-cluster เป็น `admin`/`user` — **ไม่มี `parent_bu_id` แล้ว**), `tb_cluster_license` (ledger การซื้อโควตา BU ของ cluster) &nbsp;·&nbsp; `tb_cluster_note` (ใหม่ 2026-10-26 — บันทึกภายในและไฟล์ของเจ้าหน้าที่) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **Permission key:** `cluster.read` (list/nav) + `cluster.create`/`cluster.update`/`cluster.delete` บวก `activity_log.read` (View History) และ `cluster_note.view`/`cluster_note.manage` ใหม่ (แท็บ Notes) &nbsp;·&nbsp; **Feature-flag key:** `clusters` &nbsp;·&nbsp; **superAdminOnly:** ไม่ใช่ — gate ด้วย permission ไม่ใช่ flag แบบ super-admin-only (อ้างอิง `../carmen-backstage/src/components/nav/backstageNav.ts`)
@@ -60,7 +60,7 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงเป็นแบบ permission-based ([Backstage RBAC](/th/backstage/rbac)): แต่ละ route ถือ key `requiredPermission` บวก key `feature` บน `PrivateRoute` และปุ่มที่แก้ไขข้อมูลยังถูกห่อด้วย gate `<Can>` เพิ่มเติม — บางตัวเป็นแบบ cluster-scoped ผ่าน prop `clusterId`
+การเข้าถึงเป็นแบบ permission-based ([Backstage Roles](/th/backstage/rbac)): แต่ละ route ถือ key `requiredPermission` บวก key `feature` บน `PrivateRoute` และปุ่มที่แก้ไขข้อมูลยังถูกห่อด้วย gate `<Can>` เพิ่มเติม — บางตัวเป็นแบบ cluster-scoped ผ่าน prop `clusterId`
 
 | Surface | ชนิดของ gate | Key | Scoped? |
 |---|---|---|---|

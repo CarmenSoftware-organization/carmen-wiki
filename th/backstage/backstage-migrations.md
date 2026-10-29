@@ -2,7 +2,7 @@
 title: Migration Backstage (Backstage Migrations)
 description: คอนโซลสำหรับ super-admin (หรือ CI ผ่าน deploy-token) รัน Prisma migration กับฐานข้อมูลแพลตฟอร์มที่ใช้ร่วมกัน พร้อมทะเบียน seed 8 ตัวและ drift check 7 ตัวที่รักษาข้อมูลอ้างอิงและ permission ให้ตรงกัน
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, backstage-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -84,7 +84,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 `seed-role-permission` เป็น operation เดียวในทะเบียนที่มีพารามิเตอร์ประกาศไว้ (`bu_id` บังคับ ชนิด `uuid` — `backstage_seed.catalog.ts:42-44`) และตั้งแต่ commit `157a65e` (`../carmen-backstage` HEAD — "feat(platform-migrations): เลือกได้หลาย BU ตอน seed role permissions (#281)") คอนโซลนี้ให้ผู้ดูแลเลือก BU **หลายตัว**พร้อมกันสำหรับ operation นี้ ผ่าน dialog `BuSwitcher` ตัวเดียวที่ตั้งเป็น `multiple` (`BackstageMigrationManagement.tsx:670-693`) ตัวตรวจว่า op ไหนต้องถามค่านี้เป็นแบบทั่วไป ไม่ได้ hardcode ที่ id ของ op นี้โดยเฉพาะ — `buParamOf()` มองหาพารามิเตอร์ชนิด `uuid` ที่ประกาศไว้และชื่อมีคำว่า `bu` op รายบริษัทตัวใหม่ในอนาคตจึงได้ dialog เดียวกันนี้อัตโนมัติ (`:78-83`) BU ที่เลือกจะถูกรัน**เรียงทีละตัว ทีละคำขอ ไม่มีการรันพร้อมกัน** — `runOpBatch` await `runOnce` ทีละตัวใน loop `for` (`:296-326`) เพราะ target ทุกตัวยิงสคริปต์ฐานข้อมูลเดียวกัน และคอมเมนต์ในโค้ดเองระบุตรง ๆ ว่าการรันพร้อมกันจะเชิญ deadlock มาเองและทำให้ log ที่สตรีมมาสลับกันอ่านไม่ออก (`:287-295`) ตัวที่ล้มเหลวหนึ่งตัวไม่หยุดตัวที่เหลือ ผู้ดูแลที่เลือกห้า BU จึงยังได้ครบทั้งห้าที่ถูกรัน (`:293-295`)
 
-สิ่งที่ตัวเลือกนี้รันจริงต่อ BU คือสคริปต์เดี่ยวเดียวกันที่อธิบายไว้ใน §3.3: มันเขียนแถวลง **`tb_application_role`** และ **`tb_application_role_tb_permission`** ผูกกับ `business_unit_id` แต่ละตัว (`seed.role-permission.ts:465-556`) **นี่คือระบบ application-role รายผู้เช่า ตารางคนละคู่กับตาราง backstage RBAC — `tb_backstage_role`, `tb_backstage_permission`, `tb_backstage_role_tb_permission` — ที่ [Backstage RBAC](/th/backstage/rbac) เป็นผู้อธิบาย** ตัวเลือกหลาย BU บนหน้านี้ไม่แตะสิ่งที่ RBAC ดูแลเลยแม้แต่นิดเดียว การอ่าน "seed role permissions หลาย BU พร้อมกัน" ว่าเป็น operation ของ RBAC จะเป็นความเข้าใจผิดโดยสิ้นเชิง (`seed-backstage-role-permission` ในทางกลับกัน เขียนลงตาราง link ของ backstage RBAC จริง — ดู §3.3 — แต่ไม่รับ `bu_id` และรันรายบริษัทไม่ได้)
+สิ่งที่ตัวเลือกนี้รันจริงต่อ BU คือสคริปต์เดี่ยวเดียวกันที่อธิบายไว้ใน §3.3: มันเขียนแถวลง **`tb_application_role`** และ **`tb_application_role_tb_permission`** ผูกกับ `business_unit_id` แต่ละตัว (`seed.role-permission.ts:465-556`) **นี่คือระบบ application-role รายผู้เช่า ตารางคนละคู่กับตาราง backstage RBAC — `tb_backstage_role`, `tb_backstage_permission`, `tb_backstage_role_tb_permission` — ที่ [Backstage Roles](/th/backstage/rbac) เป็นผู้อธิบาย** ตัวเลือกหลาย BU บนหน้านี้ไม่แตะสิ่งที่ RBAC ดูแลเลยแม้แต่นิดเดียว การอ่าน "seed role permissions หลาย BU พร้อมกัน" ว่าเป็น operation ของ RBAC จะเป็นความเข้าใจผิดโดยสิ้นเชิง (`seed-backstage-role-permission` ในทางกลับกัน เขียนลงตาราง link ของ backstage RBAC จริง — ดู §3.3 — แต่ไม่รับ `bu_id` และรันรายบริษัทไม่ได้)
 
 ## 4. บทบาทและสิทธิ์
 
@@ -121,7 +121,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 ## 8. โมดูลที่เกี่ยวข้อง
 
 - [Backstage Config](/th/backstage/backstage-config) — เจ้าของ `backstage_migration.api_enabled` สวิตช์เดียวที่ทุก route ในโมดูลนี้อยู่หลังมัน §3.2 ของหน้านั้นครอบคลุมฝั่งคีย์ config ของสวิตช์นี้ ส่วน §3.1 ข้างต้นครอบคลุมสองผู้มีสิทธิ์ที่สวิตช์นี้กั้นอยู่
-- [Backstage RBAC](/th/backstage/rbac) — เจ้าของ `tb_backstage_role`, `tb_backstage_permission` และ `tb_backstage_role_tb_permission` ตารางที่ `seed-backstage-role`, `seed-backstage-permission` และ `seed-backstage-role-permission` เติมข้อมูลให้ และยังเป็นสิ่งที่ตาราง tenant app-role ของ `seed-role-permission` ต้องไม่ถูกสับสนด้วย (§3.4)
+- [Backstage Roles](/th/backstage/rbac) — เจ้าของ `tb_backstage_role`, `tb_backstage_permission` และ `tb_backstage_role_tb_permission` ตารางที่ `seed-backstage-role`, `seed-backstage-permission` และ `seed-backstage-role-permission` เติมข้อมูลให้ และยังเป็นสิ่งที่ตาราง tenant app-role ของ `seed-role-permission` ต้องไม่ถูกสับสนด้วย (§3.4)
 - [Super Admins](/th/backstage/super-admins) — วิธีที่ถูกต้องและมี audit ในการมอบสิทธิ์ที่การตรวจสิทธิ์ของโมดูลนี้ตรวจหาอยู่ในที่สุด และยังเป็นเหตุผลที่ `db:seed.backstage-super-admin` ถูกตัดออกจากทะเบียนของคอนโซลนี้โดยเจตนา (§2, §6)
 - [Business Units](/th/backstage/business-units) — เจ้าของ `tb_business_unit` entity ที่ตัวเลือกหลาย BU (§3.4) เลือกจาก และที่ `check-seat-pool-view` (§3.3) ยืมมาหนึ่งแถวสำหรับการทดสอบที่ rollback ของมัน
 - [Licenses](/th/backstage/licenses) — ผู้บริโภคของ view `v_business_unit_seat` ที่ `check-seat-pool-view` ตรวจความหมายให้

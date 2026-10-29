@@ -2,7 +2,7 @@
 title: Broadcasts
 description: Broadcasts module overview — three screens covering push notifications with three target modes, a mandatory expiry, and a full sender-side lifecycle.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T13:15:00.000Z
@@ -49,7 +49,7 @@ Scheduling still lets an operator stage a notice ahead of time: a scheduled broa
 
 ## 4. Roles and Personas
 
-Four permission keys now gate the module, through [Backstage RBAC](/en/backstage/rbac), seeded per role in `seed.backstage-role-permission.data.ts`:
+Four permission keys now gate the module, through [Backstage Roles](/en/backstage/rbac), seeded per role in `seed.backstage-role-permission.data.ts`:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -76,7 +76,7 @@ Four permission keys now gate the module, through [Backstage RBAC](/en/backstage
 - [News](/en/backstage/news) — the pull-side sibling: authored content with a lifecycle and a public feed, versus Broadcasts' push.
 - [Business Units](/en/backstage/business-units) — BU mode targets one unit by `code`; the Compose screen loads its select options from that module's API (active BUs only, capped at 100).
 - [Users](/en/backstage/users) — *specific users* mode searches the user registry through `UserMultiSelect`; recipients are sent as `tb_user.id` UUIDs.
-- [Backstage RBAC](/en/backstage/rbac) — defines and resolves the four `broadcast.*` keys gating the SPA and API surfaces.
+- [Backstage Roles](/en/backstage/rbac) — defines and resolves the four `broadcast.*` keys gating the SPA and API surfaces.
 
 ## 6. Reference Sources
 

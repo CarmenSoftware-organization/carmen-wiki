@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา — หน้าจอ UI (UI Screens)
 description: หน้ารายการ ตัวกรอง และสถิติสรุปของ CronJobManagement การ์ด basics/schedule/execution/type-config ของ CronJobEdit และตัวสร้างตารางเวลาหกโหมดของ CronScheduleField
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cronjobs, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -155,5 +155,5 @@ render `AuditMeta` — เฉพาะ `created_at`/`created_by_id`/`updated_at`
 - `../carmen-backstage/src/utils/cronExpression.ts`, `cronSchedule.ts` — `describeCron`, `nextRuns`, `parseCron`, `buildCron`
 - `../carmen-backstage/src/components/Can.tsx` — helper render ตามสิทธิ์ที่อ้างถึงตลอดทั้งหน้า
 - [Data Model](/th/backstage/cronjobs/data-model) — ตารางฟิลด์และกลไก scheduler ที่การพาชมหน้าจอนี้ชี้กลับไปตลอด
-- [หน้า landing ของ Cronjobs](/th/backstage/cronjobs) §4 — ด่านสิทธิ์เบื้องหลังทุกปุ่มที่อ้างถึงในหน้านี้
+- [หน้า landing ของ Scheduled Jobs](/th/backstage/cronjobs) §4 — ด่านสิทธิ์เบื้องหลังทุกปุ่มที่อ้างถึงในหน้านี้
 - ยืนยันกับ `carmen-backstage` HEAD `157a65e` (2026-09-04)

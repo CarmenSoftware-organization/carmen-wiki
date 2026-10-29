@@ -2,7 +2,7 @@
 title: หน่วยธุรกิจ (Business Units)
 description: เอนทิตีต่อ property/ต่อโรงแรม แก้ไขบนฟอร์มเจ็ดแท็บ (General/Location/Formats/Technical/Users/Licenses/Notes) ครอบคลุมข้อมูลระบุตัวตน รูปแบบ การผูก database pool และรายชื่อผู้ใช้/license ที่ผูกกับ BU
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/business-units, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -61,13 +61,13 @@ Business unit คือ tenant ปฏิบัติการของ Carmen Bl
 - **คอลัมน์ audit**: หน้ารายการแสดงคอลัมน์ Created และ Updated (timestamp พร้อมชื่อผู้กระทำ) ตอนนี้ทั้งหน้ารายการและหน้าแก้ไขอ่านค่า audit ทุกตัวผ่าน helper ที่ใช้ร่วมกัน `normalizeAudit()` (`src/utils/audit.ts`) ซึ่งลองอ่าน object `audit` แบบ nested ก่อนเสมอ แล้วค่อย fallback ไปที่ shape แบบ flat รุ่นเก่า (`created_at`/`created_by_name` หรือ `created_by` ฯลฯ) เฉพาะเมื่อค่าฝั่ง nested ไม่มีหรือว่างเปล่า — ไม่ใช่ทางกลับกัน แถว Updated จะแสดงก็ต่อเมื่อ record ถูกแก้ไขจริง ตัดสินจากการมีชื่อผู้แก้ไข หรือ — เมื่อไม่มีชื่อ — เวลาที่ต่างจากเวลาสร้าง ไม่ใช่การเทียบ `updated_at === created_at` ตรง ๆ
 - **ที่นั่ง (`tb_business_unit_license`)**: ledger การซื้อแบบมีวันที่ หนึ่งแถวต่อหนึ่งสัญญาที่นั่ง แทนที่ integer `max_license_users` ที่ถูกถอดออก รวมกันจากแถวที่ active เป็นตัวเลข "Max users" แบบอ่านอย่างเดียวบนแท็บ General; ถูกดู (ไม่ใช่แก้ไข) บนแท็บ Licenses ซึ่งลิงก์ออกไปฟอร์ม License Center เต็มหน้าสำหรับสร้าง/แก้ไขแถวจริง
 - **Interface licence (`tb_business_unit_interface_license`)**: ledger แบบมีวันที่ใบที่สองบนแท็บเดียวกันตั้งแต่ 2026-09-10 — หนึ่งแถวต่อ interface feature group (`interface.pos.micros3700`, `interface.accounting.carmen_gl`, …) ต่อช่วงวันที่ เลขที่ขึ้นต้น `INF` สิทธิ์ที่มันให้คำนวณโดย backend เป็น `in_force = licence active ตามวันที่ของตัวเอง AND subscription หลักของ BU active`; การ์ดใส่ badge ตาม `in_force` เท่านั้น ไม่เคยตามวันที่ ดังนั้น licence "ที่ยังอยู่ในช่วงวันที่" แต่สัญญาหลักหมดอายุแล้วจะแสดง **Capped by contract** ถูกดูที่นี่ สร้าง/แก้ไขบนฟอร์ม `/licenses/interface/*` ของ License Center
-- **BU role (`admin` vs. `user`)**: role ที่ผูกกับการ assign user-BU แต่ละครั้ง เก็บบนแถว join ของ BU-user คู่กับ `is_active` และ `is_default` role นี้ **orthogonal** กับ permission assignment ของ Backstage RBAC บนบัญชีผู้ใช้ BU role ควบคุมพฤติกรรมของผู้ใช้ใน inventory app สำหรับ BU นั้น ไม่ใช่การเข้าถึง route ของ admin
+- **BU role (`admin` vs. `user`)**: role ที่ผูกกับการ assign user-BU แต่ละครั้ง เก็บบนแถว join ของ BU-user คู่กับ `is_active` และ `is_default` role นี้ **orthogonal** กับ permission assignment ของ Backstage Roles บนบัญชีผู้ใช้ BU role ควบคุมพฤติกรรมของผู้ใช้ใน inventory app สำหรับ BU นั้น ไม่ใช่การเข้าถึง route ของ admin
 - **Pattern เพิ่ม user จาก cluster**: สมาชิก BU ใหม่ถูกเลือกจากรายชื่อผู้ใช้ของ cluster ที่เป็นแม่ — ผู้ใช้ต้องเป็นสมาชิก cluster ก่อนถึงจะถูกเพิ่มเข้า BU ภายใน cluster ได้
 - **Soft delete**: BU ถูก soft-delete ผ่าน `deleted_at` / `deleted_by_name` หน้ารายการมี toggle filter "Show soft-deleted business units" ต่างจาก [clusters](/th/backstage/clusters) ตรงที่ action Delete ของหน้ารายการ BU ไม่มี client-side dependency guard
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงเป็นแบบ permission-based ([Backstage RBAC](/th/backstage/rbac)) — แต่มี gotcha ที่สำคัญที่สุดของโมดูลนี้:
+การเข้าถึงเป็นแบบ permission-based ([Backstage Roles](/th/backstage/rbac)) — แต่มี gotcha ที่สำคัญที่สุดของโมดูลนี้:
 
 > **Gotcha การ reuse key: โมดูล Business Units ไม่มี permission key ของตัวเอง** route `/business-units`, `/business-units/new` และ `/business-units/:id/edit` reuse key **`cluster.read` / `cluster.create` / `cluster.update`**, รายการใน sidebar filter ด้วย `cluster.read` และ gate Delete ภายในหน้าใช้ `cluster.delete` — **ไม่มี key `business_unit.*`** ใน catalog เลย `cluster.read` เพียงตัวเดียวขับเคลื่อนสองรายการ sidebar — Clusters และ Business Units — grant ใดที่เปิดโมดูล Clusters จึงเปิด Business Units ไปด้วย และแยกทั้งสองออกจากกันด้วย permission อย่างเดียวไม่ได้ (feature flag `business_units` ด้านล่างเป็นสวิตช์เปิด-ปิดต่อโมดูลตัวเดียว) Tenant Migrations เคยเป็นรายการที่สามบน `cluster.read`; ตั้งแต่รอบ 2026-10 มี key ของตัวเองคือ `tenant_migration.read` (`backstageNav.ts:17`) grant `cluster.update` ที่ scope ไว้กับ cluster X ครอบคลุมการแก้ไข BU ของ cluster X มุมมองฝั่ง cluster ของ gotcha เดียวกันอยู่ใน [clusters permissions](/th/backstage/clusters/permissions) §2
 

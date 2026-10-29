@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม — โมเดลข้อมูล (Data Model)
 description: ทุกฟิลด์ของเรคคอร์ด tb_activity_event — ใครเป็นคนเขียน ฟิลด์ไหนจำเป็น ฟิลด์ที่เพิ่มเข้ามาเฉพาะตอนอ่าน พร้อมงาน retention 365 วันและ rollup รายวันที่คุมว่าแถวมีชีวิตอยู่นานแค่ไหน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, activity-events, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -57,7 +57,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 4. การเก็บรักษาข้อมูล (Retention) และการสรุปยอดรายวัน (Rollup)
 
-งานตามเวลาสองงานคุมอายุของตารางนี้ ทั้งคู่นิยามอยู่ใน `../micro-cronjobs` (HEAD `d17d8eb9bc3`, 2026-09-04) และทั้งคู่ถูก seed เป็น cron entry ที่ **active** อยู่ในตาราง `"CRONJOBS"."Cronjob"` เดียวกับที่หน้า [Cronjobs](/th/backstage/cronjobs) ของแพลตฟอร์มเองบริหารจัดการ (ยืนยันโดย backend proxy ของโมดูลนั้นเอง `backstage_cronjobs.service.ts:7-30` ซึ่งระบุ `CronJobRow` ว่าเป็น "one row of `\"CRONJOBS\".\"Cronjob\"` as micro-cronjob serialises it" — ชื่อตารางเดียวกับที่ migration seed ด้านล่าง insert เข้าไป)
+งานตามเวลาสองงานคุมอายุของตารางนี้ ทั้งคู่นิยามอยู่ใน `../micro-cronjobs` (HEAD `d17d8eb9bc3`, 2026-09-04) และทั้งคู่ถูก seed เป็น cron entry ที่ **active** อยู่ในตาราง `"CRONJOBS"."Cronjob"` เดียวกับที่หน้า [Scheduled Jobs](/th/backstage/cronjobs) ของแพลตฟอร์มเองบริหารจัดการ (ยืนยันโดย backend proxy ของโมดูลนั้นเอง `backstage_cronjobs.service.ts:7-30` ซึ่งระบุ `CronJobRow` ว่าเป็น "one row of `\"CRONJOBS\".\"Cronjob\"` as micro-cronjob serialises it" — ชื่อตารางเดียวกับที่ migration seed ด้านล่าง insert เข้าไป)
 
 ### 4.1 Retention — คำตอบ และจุดที่บังคับใช้จริง
 
@@ -76,7 +76,7 @@ WHERE id IN (
 
 งานนี้ไม่ใช่แค่ทฤษฎี: migration seed ตัวหนึ่งใส่มันเป็น cron entry ที่ตั้งเวลาไว้และ **active** อยู่จริง — `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — ชื่อ "Activity events retention (365d)", `job_type = 'activity_retention'`, `cron_expression = '0 4 * * *'` (04:00 ทุกวัน), `job_data = {"retention_days":365,"batch_size":10000}`, `is_active = true` (struct ค่า default ของ Go ใน executor เองก็เป็นตัวเลขชุดเดียวกัน — `RetentionDays: 365, BatchSize: 10000` — ถ้า config ของงานไหนขาดสองค่านี้ไป แต่แถวที่ seed ไว้ระบุค่าตรง ๆ อยู่แล้ว)
 
-เพราะแถวนี้อยู่ในตารางเดียวกับที่หน้า Cronjobs ของแพลตฟอร์มบริหารจัดการ operator ที่ถือ `cronjob.manage` จึงอาจปิดหรือปรับค่าช่วงเวลา retention นี้ผ่านหน้าจอนั้นได้ในหลักการ — ยืนยันเชิงโครงสร้างแล้ว (ตารางเดียวกัน รูปแถวเดียวกัน) แต่ไม่ได้ทดสอบกับ deployment จริง และอยู่นอกขอบเขตของหน้านี้เกินกว่าการชี้ให้เห็นความเชื่อมโยงนี้
+เพราะแถวนี้อยู่ในตารางเดียวกับที่หน้า Scheduled Jobs ของแพลตฟอร์มบริหารจัดการ operator ที่ถือ `cronjob.manage` จึงอาจปิดหรือปรับค่าช่วงเวลา retention นี้ผ่านหน้าจอนั้นได้ในหลักการ — ยืนยันเชิงโครงสร้างแล้ว (ตารางเดียวกัน รูปแถวเดียวกัน) แต่ไม่ได้ทดสอบกับ deployment จริง และอยู่นอกขอบเขตของหน้านี้เกินกว่าการชี้ให้เห็นความเชื่อมโยงนี้
 
 ### 4.2 Rollup — อะไร feed เข้า `tb_activity_event_daily` และใครอ่านมันบ้าง
 
@@ -90,7 +90,7 @@ WHERE id IN (
 
 - [Activity Events](/th/backstage/activity-events) — หน้าจอที่ใช้เรคคอร์ดนี้; ตัวกรอง คอลัมน์ และเส้นทางการเขียนโดยสรุป (§3.4 ของหน้านั้น)
 - [Usage Analytics](/th/backstage/usage-analytics) — แดชบอร์ดสรุปที่คำนวณจากตารางดิบเดียวกัน
-- [Cronjobs](/th/backstage/cronjobs) — หน้าจัดการของแพลตฟอร์มเองบนตาราง `"CRONJOBS"."Cronjob"` เดียวกันที่ตั้งเวลา retention และ rollup (§4)
+- [Scheduled Jobs](/th/backstage/cronjobs) — หน้าจัดการของแพลตฟอร์มเองบนตาราง `"CRONJOBS"."Cronjob"` เดียวกันที่ตั้งเวลา retention และ rollup (§4)
 - [Applications](/th/backstage/applications) — เจ้าของแถว `tb_application` ที่ถูก join เป็น `app_name` ตอนอ่าน (§3)
 
 ## 6. แหล่งอ้างอิง
@@ -101,7 +101,7 @@ WHERE id IN (
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (เต็ม) — `POST api/analytics-events`, `ExtractRequestHeader` สำหรับ `user_id`, guard ต่าง ๆ
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (เต็ม) — ตัว proxy จาก gateway ไป microservice
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (การ insert) และ `findEvents()` (การเติมชื่อผู้ใช้/แอปตอนอ่าน)
-- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/backstage_cronjobs.service.ts:7-30` — `CronJobRow` ยืนยันว่าหน้า Cronjobs ของแพลตฟอร์มกับงาน retention/rollup ที่ seed ไว้ใช้ตารางเดียวกัน
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/backstage_cronjobs.service.ts:7-30` — `CronJobRow` ยืนยันว่าหน้า Scheduled Jobs ของแพลตฟอร์มกับงาน retention/rollup ที่ seed ไว้ใช้ตารางเดียวกัน
 - `../carmen-frontend/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — รูปร่าง `AnalyticsEvent` ฝั่ง client (ยืนยันว่าไม่มี `user_id` อยู่ในนั้น)
 - `../micro-cronjobs/internal/executor/activity_retention.go` (เต็ม, HEAD `d17d8eb9bc3`, 2026-09-04) — executor การลบแบบ batch สำหรับ retention
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (เต็ม 80 บรรทัด) — executor การ upsert รายวันสำหรับ rollup

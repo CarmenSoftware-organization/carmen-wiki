@@ -2,7 +2,7 @@
 title: Email Settings
 description: One screen, two peer sections — a named list of SMTP sender profiles, and the routing map that decides which of the five outbound mail flows uses which profile.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, email-settings
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -117,7 +117,7 @@ The read gate's veto over the button (§4.2) means "grant `email_setting.*` alon
 ## 5. Related Modules
 
 - [Backstage Config](/en/backstage/backstage-config) — owns the `email_routing` registry key and the generic `/api-system/backstage/configs` surface this module's routing card reads and writes through (§4.2); also documents, from its own side, the identical permission mismatch this page traces end to end.
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog where `email_setting.read`/`.manage` and `backstage_config.read`/`.manage` are both visible as independent resources.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog where `email_setting.read`/`.manage` and `backstage_config.read`/`.manage` are both visible as independent resources.
 
 ## 6. Reference Sources
 

@@ -2,7 +2,7 @@
 title: Activity Events — Data Model
 description: Every field of the tb_activity_event record — what writes it, what's optional, the enriched fields added only at read time — plus the 365-day retention job and daily rollup that govern how long rows live.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, activity-events, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -57,7 +57,7 @@ Because these three are computed at read time, they can go stale relative to the
 
 ## 4. Retention and Rollup
 
-Two scheduled jobs govern this table's lifecycle, both defined in `../micro-cronjobs` (HEAD `d17d8eb9bc3`, 2026-09-04) and both seeded as **active** cron entries in the same `"CRONJOBS"."Cronjob"` table the platform's own [Cronjobs](/en/backstage/cronjobs) module administers (confirmed by that module's own backend proxy, `backstage_cronjobs.service.ts:7-30`, which documents `CronJobRow` as "one row of `\"CRONJOBS\".\"Cronjob\"` as micro-cronjob serialises it" — the same table name the seed migrations below insert into).
+Two scheduled jobs govern this table's lifecycle, both defined in `../micro-cronjobs` (HEAD `d17d8eb9bc3`, 2026-09-04) and both seeded as **active** cron entries in the same `"CRONJOBS"."Cronjob"` table the platform's own [Scheduled Jobs](/en/backstage/cronjobs) module administers (confirmed by that module's own backend proxy, `backstage_cronjobs.service.ts:7-30`, which documents `CronJobRow` as "one row of `\"CRONJOBS\".\"Cronjob\"` as micro-cronjob serialises it" — the same table name the seed migrations below insert into).
 
 ### 4.1 Retention — the answer, and its enforcement point
 
@@ -76,7 +76,7 @@ WHERE id IN (
 
 The job is not hypothetical: a seed migration inserts it as an **active**, scheduled cron entry — `../micro-cronjobs/migrations/20260730093731_seed_activity_retention_job.up.sql` — named "Activity events retention (365d)", `job_type = 'activity_retention'`, `cron_expression = '0 4 * * *'` (04:00 daily), `job_data = {"retention_days":365,"batch_size":10000}`, `is_active = true`. (The executor's own Go struct defaults to the same numbers — `RetentionDays: 365, BatchSize: 10000` — if a job's config is ever missing them, but the seeded row supplies them explicitly.)
 
-Because this row lives in the same table the platform's Cronjobs screen manages, an operator holding `cronjob.manage` could in principle disable or reconfigure this retention window from that screen — this was confirmed structurally (same table, same row shape) but not tested against a live deployment, and is out of scope for this page beyond noting the connection.
+Because this row lives in the same table the platform's Scheduled Jobs screen manages, an operator holding `cronjob.manage` could in principle disable or reconfigure this retention window from that screen — this was confirmed structurally (same table, same row shape) but not tested against a live deployment, and is out of scope for this page beyond noting the connection.
 
 ### 4.2 Rollup — what feeds `tb_activity_event_daily`, and who reads it
 
@@ -90,7 +90,7 @@ Before retention runs each day, a second job aggregates recent raw rows into `tb
 
 - [Activity Events](/en/backstage/activity-events) — the screen this record backs; filters, columns, and the write path in outline (§3.4 there).
 - [Usage Analytics](/en/backstage/usage-analytics) — the aggregate dashboard computed from the same raw table.
-- [Cronjobs](/en/backstage/cronjobs) — the platform's own admin screen over the same `"CRONJOBS"."Cronjob"` table that schedules retention and rollup (§4).
+- [Scheduled Jobs](/en/backstage/cronjobs) — the platform's own admin screen over the same `"CRONJOBS"."Cronjob"` table that schedules retention and rollup (§4).
 - [Applications](/en/backstage/applications) — owner of the `tb_application` rows joined into `app_name` at read time (§3).
 
 ## 6. Reference Sources
@@ -101,7 +101,7 @@ Before retention runs each day, a second job aggregates recent raw rows into `tb
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.controller.ts` (full) — `POST api/analytics-events`, `ExtractRequestHeader` for `user_id`, guards.
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/analytics-events/analytics-events.service.ts` (full) — the gateway-to-microservice proxy.
 - `../carmen-turborepo-backend/apps/micro-business/src/log/activity-event/activity-event.service.ts:82-112,246-347` — `createBatch()` (the insert) and `findEvents()` (the read-time user/app-name enrichment).
-- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/backstage_cronjobs.service.ts:7-30` — `CronJobRow`, confirming the platform's Cronjobs module and the seeded retention/rollup jobs share one table.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/backstage_cronjobs.service.ts:7-30` — `CronJobRow`, confirming the platform's Scheduled Jobs module and the seeded retention/rollup jobs share one table.
 - `../carmen-frontend/lib/analytics.ts:30-42` (HEAD `72d6cd340`, 2026-09-04) — the `AnalyticsEvent` client-side shape (confirms `user_id` is absent from it).
 - `../micro-cronjobs/internal/executor/activity_retention.go` (full, HEAD `d17d8eb9bc3`, 2026-09-04) — the batched-delete retention executor.
 - `../micro-cronjobs/internal/executor/activity_rollup.go` (full, 80 lines) — the daily upsert rollup executor.

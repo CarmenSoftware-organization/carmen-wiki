@@ -2,7 +2,7 @@
 title: Backstage Users — UI Screens
 description: UserBackstageManagement's filter-consistent registry and UserBackstageEdit's per-holder dossier — plus where the e2e suite no longer matches this UI.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -70,4 +70,4 @@ All paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turb
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/user_backstage_role/user_backstage_role.service.ts` — `assign`/`assignBulk`/`remove` backing every write on both screens.
 - `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts`, `pages/UserPlatform{ManagementPage,EditPage}.ts` — the stale suite discussed in §4.
 
-**Cross-links:** [Backstage Users landing](/en/backstage/user-backstage) &nbsp;·&nbsp; [Permissions](/en/backstage/user-backstage/permissions) &nbsp;·&nbsp; [Users](/en/backstage/users) &nbsp;·&nbsp; [Backstage RBAC](/en/backstage/rbac)
+**Cross-links:** [Backstage Users landing](/en/backstage/user-backstage) &nbsp;·&nbsp; [Permissions](/en/backstage/user-backstage/permissions) &nbsp;·&nbsp; [Users](/en/backstage/users) &nbsp;·&nbsp; [Backstage Roles](/en/backstage/rbac)

@@ -2,7 +2,7 @@
 title: Business Unit — Data Model
 description: Entity ของ BU, ledger ที่นั่ง tb_business_unit_license, ledger interface licence (INF), database_pool_id/db_schema ที่แทน db_connection, branding file token และบันทึกภายใน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, business-units, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -24,7 +24,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 - คอลัมน์ audit: API คืน object `audit` แบบ nested (`audit.created/updated/deleted` แต่ละตัวเป็น `{ at, id, name, avatar }`); SPA flatten กลับผ่าน `normalizeAudit()` ที่ใช้ร่วมกันทั้งหน้ารายการและหน้าแก้ไข
 - **`tb_business_unit_note` — บันทึกภายในของเจ้าหน้าที่ (ใหม่ 2026-10-26)**: โน้ตอิสระและไฟล์แนบที่เจ้าหน้าที่ Backstage ทิ้งไว้บน BU ไม่แสดงให้ tenant เห็นเลย เพิ่มโดย migration `20261026160000_add_business_unit_note`; permission `bu_note.view` / `bu_note.manage` join M:N เดิม `tb_business_unit_tb_module` และแค็ตตาล็อก `tb_module` ไม่มีอีกแล้ว (drop โดย migration `20260818000000_license_model`)
 - `tb_user_tb_business_unit.seat_released_at` (ใหม่ 2026-10-27, migration `20261027090000_add_user_bu_seat_released_at`) ถูกตั้งโดย action **Release seat** ของ cluster ซึ่งตั้ง `is_active = false` ด้วย
-- Role ของ BU-user join (`enum_user_business_unit_role`: `admin`/`user`) orthogonal กับโมเดล Backstage RBAC ([rbac](/th/backstage/rbac))
+- Role ของ BU-user join (`enum_user_business_unit_role`: `admin`/`user`) orthogonal กับโมเดล Backstage Roles ([rbac](/th/backstage/rbac))
 
 ## 2. References
 

@@ -1,14 +1,14 @@
 ---
-title: Cronjobs — Data Model
+title: Scheduled Jobs — Data Model
 description: The full "CRONJOBS"."Cronjob" field table (owned by micro-cronjobs' own SQL migrations, not Prisma), every job type's config shape, scheduler mechanics, and exactly where a failed run becomes visible.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cronjobs, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs — Data Model
+# Scheduled Jobs — Data Model
 
 > **Source of truth:** read these before updating this page.
 > - `../micro-cronjobs/internal/model/cronjob.go` — the Go struct and its GORM column mapping (read in full)

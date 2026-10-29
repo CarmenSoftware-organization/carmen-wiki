@@ -2,7 +2,7 @@
 title: User — Data Model
 description: User entity, profile extension, status, per-cluster BU assignments.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, users, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 # User — Data Model
 
 > **At a Glance**
-> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension, incl. `avatar_file_token` and the new, SPA-unused `signature_file_token`) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on `tb_user` and `tb_user_profile` (added 2026-07-16), enforced as an optimistic lock on `PUT` &nbsp;·&nbsp; **Platform access:** not stored on these tables — RBAC role assignments own it (see [Backstage RBAC](/en/backstage/rbac))
+> **Tables:** `tb_user` &nbsp;·&nbsp; `tb_cluster_user` &nbsp;·&nbsp; `tb_user_tb_business_unit` &nbsp;·&nbsp; `tb_user_profile` (profile extension, incl. `avatar_file_token` and the new, SPA-unused `signature_file_token`) &nbsp;·&nbsp; **Enums:** `enum_cluster_user_role` (admin/user) &nbsp;·&nbsp; `enum_user_business_unit_role` (admin/user) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, surfaced as a nested `audit` object by the API &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on `tb_user` and `tb_user_profile` (added 2026-07-16), enforced as an optimistic lock on `PUT` &nbsp;·&nbsp; **Platform access:** not stored on these tables — RBAC role assignments own it (see [Backstage Roles](/en/backstage/rbac))
 
 > **Source of truth:** Backend Prisma platform schema. Always read this first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
@@ -20,7 +20,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`) and the `is_active` / `is_consent` flags that gate access. What the account may do in the Backstage SPA is **not** stored here — the legacy `platform_role` column was removed along with `enum_platform_role` (see §4 historical note); platform access now lives in the RBAC assignment tables (`tb_user_tb_backstage_role` and friends), documented in the [Backstage RBAC data model](/en/backstage/rbac/data-model). Name parts (`firstname`, `middlename`, `lastname`), the avatar (`avatar_file_token`), and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — the Prisma relation is 1:M at the schema level, but the application treats it as a 1:1 extension of `tb_user` — see §2.4 for the constraint detail.
+The Users module is backed by four tables. `tb_user` is the identity anchor: one row per person, holding the fields required for sign-in (`username`, `email`) and the `is_active` / `is_consent` flags that gate access. What the account may do in the Backstage SPA is **not** stored here — the legacy `platform_role` column was removed along with `enum_platform_role` (see §4 historical note); platform access now lives in the RBAC assignment tables (`tb_user_tb_backstage_role` and friends), documented in the [Backstage Roles data model](/en/backstage/rbac/data-model). Name parts (`firstname`, `middlename`, `lastname`), the avatar (`avatar_file_token`), and supplementary contact fields live in the companion table `tb_user_profile`, which has a 1:M relation to `tb_user` via `user_id` — the Prisma relation is 1:M at the schema level, but the application treats it as a 1:1 extension of `tb_user` — see §2.4 for the constraint detail.
 
 The two many-to-many join tables extend the user into organisational scope. `tb_cluster_user` records which clusters a user belongs to and at what per-cluster role (`admin` or `user`); this table is authoritatively mutated from the cluster edit page, not from the Users module. `tb_user_tb_business_unit` records which business units a user is assigned to within those clusters, carrying its own per-BU role and an `is_default` flag that marks the BU the inventory application should land on at login; this table is mutated from the Add BU dialog on the user edit screen.
 
@@ -30,7 +30,7 @@ All four tables carry the full audit trio — `created_at`/`created_by_id`, `upd
 
 ### 2.1 `tb_user`
 
-The identity row. One row per platform user, driving sign-in. This table does not store a password hash directly — credential management is delegated to Keycloak; the `fetchKeycloakUsers` API call synchronises user records from Keycloak into this table. Online-presence fields (`socket_id`, `is_online`) track real-time WebSocket state. **Historical note:** until 2026-06-10 this table carried a `platform_role` enum column (`enum_platform_role`, 7 values) that drove every access gate in the SPA; both the column and the enum are gone from the schema, replaced by RBAC role assignments — see [Backstage RBAC §5](/en/backstage/rbac) for the legacy→replacement mapping.
+The identity row. One row per platform user, driving sign-in. This table does not store a password hash directly — credential management is delegated to Keycloak; the `fetchKeycloakUsers` API call synchronises user records from Keycloak into this table. Online-presence fields (`socket_id`, `is_online`) track real-time WebSocket state. **Historical note:** until 2026-06-10 this table carried a `platform_role` enum column (`enum_platform_role`, 7 values) that drove every access gate in the SPA; both the column and the enum are gone from the schema, replaced by RBAC role assignments — see [Backstage Roles §5](/en/backstage/rbac) for the legacy→replacement mapping.
 
 | Field | Prisma Type | Nullable | Default | Description |
 | ----- | ----------- | -------- | ------- | ----------- |
@@ -173,7 +173,7 @@ Note: `tb_user_tb_business_unit` does **not** carry a `cluster_id` column in the
 
 ### `enum_platform_role` — removed (historical)
 
-Until 2026-06-10 the schema defined a 7-value `enum_platform_role` (`super_admin`, `platform_admin`, `support_manager`, `support_staff`, `security_officer`, `integration_developer`, `user`) carried on `tb_user.platform_role`, and the SPA's login gate checked the value against an `ALLOWED_ROLES` allow-list. Both the enum and the column are gone from the Prisma platform schema, and the frontend dropped every reference (commits `6091ffc`, `5f629f2` in `carmen-backstage`). Platform access is now expressed as permission-key role assignments in `tb_backstage_role` / `tb_user_tb_backstage_role` (with a separate `tb_backstage_super_admin` flag table) — see the [Backstage RBAC data model](/en/backstage/rbac/data-model) for those tables and [Backstage RBAC §5](/en/backstage/rbac) for the full legacy→replacement mapping.
+Until 2026-06-10 the schema defined a 7-value `enum_platform_role` (`super_admin`, `platform_admin`, `support_manager`, `support_staff`, `security_officer`, `integration_developer`, `user`) carried on `tb_user.platform_role`, and the SPA's login gate checked the value against an `ALLOWED_ROLES` allow-list. Both the enum and the column are gone from the Prisma platform schema, and the frontend dropped every reference (commits `6091ffc`, `5f629f2` in `carmen-backstage`). Platform access is now expressed as permission-key role assignments in `tb_backstage_role` / `tb_user_tb_backstage_role` (with a separate `tb_backstage_super_admin` flag table) — see the [Backstage Roles data model](/en/backstage/rbac/data-model) for those tables and [Backstage Roles §5](/en/backstage/rbac) for the full legacy→replacement mapping.
 
 ### `enum_cluster_user_role` — 2 values
 
@@ -235,6 +235,6 @@ No other divergences detected as of 2026-09-05 (re-verified against backend HEAD
 - `../carmen-backstage/src/pages/UserBackstageEdit.tsx` (lines 44, 198) — the only SPA surface for `tb_user.email_verified_at`; this module's own `UserEdit.tsx`/`UserManagement.tsx` never read it.
 - `../carmen-backstage/src/types/index.ts` — `User` interface (flattened API response shape), `UserInfo` interface, `Audit`/`AuditEntry`.
 - `../carmen-backstage/src/services/userService.ts` — REST client at `/api-system/user`, plus `getDirectorySummary` at `/api-system/user/summary`.
-- `../carmen-backstage/src/context/AuthContext.tsx` — permission-based login gate (effective permissions, not a role allow-list); see [Backstage RBAC](/en/backstage/rbac).
+- `../carmen-backstage/src/context/AuthContext.tsx` — permission-based login gate (effective permissions, not a role allow-list); see [Backstage Roles](/en/backstage/rbac).
 
 **Landing cross-link:** [users](/en/backstage/users)

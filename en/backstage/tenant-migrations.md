@@ -2,7 +2,7 @@
 title: Tenant Migrations
 description: Fleet-wide screen that checks and applies pending tenant-database schema migrations (and dashboard views) across every business unit; viewing needs tenant_migration.read, changing anything needs tenant_migration.apply.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -139,7 +139,7 @@ The gateway's `deployStream` handler maps a pre-stream connection failure to an 
 
 - [Business Units](/en/backstage/business-units) — every row on this screen is a `business_unit`; the [Tenant Migrations](/en/backstage/business-units/tenant-migrations) sub-page there covers only the embedded per-BU `TenantMigrationCard`, not this fleet-wide screen
 - [Database Pools](/en/backstage/database-pools) — the `tb_database_pool` records a BU's `database_pool_id` points at; a pool that is inactive or soft-deleted makes that BU's tenant connection unresolvable (§3.3, §4.4)
-- [Backstage RBAC](/en/backstage/rbac) — the permission model behind `tenant_migration.*`, and (`rbac/permissions.md`) the route-level gate table that also lists `/tenant-migrations`
+- [Backstage Roles](/en/backstage/rbac) — the permission model behind `tenant_migration.*`, and (`rbac/permissions.md`) the route-level gate table that also lists `/tenant-migrations`
 - [SQL Workbench](/en/backstage/sql-workbench) — the other per-tenant database console, added the same release window; §4.2 above contrasts its real permission gap with this module's real (non-bypassable) one
 
 ## 6. Reference Sources

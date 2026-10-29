@@ -1,21 +1,21 @@
 ---
-title: Backstage RBAC — UI Screens
+title: Backstage Roles — UI Screens
 description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and Backstage Users assignment screens.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
 ---
 
-# Backstage RBAC — UI Screens
+# Backstage Roles — UI Screens
 
 > **At a Glance**
 > **Screens:** `RoleManagement` (`/backstage/roles`) · `RoleEdit` (`/backstage/roles/new`, `/backstage/roles/:id/edit`) · `PermissionCatalog` (`/backstage/category-permissions`) · `SuperAdminManagement` (`/backstage/super-admins`) · `UserBackstageManagement` (`/backstage/user-backstage`) · `UserBackstageEdit` (`/backstage/user-backstage/:userId`) &nbsp;·&nbsp; **Standard pattern:** Roles and Backstage Users list use the server-side `DataTable`; Super Admins (rewritten again 2026-09-02) is a card-based roster, not a table; Permission Catalog is a read-only card grid &nbsp;·&nbsp; **Key component:** `PermissionGrid` — every catalog action shown as a per-resource row, toggle buttons in edit mode, withheld actions dimmed rather than hidden (replaced the accordion `PermissionPicker` on 2026-08-20) &nbsp;·&nbsp; **In-page gates:** Roles list/edit gate Add/Edit/Delete and the Edit toggle with `backstage_role.*` keys; `<Can permission="user_backstage.manage">` on the Backstage Users detail page &nbsp;·&nbsp; **Summary strips:** `RolesAccessSummary` on the Roles list (now catalog-anchored, since 2026-09-02), `BackstageAccessSummary` on the Backstage Users list
 
-![Backstage RBAC — UI Screens screen](/screenshots/platform/rbac/ui-screens.png)
+![Backstage Roles — UI Screens screen](/screenshots/platform/rbac/ui-screens.png)
 
-![Backstage RBAC — UI Screens form screen](/screenshots/platform/rbac/ui-screens-form.png)
+![Backstage Roles — UI Screens form screen](/screenshots/platform/rbac/ui-screens-form.png)
 
 **Scope note:** this page verifies §2 (Roles) and §3 (Permission Catalog) against current source in full. §4 (Super Admins) and §5 (Backstage Users) are updated at a summary level only — see the scope note on the [module landing page](/en/backstage/rbac).
 
@@ -143,4 +143,4 @@ Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (
 - `../carmen-backstage/src/components/Can.tsx` — the permission-gated render wrapper.
 - `../carmen-backstage/src/pages/Forbidden.tsx` — the 403 page rendered on a failed route guard (see [Permissions](/en/backstage/rbac/permissions)).
 
-**Cross-links:** [Backstage RBAC landing](/en/backstage/rbac) &nbsp;·&nbsp; [Data Model](/en/backstage/rbac/data-model) &nbsp;·&nbsp; [Permissions](/en/backstage/rbac/permissions)
+**Cross-links:** [Backstage Roles landing](/en/backstage/rbac) &nbsp;·&nbsp; [Data Model](/en/backstage/rbac/data-model) &nbsp;·&nbsp; [Permissions](/en/backstage/rbac/permissions)

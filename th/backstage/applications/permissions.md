@@ -2,7 +2,7 @@
 title: Applications — สิทธิ์ (Permissions)
 description: เมทริกซ์ของ gate application.*, การเข้าถึงของ machine-client (x-app-id + api_names) ต่างจาก RBAC ของผู้ใช้อย่างไร และกรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:15:00.000Z
@@ -15,11 +15,11 @@ dateCreated: 2026-06-10T15:15:00.000Z
 
 ## 1. ภาพรวม
 
-หน้านี้ครอบคลุมเรื่องราว authorization สองเรื่องที่แตกต่างกันซึ่งตัดกันบนหน้าจอเหล่านี้ เรื่องแรกคือ [Backstage RBAC](/th/backstage/rbac) ตามปกติ: permission key `application.*` ที่ตัดสินว่า *มนุษย์* คนใดเห็นและแก้ไขเรคคอร์ด application ได้ (§2) เรื่องที่สองคือสิ่งที่ตัวเรคคอร์ดเอง encode ไว้: **grant ของ machine-client** — caller ที่แสดง `x-app-id` ของ application นี้เรียก endpoint ที่ถูก guard ด้วย `api_name` ตัวใดได้บ้าง (§3) ผู้ทดสอบต้องใช้ทั้งสองเลนส์: มนุษย์ที่ถือ key `application.*` ครบสามารถมอบอำนาจที่ตัวมนุษย์เองไม่ได้ถือให้กับ application ได้ เพราะคลังศัพท์ทั้งสองเป็นอิสระต่อกัน
+หน้านี้ครอบคลุมเรื่องราว authorization สองเรื่องที่แตกต่างกันซึ่งตัดกันบนหน้าจอเหล่านี้ เรื่องแรกคือ [Backstage Roles](/th/backstage/rbac) ตามปกติ: permission key `application.*` ที่ตัดสินว่า *มนุษย์* คนใดเห็นและแก้ไขเรคคอร์ด application ได้ (§2) เรื่องที่สองคือสิ่งที่ตัวเรคคอร์ดเอง encode ไว้: **grant ของ machine-client** — caller ที่แสดง `x-app-id` ของ application นี้เรียก endpoint ที่ถูก guard ด้วย `api_name` ตัวใดได้บ้าง (§3) ผู้ทดสอบต้องใช้ทั้งสองเลนส์: มนุษย์ที่ถือ key `application.*` ครบสามารถมอบอำนาจที่ตัวมนุษย์เองไม่ได้ถือให้กับ application ได้ เพราะคลังศัพท์ทั้งสองเป็นอิสระต่อกัน
 
 ## 2. เมทริกซ์ของ gate
 
-gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัวเดียวที่ document ไว้ใน [Backstage RBAC — Permissions](/th/backstage/rbac/permissions); route guard ที่ไม่ผ่าน render `<Forbidden>` (หน้า 403) ภายใน shell `<Layout>` ปกติ
+gate ทุกตัว resolve ผ่าน resolver `hasPermission` ตัวเดียวที่ document ไว้ใน [Backstage Roles — Permissions](/th/backstage/rbac/permissions); route guard ที่ไม่ผ่าน render `<Forbidden>` (หน้า 403) ภายใน shell `<Layout>` ปกติ
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
@@ -63,7 +63,7 @@ key ของ route ทั้งสามเป็นอิสระต่อก
 |---|---|---|
 | Caller ระบุตัวตนด้วย | `Authorization: Bearer <token>` (session) | header `x-app-id: <tb_application.id>` |
 | คลังศัพท์ของ key | row ใน `tb_backstage_permission` (Postgres, seed ด้วย migration ฝั่ง backend); ชุด verb `read`/`create`/`update`/… | `api_name` ที่เก็บเกี่ยวจากการเรียก `new AppIdGuard('...')` โดย `scripts/generate-app-api-catalog/run.ts` (ไฟล์ที่ generate ขึ้น ไม่มีตาราง); verb ทำตาม method ของ controller (`findAll`, `findOne`, `uploadLogo`) — ไวยากรณ์เดียวกัน string ต่างกัน |
-| ที่เก็บ grant | join row ระหว่าง role→permission บวก assignment row แบบมี scope ระหว่าง user→role (ห้าตาราง — ดู [Backstage RBAC data-model](/th/backstage/rbac/data-model)) | row `tb_application_api` แบบแบนต่อ application (ไม่มี role ไม่มี scope) |
+| ที่เก็บ grant | join row ระหว่าง role→permission บวก assignment row แบบมี scope ระหว่าง user→role (ห้าตาราง — ดู [Backstage Roles data-model](/th/backstage/rbac/data-model)) | row `tb_application_api` แบบแบนต่อ application (ไม่มี role ไม่มี scope) |
 | Wildcard | flag super-admin (`tb_backstage_super_admin`) ต่อผู้ใช้ | boolean `allow_all` ต่อ application |
 | มิติของ scope | ทั้งแพลตฟอร์มหรือต่อ cluster (`cluster_id` บน assignment) | ไม่มี — grant มีผลทุกที่ที่ endpoint มีผล |
 | Semantics การเขียน (SPA) | permission ของ role ส่งเป็น delta `{ add, remove }` | replace ทั้งชุดผ่าน `details.add[]` ทุกครั้งที่ `PUT` |
@@ -104,4 +104,4 @@ header ทั้งสองเดินทางไปด้วยกันบ�
 - ~~ปิดช่องว่างของ gate บน empty-state ที่ต้นทาง~~ **เสร็จแล้ว** — CTA ของ `EmptyState` ถูกห่อด้วย `<Can permission="application.create">` แล้ว ตรงกับปุ่ม header ไม่ต้องดำเนินการเพิ่มเติมตรงนี้
 
 **แหล่งข้อมูลอ้างอิง:** path ทั้งหมดคือ `../carmen-backstage` เว้นแต่ระบุไว้ `src/App.tsx` (route guard `application.*` ทั้งสาม แต่ละตัวมี `feature="applications"` ด้วย) · `src/components/nav/backstageNav.ts` (รายการ sidebar, บรรทัด 45 — ไม่ใช่ `Layout.tsx` ซึ่งไม่นิยาม nav row อีกต่อไป) · `src/pages/ApplicationManagement.tsx` (gate `<Can>`, empty state, View History ของ row) · `src/pages/ApplicationEdit.tsx` (gate ของ toggle Edit, View History ของ hero) · `src/utils/permissions.ts` (`BACKSTAGE_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (ฟีเจอร์ View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` (การ generate catalog)
-**Cross-link:** [หน้า landing ของ Applications](/th/backstage/applications) &nbsp;·&nbsp; [Data Model](/th/backstage/applications/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/applications/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions)
+**Cross-link:** [หน้า landing ของ Applications](/th/backstage/applications) &nbsp;·&nbsp; [Data Model](/th/backstage/applications/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/applications/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions)

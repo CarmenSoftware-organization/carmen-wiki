@@ -2,7 +2,7 @@
 title: Activity Events
 description: The raw, per-event UI-telemetry explorer at /activity-events — every filter and column, the activity_event.detail permission it shares (but does not duplicate) with Usage Analytics, and why it is not the activity_log "View History" audit trail.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -118,9 +118,9 @@ Holding `activity_event.detail` opens this screen outright — a caller does not
 ## 5. Related Modules
 
 - [Usage Analytics](/en/backstage/usage-analytics) — the aggregate dashboard sibling at `/analytics`, gated by `activity_event.read`; owns the full permission/guard/cluster-scoping writeup this page's §4 defers to.
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog and role-bundle definitions referenced in §2 and §4.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog and role-bundle definitions referenced in §2 and §4.
 - [Business Units](/en/backstage/business-units) and [Applications](/en/backstage/applications) — supply the BU and Application filter dropdowns (§3.2); this page does not own either list.
-- [Cronjobs](/en/backstage/cronjobs) — the platform's own scheduled-job admin screen, which (per the same `"CRONJOBS"."Cronjob"` table `../carmen-turborepo-backend`'s `backstage_cronjobs.service.ts` reads and writes) is the same store that holds the retention and rollup job definitions documented on the [Data Model](/en/backstage/activity-events/data-model) page.
+- [Scheduled Jobs](/en/backstage/cronjobs) — the platform's own scheduled-job admin screen, which (per the same `"CRONJOBS"."Cronjob"` table `../carmen-turborepo-backend`'s `backstage_cronjobs.service.ts` reads and writes) is the same store that holds the retention and rollup job definitions documented on the [Data Model](/en/backstage/activity-events/data-model) page.
 
 ## 6. Reference Sources
 

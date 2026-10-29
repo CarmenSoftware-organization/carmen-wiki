@@ -142,8 +142,8 @@ books:
             label_en: "Report Templates"
             label_th: "Report Templates"
           - slug: report-form-groups
-            label_en: "Report Form Groups"
-            label_th: "Report Form Groups"
+            label_en: "Form Groups"
+            label_th: "Form Groups"
           - slug: dashboard-templates
             label_en: "Dashboard Templates"
             label_th: "Dashboard Templates"
@@ -166,8 +166,8 @@ books:
         label_th: "Scheduling"
         modules:
           - slug: cronjobs
-            label_en: "Cronjobs"
-            label_th: "Cronjobs"
+            label_en: "Scheduled Jobs"
+            label_th: "Scheduled Jobs"
       - label_en: "Backstage"
         label_th: "Backstage"
         modules:
@@ -181,8 +181,8 @@ books:
             label_en: "Applications"
             label_th: "Applications"
           - slug: rbac
-            label_en: "Backstage RBAC"
-            label_th: "Backstage RBAC"
+            label_en: "Backstage Roles"
+            label_th: "Backstage Roles"
           - slug: user-backstage
             label_en: "Backstage Users"
             label_th: "Backstage Users"

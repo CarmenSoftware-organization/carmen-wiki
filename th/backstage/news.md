@@ -2,7 +2,7 @@
 title: ข่าวสาร (News)
 description: ภาพรวมโมดูล News — ประกาศ markdown พร้อมรูป tags สถานะ draft/published/archived การกำหนดเป้าหมาย global หรือราย BU และ bulk action เขียนใน admin SPA ส่งผ่าน public endpoint แบบ anonymous
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/news, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -53,7 +53,7 @@ filter `published_at <= now()` หมายความว่าผู้เข�
 
 ## 4. บทบาทและ Persona
 
-การเข้าถึงถูก gate ด้วย permission ผ่าน [Backstage RBAC](/th/backstage/rbac) (key `news.*` ทั้งสี่ถูก seed ใน `seed.backstage-permission.ts`) ด้วย route guard และ gate `<Can>` ภายในหน้า:
+การเข้าถึงถูก gate ด้วย permission ผ่าน [Backstage Roles](/th/backstage/rbac) (key `news.*` ทั้งสี่ถูก seed ใน `seed.backstage-permission.ts`) ด้วย route guard และ gate `<Can>` ภายในหน้า:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -74,7 +74,7 @@ filter `published_at <= now()` หมายความว่าผู้เข�
 
 - [Business Units](/th/backstage/business-units) — การกำหนดเป้าหมายอ้างอิงค่า `tb_business_unit.id`: ถูกตรวจสอบว่าเป็น BU ที่ live อยู่ตอนเขียน จัดเก็บแบบไม่มี FK ใน JSONB multi-select ของการกำหนดเป้าหมายโหลดรายการ BU ทั้งหมดจาก API ของโมดูลนั้น
 - [Broadcasts](/th/backstage/broadcasts) — คู่เทียบแบบ **push** ของ News ซึ่งเป็นแบบ **pull**: broadcast push การแจ้งเตือนไปยังผู้ใช้ทั้งหมด ผู้ใช้ที่เลือก หรือ business unit หนึ่งแห่ง (ทันทีหรือตามกำหนดเวลา) ขณะที่บทความข่าวนั่งรออยู่ใน `tb_news` ให้ถูก fetch จาก public feed ใช้ Broadcasts เพื่อขัดจังหวะ ใช้ News เพื่อแจ้งข้อมูล
-- [Backstage RBAC](/th/backstage/rbac) — กำหนดและ resolve permission key `news.*` ทั้งสี่ที่ gate surface ของ SPA
+- [Backstage Roles](/th/backstage/rbac) — กำหนดและ resolve permission key `news.*` ทั้งสี่ที่ gate surface ของ SPA
 - [Applications](/th/backstage/applications) — แกน `x-app-id`: ทุกการเรียก `/api/news` ต้องมาจาก application ที่ได้รับ grant `api_name` `news.*` ที่ตรงกัน (หรือ `allow_all`) controller `/api/public/news` แบบ anonymous ไม่ตรวจสอบทั้ง token และ app id
 
 ## 6. แหล่งข้อมูลอ้างอิง

@@ -1,14 +1,14 @@
 ---
-title: Backstage RBAC — แบบจำลองข้อมูล (Data Model)
+title: Backstage Roles — แบบจำลองข้อมูล (Data Model)
 description: ตาราง RBAC ทั้งห้า — permission catalog, role, join role-permission, assignment แบบมี scope, flag super-admin — การ rollout doc_version เมื่อ 2026-07-16 และความต่างจาก shape ของ SPA
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
 ---
 
-# Backstage RBAC — แบบจำลองข้อมูล (Data Model)
+# Backstage Roles — แบบจำลองข้อมูล (Data Model)
 
 > **At a Glance**
 > **ตาราง:** `tb_backstage_permission` &nbsp;·&nbsp; `tb_backstage_role` &nbsp;·&nbsp; `tb_backstage_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_backstage_role` &nbsp;·&nbsp; `tb_backstage_super_admin` &nbsp;·&nbsp; **Enum:** ไม่มี — `resource`/`action` เป็น VarChar รูปแบบอิสระ &nbsp;·&nbsp; **Scope:** `cluster_id` แบบ nullable บน assignment row (`null` = ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **คอลัมน์ audit:** trio มาตรฐาน `created_*`/`updated_*`/`deleted_*` บนทุกตาราง บวก `doc_version Int @default(0)` บนทั้งห้าตาราง (เพิ่มเมื่อ 2026-07-16, การ rollout optimistic-lock ทั้งแพลตฟอร์ม) &nbsp;·&nbsp; **Unique แบบ soft-delete:** uniqueness constraint ทุกตัวรวม `deleted_at` ดังนั้น row ที่ถูกลบสามารถสร้างใหม่ได้
@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 ## 1. ภาพรวม
 
-โมดูล RBAC เป็นเจ้าของตารางห้าตัว จัดกลุ่มใต้ banner `// ==== Backstage RBAC ====` และ `// ==== Backstage Super Admin` ใน Prisma schema (บรรทัด 1286–1390) `tb_backstage_permission` คือ catalog: หนึ่ง row ต่อคู่ `resource` + `action` เขียนโดย backend เท่านั้น (seed/migration) — SPA อ่านได้แต่ไม่มี surface สำหรับสร้าง/แก้ไข `tb_backstage_role` เก็บชุด key ที่มีชื่อ และ `tb_backstage_role_tb_permission` คือ M:N join ที่บันทึกว่า role มอบ row ใดของ catalog บ้าง
+โมดูล RBAC เป็นเจ้าของตารางห้าตัว จัดกลุ่มใต้ banner `// ==== Backstage Roles ====` และ `// ==== Backstage Super Admin` ใน Prisma schema (บรรทัด 1286–1390) `tb_backstage_permission` คือ catalog: หนึ่ง row ต่อคู่ `resource` + `action` เขียนโดย backend เท่านั้น (seed/migration) — SPA อ่านได้แต่ไม่มี surface สำหรับสร้าง/แก้ไข `tb_backstage_role` เก็บชุด key ที่มีชื่อ และ `tb_backstage_role_tb_permission` คือ M:N join ที่บันทึกว่า role มอบ row ใดของ catalog บ้าง
 
 `tb_user_tb_backstage_role` ผูก role เข้ากับผู้ใช้พร้อม scope: คอลัมน์ `cluster_id` ที่เป็น nullable ของมันคือกลไก scope ทั้งหมด — `null` หมายถึง assignment มีผลทั้งแพลตฟอร์ม ส่วน UUID หมายถึงมีผลภายใน cluster นั้นเท่านั้น `tb_backstage_super_admin` จงใจไม่เป็นส่วนหนึ่งของกราฟ role: มันคือตาราง flag (มีแค่ `user_id` + `is_active` นอกเหนือจาก audit trio) ที่ row ของมันทำเครื่องหมายผู้ใช้ที่ bypass ทุกการตรวจสอบ permission
 
@@ -235,4 +235,4 @@ REST surface ที่ service ของ SPA ใช้ (`roleService.ts`, `permi
 - `../carmen-backstage/src/services/superAdminService.ts` และ `src/pages/SuperAdminManagement.tsx` — endpoint ของ super-admin และ `extractArray` ที่ไล่ลง envelope
 - `../carmen-backstage/src/services/userRoleService.ts` — endpoint ของ assignment และการไล่ลง envelope
 
-**Cross-link:** [หน้า landing ของ Backstage RBAC](/th/backstage/rbac) &nbsp;·&nbsp; [UI Screens](/th/backstage/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [data-model ของ users](/th/backstage/users/data-model) (row ของ `tb_user` ที่ assignment ชี้ไป)
+**Cross-link:** [หน้า landing ของ Backstage Roles](/th/backstage/rbac) &nbsp;·&nbsp; [UI Screens](/th/backstage/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [data-model ของ users](/th/backstage/users/data-model) (row ของ `tb_user` ที่ assignment ชี้ไป)

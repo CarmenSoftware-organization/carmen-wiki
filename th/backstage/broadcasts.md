@@ -2,7 +2,7 @@
 title: บรอดแคสต์ (Broadcasts)
 description: ภาพรวมโมดูล Broadcasts — สามหน้าจอ (List, Compose, Edit) ครอบคลุม push notification พร้อมวันหมดอายุที่บังคับ และวงจรชีวิตฝั่งผู้ส่งแบบเต็ม
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/broadcasts, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -49,7 +49,7 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 
 ## 4. บทบาทและ Persona
 
-ตอนนี้มีสี่ permission key ที่ gate โมดูลนี้ ผ่าน [Backstage RBAC](/th/backstage/rbac) ที่ seed ไว้ตาม role ใน `seed.backstage-role-permission.data.ts`:
+ตอนนี้มีสี่ permission key ที่ gate โมดูลนี้ ผ่าน [Backstage Roles](/th/backstage/rbac) ที่ seed ไว้ตาม role ใน `seed.backstage-role-permission.data.ts`:
 
 | Surface | Gate | Key |
 |---|---|---|
@@ -76,7 +76,7 @@ News และ Broadcasts ยังคงแบ่งปัญหาการป
 - [News](/th/backstage/news) — คู่เทียบฝั่ง pull: เนื้อหาที่เขียนไว้พร้อมวงจรชีวิตและ public feed เทียบกับ push ของ Broadcasts
 - [Business Units](/th/backstage/business-units) — โหมด BU กำหนดเป้าหมายหนึ่งหน่วยด้วย `code`; หน้า Compose โหลด option จาก API ของโมดูลนั้น (เฉพาะ BU ที่ active, จำกัด 100 รายการ)
 - [Users](/th/backstage/users) — โหมด *specific users* ค้นหา user registry ผ่าน `UserMultiSelect`; ผู้รับถูกส่งเป็น UUID ของ `tb_user.id`
-- [Backstage RBAC](/th/backstage/rbac) — กำหนดและ resolve สี่ key `broadcast.*` ที่ gate ทั้ง SPA และ API
+- [Backstage Roles](/th/backstage/rbac) — กำหนดและ resolve สี่ key `broadcast.*` ที่ gate ทั้ง SPA และ API
 
 ## 6. แหล่งอ้างอิง
 

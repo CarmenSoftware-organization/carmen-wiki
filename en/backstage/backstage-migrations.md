@@ -2,7 +2,7 @@
 title: Backstage Migrations
 description: A super-admin (or CI deploy-token) console for Prisma migrations against the shared platform database, plus a catalog of 8 seed operations and 7 drift checks that keep platform-wide reference and permission data in sync.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, backstage-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -84,7 +84,7 @@ Closing the browser tab or losing the connection mid-run does **not** stop the u
 
 `seed-role-permission` is the only catalog operation with a declared parameter (`bu_id`, required, type `uuid` — `backstage_seed.catalog.ts:42-44`), and as of commit `157a65e` (`../carmen-backstage` HEAD — "feat(platform-migrations): เลือกได้หลาย BU ตอน seed role permissions (#281)") this console lets an operator pick **several** business units at once for it, one `BuSwitcher` dialog set to `multiple` (`BackstageMigrationManagement.tsx:670-693`). The detection that decides whether an op needs this prompt at all is generic, not hardcoded to this op's id — `buParamOf()` looks for a declared `uuid` parameter whose name matches `bu`, so a future per-BU op would get the same prompt automatically (`:78-83`). Selected BUs are then run **sequentially, one request per BU, never in parallel** — `runOpBatch` awaits each `runOnce` in a `for` loop (`:296-326`) specifically because every target hits the same database script, and the code's own comment is explicit that running them concurrently would invite deadlocks and interleave the streamed logs into something unreadable (`:287-295`); a failure on one BU does not stop the rest from running, so the operator who selected five BUs still gets all five attempted (`:293-295`).
 
-What the picker actually runs, per BU, is the same single-BU script described in §3.3: it writes rows to **`tb_application_role`** and **`tb_application_role_tb_permission`**, each scoped by `business_unit_id` (`seed.role-permission.ts:465-556`). **This is a per-tenant application-role system, a completely different pair of tables from the platform RBAC tables — `tb_backstage_role`, `tb_backstage_permission`, `tb_backstage_role_tb_permission` — that [Backstage RBAC](/en/backstage/rbac) documents.** The multi-BU picker on this page never touches anything RBAC governs; reading "seed role permissions, several BUs at once" as an RBAC operation would be the wrong mental model entirely. (`seed-backstage-role-permission`, by contrast, does write to the actual platform RBAC link table — see §3.3 — but takes no `bu_id` and cannot be run per-BU.)
+What the picker actually runs, per BU, is the same single-BU script described in §3.3: it writes rows to **`tb_application_role`** and **`tb_application_role_tb_permission`**, each scoped by `business_unit_id` (`seed.role-permission.ts:465-556`). **This is a per-tenant application-role system, a completely different pair of tables from the platform RBAC tables — `tb_backstage_role`, `tb_backstage_permission`, `tb_backstage_role_tb_permission` — that [Backstage Roles](/en/backstage/rbac) documents.** The multi-BU picker on this page never touches anything RBAC governs; reading "seed role permissions, several BUs at once" as an RBAC operation would be the wrong mental model entirely. (`seed-backstage-role-permission`, by contrast, does write to the actual platform RBAC link table — see §3.3 — but takes no `bu_id` and cannot be run per-BU.)
 
 ## 4. Roles and Permissions
 
@@ -121,7 +121,7 @@ Treat every row on the **Seed data** card as a deliberate write to data every cl
 ## 8. Related Modules
 
 - [Backstage Config](/en/backstage/backstage-config) — owns `backstage_migration.api_enabled`, the single switch every route in this module sits behind; its own §3.2 covers the config-key side of that switch, while §3.1 above covers the two authorities the switch gates.
-- [Backstage RBAC](/en/backstage/rbac) — owns `tb_backstage_role`, `tb_backstage_permission`, and `tb_backstage_role_tb_permission`, the tables `seed-backstage-role`, `seed-backstage-permission`, and `seed-backstage-role-permission` populate; also the module `seed-role-permission`'s tenant app-role tables must never be confused with (§3.4).
+- [Backstage Roles](/en/backstage/rbac) — owns `tb_backstage_role`, `tb_backstage_permission`, and `tb_backstage_role_tb_permission`, the tables `seed-backstage-role`, `seed-backstage-permission`, and `seed-backstage-role-permission` populate; also the module `seed-role-permission`'s tenant app-role tables must never be confused with (§3.4).
 - [Super Admins](/en/backstage/super-admins) — the properly-audited way to grant the privilege this module's authorization ultimately checks for; also the reason `db:seed.backstage-super-admin` is deliberately excluded from this console's catalog (§2, §6).
 - [Business Units](/en/backstage/business-units) — owns `tb_business_unit`, the entity the multi-BU picker (§3.4) selects from and `check-seat-pool-view` (§3.3) borrows one row of for its rolled-back test.
 - [Licenses](/en/backstage/licenses) — the consumer of the `v_business_unit_seat` view that `check-seat-pool-view` verifies the semantics of.

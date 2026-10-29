@@ -2,7 +2,7 @@
 title: ผู้ใช้ Backstage (Backstage Users)
 description: มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว หน้าจอทะเบียนสิทธิ์ที่แยกออกมาจาก RBAC และ Users
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -72,7 +72,7 @@ type ฝั่ง frontend ของฟิลด์นี้เป็น optiona
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Users](/th/backstage/users) — เป็นเจ้าของบัญชี `tb_user` ที่โมดูลนี้ผูก role เข้าไป identity, การเปิด/ปิดใช้งาน และสมาชิกภาพ cluster/BU ล้วนแก้ที่นั่น ไม่ใช่ที่นี่ ดู §2 สำหรับการแบ่งงานที่แน่นอน และ §3.3 สำหรับคอลัมน์ยืนยันอีเมลที่โมดูลนี้แสดงแทนโมดูล Users
-- [Backstage RBAC](/th/backstage/rbac) — เป็นเจ้าของ catalog และตัว role เอง (`tb_backstage_role`, `tb_backstage_permission`) รวมถึง union `Scope` ที่ type `BackstageUserScope`/`Scope` ของโมดูลนี้สะท้อนตาม และเคยบันทึกโมดูลนี้ไว้ระดับสรุปก่อนหน้านี้จะมีหน้าเป็นของตัวเอง หน้านี้คือเวอร์ชันที่ครบถ้วนกว่า
+- [Backstage Roles](/th/backstage/rbac) — เป็นเจ้าของ catalog และตัว role เอง (`tb_backstage_role`, `tb_backstage_permission`) รวมถึง union `Scope` ที่ type `BackstageUserScope`/`Scope` ของโมดูลนี้สะท้อนตาม และเคยบันทึกโมดูลนี้ไว้ระดับสรุปก่อนหน้านี้จะมีหน้าเป็นของตัวเอง หน้านี้คือเวอร์ชันที่ครบถ้วนกว่า
 - [Super Admins](/th/backstage/super-admins) — flag ข้ามผ่านแยกต่างหาก กั้นด้วย `superAdminOnly` (`tb_backstage_super_admin`) ไม่ใช่ role ใน `tb_backstage_role` และไม่ใช่สิ่งที่หน้าจอนี้แสดงหรือมอบให้
 - Clusters — `cluster_id` ที่ assignment แบบมี scope อ้างอิงถึง ทั้ง Grant Access และ Add Role อ่านรายการ cluster เพื่อป้อน dropdown scope เท่านั้น (`cluster.read`, best-effort — ถ้าโหลดไม่ได้ dropdown จะลดระดับเหลือแค่ raw id แต่ไม่บล็อกการมอบสิทธิ์)
 

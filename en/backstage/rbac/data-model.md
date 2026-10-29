@@ -1,14 +1,14 @@
 ---
-title: Backstage RBAC — Data Model
+title: Backstage Roles — Data Model
 description: The five RBAC tables — permission catalog, roles, role-permission join, scoped user assignments, super-admin flag — their 2026-07-16 doc_version rollout, and divergences from the SPA shapes.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
 ---
 
-# Backstage RBAC — Data Model
+# Backstage Roles — Data Model
 
 > **At a Glance**
 > **Tables:** `tb_backstage_permission` &nbsp;·&nbsp; `tb_backstage_role` &nbsp;·&nbsp; `tb_backstage_role_tb_permission` &nbsp;·&nbsp; `tb_user_tb_backstage_role` &nbsp;·&nbsp; `tb_backstage_super_admin` &nbsp;·&nbsp; **Enums:** none — `resource`/`action` are free-form VarChar &nbsp;·&nbsp; **Scope:** nullable `cluster_id` on the assignment row (`null` = platform-wide) &nbsp;·&nbsp; **Audit columns:** standard `created_*`/`updated_*`/`deleted_*` trio on every table, plus `doc_version Int @default(0)` on all five (added 2026-07-16, platform-wide optimistic-lock rollout) &nbsp;·&nbsp; **Soft-delete uniques:** every uniqueness constraint includes `deleted_at`, so deleted rows can be re-created
@@ -20,7 +20,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 ## 1. Overview
 
-The RBAC module owns five tables, grouped under the `// ==== Backstage RBAC ====` and `// ==== Backstage Super Admin ====` banners in the Prisma schema (lines 1286–1390). `tb_backstage_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_backstage_role` holds the named bundles, and `tb_backstage_role_tb_permission` is the M:N join that records which catalog rows a role grants.
+The RBAC module owns five tables, grouped under the `// ==== Backstage Roles ====` and `// ==== Backstage Super Admin ====` banners in the Prisma schema (lines 1286–1390). `tb_backstage_permission` is the catalog: one row per `resource` + `action` pair, written only by the backend (seed/migration) — the SPA reads it but exposes no create/edit surface. `tb_backstage_role` holds the named bundles, and `tb_backstage_role_tb_permission` is the M:N join that records which catalog rows a role grants.
 
 `tb_user_tb_backstage_role` binds a role to a user with a scope: its nullable `cluster_id` column is the entire scope mechanism — `null` means the assignment applies platform-wide, a UUID means it applies inside that cluster only. `tb_backstage_super_admin` is deliberately not part of the role graph: it is a flag table (just `user_id` + `is_active` beyond the audit trio) whose rows mark users that bypass every permission check.
 
@@ -235,4 +235,4 @@ REST surface consumed by the SPA services (`roleService.ts`, `permissionService.
 - `../carmen-backstage/src/services/superAdminService.ts` and `src/pages/SuperAdminManagement.tsx` — super-admin endpoints and the envelope-descending `extractArray`.
 - `../carmen-backstage/src/services/userRoleService.ts` — assignment endpoints and envelope descent.
 
-**Cross-links:** [Backstage RBAC landing](/en/backstage/rbac) &nbsp;·&nbsp; [UI Screens](/en/backstage/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [users data-model](/en/backstage/users/data-model) (the `tb_user` rows assignments point at)
+**Cross-links:** [Backstage Roles landing](/en/backstage/rbac) &nbsp;·&nbsp; [UI Screens](/en/backstage/rbac/ui-screens) &nbsp;·&nbsp; [Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [users data-model](/en/backstage/users/data-model) (the `tb_user` rows assignments point at)

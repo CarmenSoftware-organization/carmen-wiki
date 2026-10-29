@@ -1,23 +1,23 @@
 ---
-title: RBAC ของแพลตฟอร์ม (Backstage RBAC)
+title: บทบาท Backstage (Backstage Roles)
 description: การควบคุมการเข้าถึงแบบอิง permission สำหรับ Backstage SPA — permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/rbac, carmen-software
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
 ---
 
-# RBAC ของแพลตฟอร์ม (Backstage RBAC)
+# บทบาท Backstage (Backstage Roles)
 
-โมดูล **Backstage RBAC** คือระบบควบคุมการเข้าถึงของ Carmen Blue Backstage admin SPA โมดูลนี้แทนที่ role enum ค่าเดียวแบบเดิมด้วยแบบจำลองที่อิง permission: **permission catalog** ที่ backend เป็นเจ้าของกำหนด key รูปแบบ `resource.action`, **role** รวม key เหล่านั้นเป็นชุด, **assignment** ผูก role เข้ากับผู้ใช้ที่ scope ระดับทั้งแพลตฟอร์มหรือเฉพาะ cluster และ **flag super-admin** ที่แยกต่างหากจะ bypass ทุกการตรวจสอบ route guard, รายการ sidebar และ gate ของ action ในหน้าทุกตัวใน SPA ล้วน resolve กับระบบนี้
+โมดูล **Backstage Roles** คือระบบควบคุมการเข้าถึงของ Carmen Blue Backstage admin SPA โมดูลนี้แทนที่ role enum ค่าเดียวแบบเดิมด้วยแบบจำลองที่อิง permission: **permission catalog** ที่ backend เป็นเจ้าของกำหนด key รูปแบบ `resource.action`, **role** รวม key เหล่านั้นเป็นชุด, **assignment** ผูก role เข้ากับผู้ใช้ที่ scope ระดับทั้งแพลตฟอร์มหรือเฉพาะ cluster และ **flag super-admin** ที่แยกต่างหากจะ bypass ทุกการตรวจสอบ route guard, รายการ sidebar และ gate ของ action ในหน้าทุกตัวใน SPA ล้วน resolve กับระบบนี้
 
 > **Permission key, feature key, superAdminOnly** (`src/components/nav/backstageNav.ts`): รายการ nav **Backstage Roles** (ป้ายชื่อ "Backstage Roles" ไม่ใช่ "Roles" อีกต่อไป) มี `permission: 'backstage_role.read'`, `feature: 'backstage_roles'`, ไม่มี `superAdminOnly` ส่วน Permission Catalog **ไม่มีรายการ nav เลย** — ดู §1
 
 > **At a Glance**
 > **วัตถุประสงค์ของโมดูล:** การควบคุมการเข้าถึงแบบอิง permission — catalog กำหนด key รูปแบบ `resource.action`, role รวม key เป็นชุด, assignment แบบมี scope ผูก role เข้ากับผู้ใช้, flag super-admin จะ bypass ทุกการตรวจสอบ &nbsp;·&nbsp; **กลุ่มผู้ใช้:** นักพัฒนาและ QA ที่ทำงานกับ Backstage SPA และ authorization backend ของมัน &nbsp;·&nbsp; **เอนทิตี/ตารางหลัก:** `tb_backstage_permission`, `tb_backstage_role`, `tb_backstage_role_tb_permission`, `tb_user_tb_backstage_role` (scope ผ่าน `cluster_id` ที่เป็น nullable), `tb_backstage_super_admin` — ทั้งห้าตารางมี `doc_version` (การ rollout optimistic-lock ทั้งแพลตฟอร์มเมื่อ 2026-07-16) &nbsp;·&nbsp; **หน้าจอที่ครอบคลุมในหน้านี้:** Roles · Permission Catalog &nbsp;·&nbsp; **หน้าจอที่สรุปไว้ที่นี่ มีโมดูลเต็มอยู่ที่อื่น:** [Super Admins](/th/backstage/super-admins) · [Backstage Users](/th/backstage/user-backstage) (ดูหมายเหตุขอบเขตด้านล่าง) &nbsp;·&nbsp; **หน้าย่อย:** 3 &nbsp;·&nbsp; **เปลี่ยนคีย์เมื่อ 2026-08-20:** `role.*` → `platform_role.*` (→ `backstage_role.*` on 2026-10-26, `318949a3`) ทุกจุด, คีย์ `rbac.read` แบบเดี่ยวที่บางหน้าเคยใช้ถูกยกเลิก, และ route ของ Permission Catalog ย้ายจาก `/backstage/permissions` ไปเป็น `/backstage/category-permissions` (commit `8df0b10` ใน repo `carmen-backstage`) &nbsp;·&nbsp; **ตั้งแต่ 2026-09-02:** `RoleManagement`/`RoleEdit` วัดจำนวน permission ของ role เทียบกับ **ขนาด catalog** ไม่ใช่ role ที่กว้างที่สุด และตัวเลือก permission ของ `RoleEdit` กลายเป็น grid แบบแถวต่อ resource พร้อมปุ่ม toggle (`carmen-backstage` PR #252/#253); `SuperAdminManagement` ถูกเขียนใหม่เป็นครั้งที่สอง จาก `DataTable` เป็นทะเบียนคนแบบการ์ด (`carmen-backstage` PR #244)
 
-![RBAC ของแพลตฟอร์ม (Backstage RBAC) screen](/screenshots/platform/rbac/index.png)
+![บทบาท Backstage (Backstage Roles) screen](/screenshots/platform/rbac/index.png)
 
 **หมายเหตุขอบเขต (resync 2026-09-05):** หน้านี้ครอบคลุมหน้าจอ **Roles** และ **Permission Catalog** อย่างครบถ้วน ส่วน **Backstage Users** และ **Super Admins** ครอบคลุมเฉพาะระดับสรุปเท่านั้น — ทั้งสองมีโมดูล Platform ระดับบนสุดของตัวเองแล้ว คือ [Backstage Users](/th/backstage/user-backstage) และ [Super Admins](/th/backstage/super-admins) แต่ละโมดูลมีรายการ nav, permission key และชุด e2e เป็นของตัวเองตามที่ระบุไว้ด้านล่าง พร้อมการตรวจสอบแบบละเอียดทุกบรรทัดของหน้าจอตัวเองแล้ว ข้อเท็จจริงที่ระบุด้านล่างเกี่ยวกับทั้งสองผ่านการตรวจสอบกับซอร์สปัจจุบันแล้ว แต่สำหรับเนื้อหาแบบละเอียด — หน้าจอ, คอลัมน์, endpoint — ให้ดูที่หน้าโมดูลของตัวเอง ไม่ใช่หน้านี้
 

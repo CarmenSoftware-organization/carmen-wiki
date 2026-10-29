@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม (Activity Events)
 description: หน้า explorer ของ UI telemetry รายอีเวนต์ที่ /activity-events — ตัวกรอง คอลัมน์ สิทธิ์ activity_event.detail ที่ใช้ร่วมกับ Usage Analytics และเหตุผลที่ไม่ใช่ audit trail ของ activity_log
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, activity-events
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -118,9 +118,9 @@ permission catalog ระบุความแตกต่างนี้ไว�
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Usage Analytics](/th/backstage/usage-analytics) — โมดูลพี่น้องที่เป็นแดชบอร์ดสรุปที่ `/analytics` gate ด้วย `activity_event.read`; เป็นเจ้าของการอธิบายสิทธิ์/guard/การจำกัดขอบเขตตาม cluster แบบเต็มที่ §4 ของหน้านี้อ้างถึง
-- [Backstage RBAC](/th/backstage/rbac) — permission catalog และนิยาม role bundle ที่อ้างถึงใน §2 และ §4
+- [Backstage Roles](/th/backstage/rbac) — permission catalog และนิยาม role bundle ที่อ้างถึงใน §2 และ §4
 - [Business Units](/th/backstage/business-units) และ [Applications](/th/backstage/applications) — เป็นแหล่งข้อมูลของ dropdown ตัวกรอง BU และ Application (§3.2) หน้านี้ไม่ได้เป็นเจ้าของ list ทั้งสอง
-- [Cronjobs](/th/backstage/cronjobs) — หน้าจัดการ scheduled job ของแพลตฟอร์มเอง ซึ่ง (ตามที่ `backstage_cronjobs.service.ts` ของ `../carmen-turborepo-backend` อ่านและเขียนตาราง `"CRONJOBS"."Cronjob"` เดียวกัน) เป็น store เดียวกับที่เก็บนิยามงาน retention และ rollup ที่บันทึกไว้ในหน้า [Data Model](/th/backstage/activity-events/data-model)
+- [Scheduled Jobs](/th/backstage/cronjobs) — หน้าจัดการ scheduled job ของแพลตฟอร์มเอง ซึ่ง (ตามที่ `backstage_cronjobs.service.ts` ของ `../carmen-turborepo-backend` อ่านและเขียนตาราง `"CRONJOBS"."Cronjob"` เดียวกัน) เป็น store เดียวกับที่เก็บนิยามงาน retention และ rollup ที่บันทึกไว้ในหน้า [Data Model](/th/backstage/activity-events/data-model)
 
 ## 6. แหล่งอ้างอิง
 

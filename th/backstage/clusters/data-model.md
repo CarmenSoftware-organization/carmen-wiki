@@ -2,7 +2,7 @@
 title: Cluster — Data Model
 description: Entity ของ cluster, ความสัมพันธ์กับ BU และ user, และ licence ledger ที่มาแทน cap แบบ static เดิม (max_license_bu/max_license_users)
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, clusters, data-model
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -14,7 +14,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 - Entity `tb_cluster`: field identity (`code`, `name`, `alias_name`), branding file token (`logo_file_token`, `avatar_file_token` — API resolve เป็น presigned object `logo`/`avatar` ฝังในตัว), counter `doc_version Int @default(0)` สำหรับ optimistic lock และ audit/soft-delete trio **ไม่มีคอลัมน์ licence-cap (`max_license_bu`) อีกต่อไป** — ถูกถอดออกจากทั้ง Prisma model และ SPA ทั้งหมด (โค้ดฝั่ง SPA ตัวสุดท้ายที่อ่านค่านี้ถูกลบโดย commit `7fda015`, "ลบโค้ดที่อ่าน max_license_bu ที่เหลือทั้งหมด")
 - One-to-many กับ Business Units (`tb_business_unit.cluster_id`) — `tb_business_unit.max_license_users` ก็ถูกถอดออกเช่นกัน (migration `20260821000000_drop_bu_max_license_users`, 2026-08-21) หลัง backfill ข้อมูลเข้า `tb_business_unit_license` แล้ว
-- M:N กับ user ผ่าน `tb_cluster_user` (`role` ต่อ cluster: `admin`/`user` — orthogonal กับโมเดล Backstage RBAC, ดู [rbac](/th/backstage/rbac)) **ไม่มี `parent_bu_id` แล้ว** — ไม่พบ field นี้ใน model ปัจจุบันเลย (grep ทั้ง schema ไม่เจอ) ตรงกับที่ UI ของแท็บ Users ถอด field/column ของ Business Unit ออกไปแล้ว `tb_cluster_user` ยังมี `doc_version` แต่การแก้ไข role แบบ inline ในแท็บ Users ยังไม่ส่งค่านี้ไปด้วย
+- M:N กับ user ผ่าน `tb_cluster_user` (`role` ต่อ cluster: `admin`/`user` — orthogonal กับโมเดล Backstage Roles, ดู [rbac](/th/backstage/rbac)) **ไม่มี `parent_bu_id` แล้ว** — ไม่พบ field นี้ใน model ปัจจุบันเลย (grep ทั้ง schema ไม่เจอ) ตรงกับที่ UI ของแท็บ Users ถอด field/column ของ Business Unit ออกไปแล้ว `tb_cluster_user` ยังมี `doc_version` แต่การแก้ไข role แบบ inline ในแท็บ Users ยังไม่ส่งค่านี้ไปด้วย
 - **ใหม่ — `tb_cluster_license`:** ledger การซื้อโควตา BU ของ cluster (`licensed_bus`, `start_date`/`end_date`, ฟิลด์ยกเลิก) โควตาที่มีผลคือใบที่ชนะใบเดียว (view `v_cluster_bu_cap` — คนละตัวกับ `v_cluster_bu_quota` ที่ทำหน้าที่จัดอันดับ BU รายตัว ดูรายละเอียดสองตัวนี้ในหน้า en) ไม่ใช่ผลรวม — ไม่มีใบที่ชนะ = โควตา `0` จริง ไม่ใช่ "ไม่จำกัด" กลายเป็น `bu_cap`/`bu_cap_end_date` บน `Cluster` interface แทนที่ `max_license_bu` เดิม
 - **ใหม่ — `tb_business_unit_license`:** ledger ที่นั่งต่อ BU ที่รวมยอดผ่าน view `v_business_unit_seat` เป็น `total_max_license_users` ของ cluster — **ไม่มีสระที่นั่งแบบ "ไม่จำกัด" อีกแล้ว**: ตั้งแต่รอบ 2026-10 SPA ถือว่า `total_max_license_users` ที่เป็น 0/null/ไม่มี คือ **0 ที่นั่ง** (`toSeatPool()` ใน `utils/seatPool.ts`, `seatUtilization()` ใน `utils/capacity.ts`) ตรงกับ backend (commit `566418aa`); `users_count` ใน response ของ cluster คือจำนวนผู้ถือที่นั่งตามที่ backend นับ (`seat.helper.ts`)
 - **ใหม่ — `tb_cluster_note` (2026-10-26):** บันทึกภายในและไฟล์แนบของเจ้าหน้าที่ Backstage บน cluster — tenant ไม่เห็นเลย (shell ของ cluster-admin ไม่มีแท็บ Notes) เพิ่มโดย migration `20261026150000_add_cluster_note` ฟิลด์: `id`, `cluster_id` (FK), `message`, `attachments` (JSONB array), `doc_version`, audit trio + soft delete; permission `cluster_note.view` / `cluster_note.manage`

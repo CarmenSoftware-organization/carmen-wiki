@@ -2,7 +2,7 @@
 title: การตั้งค่า Backstage (Backstage Config)
 description: หน้าจอเดียว สิบเอ็ดการ์ด สิบคีย์ config — คำเชิญ การสมัคร ยืนยันอีเมล รีเซ็ตรหัสผ่าน อีเมลแจ้งเตือน license enforcement เกณฑ์ใกล้หมดอายุ Google sign-in URL ของ external API และสวิตช์ migration API
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, backstage-config
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -139,7 +139,7 @@ handler เขียนทั้งสองตัวตรวจส่วน `c
 - Clusters, Business Units — ก็อ่านหน้าต่าง `expiry_thresholds` สำหรับ badge "ใกล้หมดอายุ" และตัวนับโควตาของตัวเอง (ดู data model ของโมดูล [Licenses](/th/backstage/licenses) สำหรับรูปแบบการใช้ threshold ร่วมกัน)
 - Email Settings — เป็นเจ้าของ `tb_email_sender_profile` (credential SMTP) และคีย์ registry `email_routing` (§3.5) แก้จากหน้าจอของตัวเอง แต่เขียนผ่านพื้นผิว `/api-system/backstage/configs` เดียวกันนี้
 - Feature Flags — เป็นเจ้าของคีย์ registry `feature_flags` (§3.5) ผ่านคู่ endpoint เฉพาะของตัวเอง ไม่ใช่พื้นผิวของโมดูลนี้
-- [Backstage RBAC](/th/backstage/rbac) — แคตตาล็อก permission ที่เห็น `backstage_config.read`/`.manage`, `license.manage` และทุกคีย์บนหน้านี้เคียงข้างทุก resource อื่นของแพลตฟอร์ม
+- [Backstage Roles](/th/backstage/rbac) — แคตตาล็อก permission ที่เห็น `backstage_config.read`/`.manage`, `license.manage` และทุกคีย์บนหน้านี้เคียงข้างทุก resource อื่นของแพลตฟอร์ม
 
 ## 6. แหล่งอ้างอิง
 

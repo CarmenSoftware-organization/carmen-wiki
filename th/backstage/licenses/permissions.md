@@ -2,7 +2,7 @@
 title: ไลเซนส์ — สิทธิ์ (Permissions)
 description: subscription.read กั้นการดู (รวมถึงเปิดหน้าแก้ไขแบบอ่านอย่างเดียว); subscription.manage เพียงตัวเดียวกั้นทุกการแก้ไข license.manage เป็นคีย์ของอีกโมดูลหนึ่ง ไม่ใช่ของโมดูลนี้
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, licenses, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -21,7 +21,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. เมทริกซ์ของ gate
 
-ทุก route ตรวจผ่าน `PrivateRoute` ซึ่งตรวจ `requiredPermission` ก่อน (ล้มเหลว → `<Forbidden>` ในที่, URL ไม่เปลี่ยน) แล้วตรวจ feature flag `feature` หลังเสมอ (ล้มเหลว → `NotFound` เมื่อ `hide`, `ComingSoon` เมื่อ `inactive`) — ดู [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) สำหรับ resolver ที่ใช้ร่วมกัน
+ทุก route ตรวจผ่าน `PrivateRoute` ซึ่งตรวจ `requiredPermission` ก่อน (ล้มเหลว → `<Forbidden>` ในที่, URL ไม่เปลี่ยน) แล้วตรวจ feature flag `feature` หลังเสมอ (ล้มเหลว → `NotFound` เมื่อ `hide`, `ComingSoon` เมื่อ `inactive`) — ดู [Backstage Roles — Permissions](/th/backstage/rbac/permissions) สำหรับ resolver ที่ใช้ร่วมกัน
 
 | Route | Permission | Feature | แหล่งที่มา |
 |---|---|---|---|
@@ -122,4 +122,4 @@ path ฝั่ง backend ทั้งหมดข้างบนคือ `../c
 - **เมื่อโมดูลนี้มี e2e spec มากกว่า smoke** เคส read/manage-independence ใน §4 (โดยเฉพาะกรณีพิเศษ 1 และ 2) คือเคสที่คุ้มค่าที่สุดที่จะเขียนเป็นชุดแรก เพราะเป็นรูปแบบการกั้นสิทธิ์ที่ไม่ชัดเจนในตัวเองที่สุดของโมดูลนี้
 
 **แหล่งอ้างอิง:** path ทั้งหมดคือ `../carmen-backstage` ยกเว้นที่ระบุไว้ `src/App.tsx:187-270` (route + redirect เก่า) · `src/components/nav/backstageNav.ts:24` (รายการ sidebar) · `src/pages/licenses/{SubscriptionForm,LicensePurchaseForm}.tsx` (การคำนวณ `canEdit`/`canEditFields`, gate `<Can>`) · `src/pages/licenses/ClusterLicenseDetail.tsx:46-59` (`canManage` แหล่งความจริงเดียวที่ส่งลงทั้งสามแท็บ) · `src/pages/BackstageConfigManagement.tsx:74-75`, `src/pages/backstageConfig/LicenseEnforcementCard.tsx:14,109` (`license.manage` — คีย์ของอีกโมดูลหนึ่ง, §1) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/{backstage_cluster-licenses,backstage_business-unit-licenses,backstage_subscriptions}/*.controller.ts` (การบังคับใช้ฝั่ง backend, §2)
-**ลิงก์ข้าม:** [หน้าลงจอด Licenses](/th/backstage/licenses) &nbsp;·&nbsp; [Data Model](/th/backstage/licenses/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/licenses/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [cluster-admin](/th/backstage/cluster-admin) &nbsp;·&nbsp; [Backstage Config](/th/backstage/backstage-config)
+**ลิงก์ข้าม:** [หน้าลงจอด Licenses](/th/backstage/licenses) &nbsp;·&nbsp; [Data Model](/th/backstage/licenses/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/licenses/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [cluster-admin](/th/backstage/cluster-admin) &nbsp;·&nbsp; [Backstage Config](/th/backstage/backstage-config)

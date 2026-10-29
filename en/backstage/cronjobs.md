@@ -1,23 +1,23 @@
 ---
-title: Cronjobs
+title: Scheduled Jobs
 description: The platform's scheduling console over the shared "CRONJOBS"."Cronjob" table — six job types, who runs them (../micro-cronjobs), and exactly where a failed run becomes visible.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Cronjobs
+# Scheduled Jobs
 
 > **At a Glance**
 > **Module purpose:** Platform-wide admin console over one shared table, `"CRONJOBS"."Cronjob"`, that this module and other backend services both write scheduled jobs into &nbsp;·&nbsp; **Screens:** `CronJobManagement` (list, `/cronjobs`) and `CronJobEdit`, used for both create (`/cronjobs/new`) and edit (`/cronjobs/:id/edit`) &nbsp;·&nbsp; **Backing service:** [`../micro-cronjobs`](#6-reference-sources) (Go) — a standalone scheduler/worker process with **no authentication of its own** &nbsp;·&nbsp; **Nav entry:** `permission: 'cronjob.read'`, its own nav group `navGroup.scheduling` — not folded into `navGroup.platform` &nbsp;·&nbsp; **Feature flag:** `cronjobs` &nbsp;·&nbsp; **Two-permission model:** `cronjob.read` (the **only** permission the frontend route guard checks on all three routes, including `/new` and `/:id/edit`) and `cronjob.manage` (every mutating action — start/stop/run-now/edit/delete/create — gated by `<Can>` **and** re-checked in the submit handler) &nbsp;·&nbsp; **Role assignment:** only the **Backstage Admin** role holds any `cronjob.*` permission &nbsp;·&nbsp; **Job types:** 6 creatable from this console — `report`, `notification`, `cleanup`, `dashboard_refresh`, `activity_rollup`, `activity_retention` — plus 2 that `micro-cronjobs` also executes but the console and gateway DTO do not know about, `gl_run_due` and `pos_simphony_pull` (§3.1) &nbsp;·&nbsp; **e2e suite:** read-only smoke spec only (`../carmen-backstage-e2e/tests/cronjobs/cronjobs-smoke.spec.ts`: page renders at `/cronjobs`, sidebar link present) — no coverage of start/stop/run/edit/delete &nbsp;·&nbsp; **Sub-pages:** 2
 
-![Cronjobs screen](/screenshots/platform/cronjobs/index.png)
+![Scheduled Jobs screen](/screenshots/platform/cronjobs/index.png)
 
 ## 1. Overview
 
-**Cronjobs** is the platform's window onto every scheduled background job in Carmen Blue — one list (`CronJobManagement.tsx`, read in full) and one create/edit form (`CronJobEdit.tsx`, read in full), both reached under `/cronjobs`. The screen itself does nothing but read and write rows; the work each row describes — sending a report, refreshing a dashboard, deleting old telemetry — is carried out entirely by a separate Go service, **`../micro-cronjobs`**, polling the same database table this console edits. Understanding this module means understanding both halves: what the console lets an operator configure, and what the worker actually does with that configuration once saved — including, critically, where a run that failed becomes visible to someone testing it.
+**Scheduled Jobs** is the platform's window onto every scheduled background job in Carmen Blue — one list (`CronJobManagement.tsx`, read in full) and one create/edit form (`CronJobEdit.tsx`, read in full), both reached under `/cronjobs`. The screen itself does nothing but read and write rows; the work each row describes — sending a report, refreshing a dashboard, deleting old telemetry — is carried out entirely by a separate Go service, **`../micro-cronjobs`**, polling the same database table this console edits. Understanding this module means understanding both halves: what the console lets an operator configure, and what the worker actually does with that configuration once saved — including, critically, where a run that failed becomes visible to someone testing it.
 
 The console proxies through `backend-gateway`'s `BackstageCronjobsController` / `BackstageCronjobsService` (`../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/`), which in turn calls `micro-cronjobs`'s own REST API (`CRONJOB_SERVICE_URL`) over plain HTTP. `micro-cronjobs` has no login, no session, no API key of its own — the gateway controller's own doc comment states this outright: it "is the only thing standing between a browser and a service that will delete any job for anyone," and `CRONJOB_SERVICE_URL` must never be exposed to the frontend. Every permission check a tester can observe from the browser happens at the gateway, not in the worker.
 
@@ -25,7 +25,7 @@ The console proxies through `backend-gateway`'s `BackstageCronjobsController` / 
 
 `"CRONJOBS"."Cronjob"` is not owned exclusively by this module — it is a **shared table**. Some rows are created here, by an operator, through this console (`source_service` is empty, shown as "Backstage" in the Owner column). Other rows are created by a different service on a business unit's behalf — most notably `reports.service.ts` in `backend-gateway` (`../carmen-turborepo-backend/apps/backend-gateway/src/application/reports/reports.service.ts`), which calls `micro-cronjobs`'s `by-source` endpoints directly (its own `cronjobHttp` client against `CRONJOB_SERVICE_URL`, bypassing this module's gateway controller entirely) whenever a business unit sets up a recurring report schedule elsewhere in the product. Those "foreign-owned" rows are still fully visible, editable, and deletable from this console — see §3 for exactly what that means and does not mean.
 
-This is also why the module sits in its **own** nav group rather than inside `navGroup.backstage`. The comment above the nav entry (`backstageNav.ts:39-40`) reads: "Scheduling — งานตามเวลา ไม่ใช่การตั้งค่าระบบ จึงเป็นกลุ่มของตัวเอง" ("Scheduling — scheduled work, not system configuration, so it gets its own group"). Verified structurally rather than taken on the comment's word: `navGroup.scheduling` contains exactly one row (`/cronjobs`, grepped across the whole nav file), sitting between the Analytics group (Usage Analytics, Activity Events) and the Backstage group (Backstage Config, Email Settings, Applications, Backstage Roles, User Backstage, Super Admins, Feature Flags) — genuinely isolated on both sides, not merged with either neighbor. The reasoning holds: everything else in `navGroup.backstage` decides *who can do what* or *how the platform is configured*; Cronjobs decides *when background work runs*, which is a materially different kind of setting.
+This is also why the module sits in its **own** nav group rather than inside `navGroup.backstage`. The comment above the nav entry (`backstageNav.ts:39-40`) reads: "Scheduling — งานตามเวลา ไม่ใช่การตั้งค่าระบบ จึงเป็นกลุ่มของตัวเอง" ("Scheduling — scheduled work, not system configuration, so it gets its own group"). Verified structurally rather than taken on the comment's word: `navGroup.scheduling` contains exactly one row (`/cronjobs`, grepped across the whole nav file), sitting between the Analytics group (Usage Analytics, Activity Events) and the Backstage group (Backstage Config, Email Settings, Applications, Backstage Roles, User Backstage, Super Admins, Feature Flags) — genuinely isolated on both sides, not merged with either neighbor. The reasoning holds: everything else in `navGroup.backstage` decides *who can do what* or *how the platform is configured*; Scheduled Jobs decides *when background work runs*, which is a materially different kind of setting.
 
 ## 3. Key Concepts
 
@@ -86,7 +86,7 @@ This is the question a list of job names cannot answer on its own — see [Data 
 | Surface | Gate | Key |
 |---|---|---|
 | `/cronjobs`, `/cronjobs/new`, `/cronjobs/:id/edit` routes | `PrivateRoute requiredPermission` + `feature` | `cronjob.read` + `cronjobs` (`App.tsx:577-600` — **the same single permission on all three routes**, `.manage` is never checked at the route level) |
-| Sidebar "Cronjobs" entry | `permission` + `feature` filter | `cronjob.read` / `cronjobs` (`backstageNav.ts:41`, its own `navGroup.scheduling`) |
+| Sidebar "Scheduled Jobs" entry | `permission` + `feature` filter | `cronjob.read` / `cronjobs` (`backstageNav.ts:41`, its own `navGroup.scheduling`) |
 | List: Add Job button (header and empty state) | `<Can>` | `cronjob.manage` |
 | List: Start/Stop, Run Now, Edit, Delete icons per row | entire actions cell returns `null` unless `canManage` | `cronjob.manage` |
 | Edit page: Save button in the unsaved-changes bar | `<Can>` | `cronjob.manage` |
@@ -106,7 +106,7 @@ Two things worth calling out precisely, both confirmed by reading the code rathe
 - [Usage Analytics](/en/backstage/usage-analytics) — the dashboard that reads the table `activity_rollup` maintains; unrelated to this module's own screens.
 - [Report Templates](/en/backstage/report-templates) — the module a business unit's recurring report schedule is set up from; those schedules land in the same `"CRONJOBS"."Cronjob"` table this console administers, created through `backend-gateway`'s `reports.service.ts`, not through this module's own create form.
 - [Database Pools](/en/backstage/database-pools) §4 — the sibling module this page's read/manage permission split and "read-only session can open but not save the form" behavior directly mirrors.
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog behind `cronjob.read`/`cronjob.manage`, and why only Backstage Admin holds either key.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog behind `cronjob.read`/`cronjob.manage`, and why only Backstage Admin holds either key.
 
 ## 6. Reference Sources
 

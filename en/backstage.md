@@ -2,7 +2,7 @@
 title: Carmen Blue Backstage
 description: Overview of the Carmen Blue Backstage admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -44,7 +44,7 @@ The sidebar's own top row — ungrouped, above every `groupKey` group, and reach
 | Module | What it covers |
 |---|---|
 | [Report Templates](/en/backstage/report-templates) | XML report template catalogue — tabbed editor, database source binding, BU allow/deny scoping, per-report-group default forms |
-| [Report Form Groups](/en/backstage/report-form-groups) | One card per fixed `report_group` code, each listing its form templates with a set-as-default action — the surface that replaced the deleted print-template-mapping module |
+| [Form Groups](/en/backstage/report-form-groups) | One card per fixed `report_group` code, each listing its form templates with a set-as-default action — the surface that replaced the deleted print-template-mapping module |
 | [News](/en/backstage/news) | Markdown announcements with a draft → published → archived lifecycle, global or per-BU targeting |
 | [Broadcasts](/en/backstage/broadcasts) | Push notifications across three target modes, with scheduling, editing, and a full sender-side lifecycle |
 
@@ -59,7 +59,7 @@ The sidebar's own top row — ungrouped, above every `groupKey` group, and reach
 
 | Module | What it covers |
 |---|---|
-| [Cronjobs](/en/backstage/cronjobs) | The platform's scheduling console over the shared Cronjob table — job types, who runs them, and where a failed run surfaces |
+| [Scheduled Jobs](/en/backstage/cronjobs) | The platform's scheduling console over the shared Cronjob table — job types, who runs them, and where a failed run surfaces |
 
 ## 7. Backstage
 
@@ -68,7 +68,7 @@ The sidebar's own top row — ungrouped, above every `groupKey` group, and reach
 | [Backstage Config](/en/backstage/backstage-config) | One screen, nine cards — invitations, sign-up, password reset, license enforcement, expiry-warning thresholds, and more |
 | [Email Settings](/en/backstage/email-settings) | Named SMTP sender profiles and the routing map deciding which of five outbound mail flows uses which profile |
 | [Applications](/en/backstage/applications) | Registered API clients — their `x-app-id` identity and allow-all vs. explicit `api_name` access grants |
-| [Backstage RBAC](/en/backstage/rbac) | Permission catalog, roles, scoped user assignments, and the super-admin bypass |
+| [Backstage Roles](/en/backstage/rbac) | Permission catalog, roles, scoped user assignments, and the super-admin bypass |
 | [Backstage Users](/en/backstage/user-backstage) | Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts |
 | [Super Admins](/en/backstage/super-admins) | The platform's god-mode allowlist — an add/remove roster of users who bypass every permission check |
 | [Feature Flags](/en/backstage/feature-flags) | The single screen that sets every feature's visibility (active/inactive/hide) across both the Platform and Cluster-admin consoles |

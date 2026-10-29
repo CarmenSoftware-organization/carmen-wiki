@@ -2,7 +2,7 @@
 title: Backstage Users — Permissions
 description: user_backstage.read gates both routes; user_backstage.manage gates every mutating action — but most of the detail screen also needs the Users module's user.read.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -76,4 +76,4 @@ Two calls the detail page makes are **not** in the table above because they hit 
 - **When verifying an inactive-holder warning or an "Email not verified" badge, confirm you are looking at real state, not the failure mode in edge case 1** — both are legitimate, sourced facts about the account (§3.4/§3.3 of the [landing page](/en/backstage/user-backstage)) only when the account fetch actually succeeded.
 
 **References:** all paths `../carmen-backstage` (HEAD `157a65e`) unless prefixed `../carmen-turborepo-backend` (HEAD `937cf5ac4`). `src/App.tsx:497-512` (routes) · `src/components/nav/backstageNav.ts:48` (nav) · `src/pages/UserBackstageManagement.tsx` (list gates, lines 390,417,586) · `src/pages/UserBackstageEdit.tsx` (detail gates and load sequence, lines 134-160,265-271,302) · `src/pages/userBackstageEdit/RoleGrantList.tsx:126` · `src/components/UserPicker.tsx`, `src/hooks/useUserSearch.ts` (inline search-failure behavior) · `src/context/AuthContext.tsx:354-358`, `src/utils/permissions.ts:56` (super-admin short-circuit) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/user-backstage-roles/user-backstage-roles.controller.ts` (lines 88-90,135-137,180-182,233-235,280-282) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage-user/backstage-user.controller.ts:128-130,264-266` (`user.read` on the Users-module endpoints this module depends on) · `../carmen-turborepo-backend/apps/micro-business/src/authen/user_backstage_role/user_backstage_role.service.ts:198-216` (the duplicate-grant race, edge case 5).
-**Cross-links:** [Backstage Users landing](/en/backstage/user-backstage) &nbsp;·&nbsp; [UI Screens](/en/backstage/user-backstage/ui-screens) &nbsp;·&nbsp; [Users](/en/backstage/users) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config) &nbsp;·&nbsp; [Email Settings](/en/backstage/email-settings)
+**Cross-links:** [Backstage Users landing](/en/backstage/user-backstage) &nbsp;·&nbsp; [UI Screens](/en/backstage/user-backstage/ui-screens) &nbsp;·&nbsp; [Users](/en/backstage/users) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config) &nbsp;·&nbsp; [Email Settings](/en/backstage/email-settings)

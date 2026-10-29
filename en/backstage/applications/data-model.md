@@ -2,7 +2,7 @@
 title: Applications — Data Model
 description: The tb_application, tb_application_api and tb_application_bypass_user tables (incl. service-status and app-secret columns), asymmetric read/write shapes, PUT replace semantics, the generated api-catalog, and the schema-only tb_application_role family.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, applications, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -184,4 +184,4 @@ Backend commit/PR references above are all in `../carmen-turborepo-backend` or `
 - `../carmen-backstage/src/utils/audit.ts` — `normalizeAudit()` (nested-first, flat-fallback; `updated` gated on `everEdited`), read by this module's `ApplicationManagement.tsx` list columns since 2026-08-22.
 - `../carmen-backstage/src/utils/docVersion.ts` — `getDocVersion`/`isVersionConflict`/`notifyVersionConflict` optimistic-lock helpers used by `ApplicationEdit.tsx`.
 
-**Cross-links:** [Applications landing](/en/backstage/applications) &nbsp;·&nbsp; [UI Screens](/en/backstage/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/en/backstage/applications/permissions) &nbsp;·&nbsp; [Backstage RBAC data-model](/en/backstage/rbac/data-model) (the delta-write contrast)
+**Cross-links:** [Applications landing](/en/backstage/applications) &nbsp;·&nbsp; [UI Screens](/en/backstage/applications/ui-screens) &nbsp;·&nbsp; [Permissions](/en/backstage/applications/permissions) &nbsp;·&nbsp; [Backstage Roles data-model](/en/backstage/rbac/data-model) (the delta-write contrast)

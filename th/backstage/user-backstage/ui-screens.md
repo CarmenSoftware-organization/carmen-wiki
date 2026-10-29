@@ -2,7 +2,7 @@
 title: ผู้ใช้แพลตฟอร์ม — หน้าจอ UI (UI Screens)
 description: ทะเบียน UserBackstageManagement (BackstageAccessSummary, RoleChips, Grant Access) และแฟ้มรายคน UserBackstageEdit (AccessReachBand, RoleGrantList, MembershipCard) พร้อมสองจุดที่ e2e suite ไม่ตรง UI
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, user-backstage, ui
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -70,4 +70,4 @@ path ทั้งหมดด้านล่างคือ `../carmen-backstage
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/user_backstage_role/user_backstage_role.service.ts` — `assign`/`assignBulk`/`remove` ที่หนุนหลังทุกการเขียนบนทั้งสองหน้าจอ
 - `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts`, `pages/UserPlatform{ManagementPage,EditPage}.ts` — suite ที่ล้าสมัยตามที่กล่าวใน §4
 
-**Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/backstage/user-backstage) &nbsp;·&nbsp; [Permissions](/th/backstage/user-backstage/permissions) &nbsp;·&nbsp; [Users](/th/backstage/users) &nbsp;·&nbsp; [Backstage RBAC](/th/backstage/rbac)
+**Cross-links:** [ผู้ใช้แพลตฟอร์ม (landing)](/th/backstage/user-backstage) &nbsp;·&nbsp; [Permissions](/th/backstage/user-backstage/permissions) &nbsp;·&nbsp; [Users](/th/backstage/users) &nbsp;·&nbsp; [Backstage Roles](/th/backstage/rbac)

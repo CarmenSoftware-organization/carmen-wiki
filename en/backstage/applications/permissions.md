@@ -2,7 +2,7 @@
 title: Applications — Permissions
 description: The application.* gate matrix, how machine-client access (x-app-id + api_names) differs from user RBAC, and edge cases for testers.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, applications, permissions
 editor: markdown
 dateCreated: 2026-06-10T12:30:00.000Z
@@ -15,11 +15,11 @@ dateCreated: 2026-06-10T12:30:00.000Z
 
 ## 1. Overview
 
-This page covers two distinct authorization stories that intersect on these screens. The first is ordinary [Backstage RBAC](/en/backstage/rbac): the `application.*` permission keys that decide which *humans* can see and mutate application records (§2). The second is what the records themselves encode: the **machine-client grant** — which `api_name`-guarded endpoints a caller presenting this application's `x-app-id` may invoke (§3). Testers need both lenses: a human with full `application.*` keys can grant an application powers the human does not hold, because the two vocabularies are independent.
+This page covers two distinct authorization stories that intersect on these screens. The first is ordinary [Backstage Roles](/en/backstage/rbac): the `application.*` permission keys that decide which *humans* can see and mutate application records (§2). The second is what the records themselves encode: the **machine-client grant** — which `api_name`-guarded endpoints a caller presenting this application's `x-app-id` may invoke (§3). Testers need both lenses: a human with full `application.*` keys can grant an application powers the human does not hold, because the two vocabularies are independent.
 
 ## 2. Gate matrix
 
-All gates resolve through the single `hasPermission` resolver documented in [Backstage RBAC — Permissions](/en/backstage/rbac/permissions); a failed route guard renders `<Forbidden>` (403 page) inside the normal `<Layout>` shell.
+All gates resolve through the single `hasPermission` resolver documented in [Backstage Roles — Permissions](/en/backstage/rbac/permissions); a failed route guard renders `<Forbidden>` (403 page) inside the normal `<Layout>` shell.
 
 | Surface | Mechanism | Key | Source |
 |---|---|---|---|
@@ -63,7 +63,7 @@ The `resource.action` grammar is shared; almost everything else differs:
 |---|---|---|
 | Caller identifies by | `Authorization: Bearer <token>` (session) | `x-app-id: <tb_application.id>` header |
 | Key vocabulary | `tb_backstage_permission` rows (Postgres, seeded by backend migration); verb set `read`/`create`/`update`/… | `api_name`s harvested from `new AppIdGuard('...')` calls by `scripts/generate-app-api-catalog/run.ts` (generated file, no table); verbs follow controller methods (`findAll`, `findOne`, `uploadLogo`) — same grammar, different strings |
-| Grant storage | role→permission join rows plus scoped user→role assignment rows (five tables — see [Backstage RBAC data-model](/en/backstage/rbac/data-model)) | flat `tb_application_api` rows per application (no roles, no scopes) |
+| Grant storage | role→permission join rows plus scoped user→role assignment rows (five tables — see [Backstage Roles data-model](/en/backstage/rbac/data-model)) | flat `tb_application_api` rows per application (no roles, no scopes) |
 | Wildcard | super-admin flag (`tb_backstage_super_admin`) per user | `allow_all` boolean per application |
 | Scope dimension | platform-wide or per-cluster (`cluster_id` on the assignment) | none — a grant applies wherever the endpoint does |
 | Write semantics (SPA) | role permissions sent as deltas `{ add, remove }` | full-set replace via `details.add[]` on every `PUT` |
@@ -105,4 +105,4 @@ Both headers travel together on every **authenticated** Platform SPA request —
 - ~~Close the empty-state gate gap at the source.~~ **Done** — the `EmptyState` CTA is now wrapped in `<Can permission="application.create">`, matching the header button; no further action needed here.
 
 **References:** all paths `../carmen-backstage` unless noted. `src/App.tsx` (the three `application.*` route guards, each also `feature="applications"`) · `src/components/nav/backstageNav.ts` (sidebar entry, line 45 — not `Layout.tsx`, which defines no nav rows today) · `src/pages/ApplicationManagement.tsx` (`<Can>` gates, empty state, row View History) · `src/pages/ApplicationEdit.tsx` (Edit-toggle gate, hero View History) · `src/utils/permissions.ts` (`BACKSTAGE_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (the View History feature; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/scripts/generate-app-api-catalog/run.ts` (catalog generation).
-**Cross-links:** [Applications landing](/en/backstage/applications) &nbsp;·&nbsp; [Data Model](/en/backstage/applications/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/applications/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions)
+**Cross-links:** [Applications landing](/en/backstage/applications) &nbsp;·&nbsp; [Data Model](/en/backstage/applications/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/applications/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions)

@@ -2,7 +2,7 @@
 title: SQL Workbench
 description: Admin console that runs arbitrary SQL and browses/creates/drops views, procedures, and functions against a chosen tenant's database — a three-pane workbench with a virtual-scrolled result grid.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/sql-workbench, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -64,7 +64,7 @@ The sidebar entry itself also moved: it sat in the Platform group until commit `
 - [Query Dataset](/en/inventory/system-config/query-dataset) — the Inventory book's documentation of the exact same backend service from the API/data-shape side: catalog projections, the `execute`/`save`/`db-objects` contract, and the `allowDangerous` validator finding. Read that page for backend request/response shapes; this page covers the carmen-backstage screen that now calls it. Both pages now describe the same five-route enforcement (§4 cross-book note).
 - [Business Units](/en/backstage/business-units) — supplies the BU list the switcher searches (loaded through the `fetchAllBusinessUnits` helper, `src/utils/fetchAllBusinessUnits.ts`, which pages the list instead of requesting `perpage=-1`) and the `db_connection` each BU carries, which is what makes a tenant database reachable at all.
 - [Report Templates](/en/backstage/report-templates) — the intended downstream consumer of views/functions created here, via `source_name`/`source_params` data-source binding; the Report Templates editor's Browse-in-BU picker reads the tenant schema's views/functions/procedures through its own endpoint (`GET /api-system/report-templates/db-objects`, itself guarded by `sql_workbench.read`), so anything saved here shows up there by name; there is no other link between the two modules.
-- [Backstage RBAC](/en/backstage/rbac) — owns the `sql_workbench.read`/`.manage` permission keys and the role-bundle assignments summarized in §4.
+- [Backstage Roles](/en/backstage/rbac) — owns the `sql_workbench.read`/`.manage` permission keys and the role-bundle assignments summarized in §4.
 
 ## 6. Reference Sources
 

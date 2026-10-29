@@ -2,7 +2,7 @@
 title: Landing
 description: หน้าการตลาดสาธารณะที่ / — redirect session ที่ authenticated แล้วไปยัง Dashboard และแสดงดัชนีโมดูล "Inside the console" แบบ hardcode ที่คลาดเคลื่อนจาก sidebar จริง
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage/landing, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T09:46:00.000Z
@@ -44,7 +44,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 |---|---|---|---|
 | Organization | Clusters, Business Units, Users, Tenant Migrations | + Tenant Seed Data, Data Import (แถว Tenant Migrations, Tenant Seed Data และ Data Import ถูกวาดเป็น sub-row ใต้ Business Units) | ขาด 2 จาก 6 |
 | License Management | *(ไม่มีกลุ่มนี้บน Landing)* | Licenses, License Feature Groups, License Features | ขาด 3 จาก 3 — ทั้งกลุ่มหายไป |
-| Content | Report Templates, News, Broadcasts | Report Templates, Report Form Groups, Dashboard Templates, News, Broadcasts | ขาด 2 จาก 5 (Form Groups, Dashboard Templates) — แถว Print Mapping ที่ตายแล้วถูกลบออกในที่สุดเมื่อ 2026-09-07 |
+| Content | Report Templates, News, Broadcasts | Report Templates, Form Groups, Dashboard Templates, News, Broadcasts | ขาด 2 จาก 5 (Form Groups, Dashboard Templates) — แถว Print Mapping ที่ตายแล้วถูกลบออกในที่สุดเมื่อ 2026-09-07 |
 | Analytics | *(ไม่มีกลุ่มนี้บน Landing)* | Usage Analytics, Activity Events | ขาด 2 จาก 2 — ทั้งกลุ่มหายไป |
 | Scheduling | *(ไม่มีกลุ่มนี้บน Landing)* | Scheduled Jobs | ขาด 1 จาก 1 — ทั้งกลุ่มหายไป |
 | Backstage | Applications, Roles & Access, Super Admins | + Backstage Config, Email Settings, Backstage Users (+ Backstage Roles ใน "Roles & Access"), Feature Flags | ขาด 4 จาก 7 |
@@ -54,8 +54,8 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 เป็นข้อความ:
 
 - **Print Mapping ไม่อยู่ในรายการอีกต่อไป** — แถวที่ตายแล้วซึ่งหน้านี้เคยชี้ไว้ในการแก้ไขรอบ 2026-09-06 (โมดูล print-template-mapping ถูกลบเมื่อ 2026-07-24, commit `de11377` แต่สำเนา hardcode ของ Landing ยังเก็บรายการไว้) ถูกลบออกจากกลุ่ม Content ของ `Landing.tsx` เมื่อ 2026-09-07 (commit `344be13`, PR #283 ซึ่งลบคีย์ i18n `pages.landing.itemPrintMapping`/`descPrintMapping` ไปด้วย) ตอนนี้ Content แสดงสามรายการ และทุกรายการมีอยู่จริง
-- **Report Form Groups และ Dashboard Templates ขาดหายจาก Content** — Report Form Groups ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) แต่ PR #283 ลบเฉพาะแถวที่ตายแล้ว ไม่ได้เพิ่มแถวที่ขาดไป ส่วน Dashboard Templates มาทีหลังและก็ไม่มีเช่นกัน
-- **กลุ่ม Backstage ขาดไป 4 จาก 7 แถวปัจจุบัน**: Backstage Users (ส่วนหนึ่งของ [Backstage RBAC](/th/backstage/rbac)), และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Backstage Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.backstage`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `backstageNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" ตอนนี้ Feature Flags มีโมดูล wiki ของตัวเองแล้ว — [Feature Flags](/th/backstage/feature-flags)
+- **Form Groups และ Dashboard Templates ขาดหายจาก Content** — Form Groups ออกมาสัปดาห์เดียวกับการลบ Print Mapping (2026-07-24) แต่ PR #283 ลบเฉพาะแถวที่ตายแล้ว ไม่ได้เพิ่มแถวที่ขาดไป ส่วน Dashboard Templates มาทีหลังและก็ไม่มีเช่นกัน
+- **กลุ่ม Backstage ขาดไป 4 จาก 7 แถวปัจจุบัน**: Backstage Users (ส่วนหนึ่งของ [Backstage Roles](/th/backstage/rbac)), และอีกสองแถวที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด — Backstage Config กับ Email Settings (ทั้งคู่อยู่ `navGroup.backstage`) — บวก Feature Flags ซึ่งแถว nav ของตัวเองมี permission (`feature_flag.manage`) แต่ตั้งใจไม่มีคีย์ `feature` เป็นของตัวเอง ตาม comment ใน `backstageNav.ts`: "สวิตช์ที่ปิดตัวเองได้จะเปิดกลับไม่ได้อีกจากหน้าจอ" ตอนนี้ Feature Flags มีโมดูล wiki ของตัวเองแล้ว — [Feature Flags](/th/backstage/feature-flags)
 - **สี่กลุ่มทั้งหมดที่ sidebar ปัจจุบันใช้จัดงาน — License Management, Analytics, Scheduling และ AI — ไม่มีตัวแทนบน Landing เลย** ทั้งหมดเป็นโมดูลที่เพิ่มหลังจากหน้านี้ทบทวนครั้งล่าสุด: Licenses, License Feature Groups, และ License Features (License Management); Usage Analytics และ Activity Events (Analytics); Scheduled Jobs (Scheduling); Purchase Request AI Providers (AI)
 - **กลุ่ม Database ก็ขาดหายไปทั้งหมดเช่นกัน**: SQL Workbench, Backstage Migrations และ Database Pools
 
@@ -69,7 +69,7 @@ Landing คือจุดเริ่มต้นสำหรับผู้ท
 
 - [Dashboard](/th/backstage/dashboard) — ที่ session ที่ authenticated จะถูก redirect ไป ทั้งจากหน้านี้และจาก Login และ route guard ของมันเอง (ไม่ใช่ Landing) คือตัวที่แยก session ที่มี platform authority ออกจาก cluster admin แบบ membership-only จริง ๆ (§1); พื้นผิวโมดูลจริงที่ filter ด้วย permission ที่ดัชนี static ของหน้านี้ตั้งใจจะ preview
 - [Changelog](/th/backstage/changelog) — อีก route สาธารณะเต็มรูปแบบ ลิงก์จาก "See what's new" ของ hero และใช้ component `VersionStamp` ร่วมกับ footer ของหน้านี้
-- [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/backstage/report-form-groups), [Backstage RBAC](/th/backstage/rbac), [SQL Workbench](/th/backstage/sql-workbench) — สามในหลายหน้าจอจริงที่ขาดหายจากดัชนีของหน้านี้ (§4) ดูตารางเต็มใน §4 รวมถึงสี่กลุ่ม (License Management, Analytics, Scheduling, AI) ที่ไม่มีตัวแทนบน Landing เลย
+- [กลุ่มฟอร์ม (Form Groups)](/th/backstage/report-form-groups), [Backstage Roles](/th/backstage/rbac), [SQL Workbench](/th/backstage/sql-workbench) — สามในหลายหน้าจอจริงที่ขาดหายจากดัชนีของหน้านี้ (§4) ดูตารางเต็มใน §4 รวมถึงสี่กลุ่ม (License Management, Analytics, Scheduling, AI) ที่ไม่มีตัวแทนบน Landing เลย
 
 ## 7. แหล่งข้อมูลอ้างอิง
 

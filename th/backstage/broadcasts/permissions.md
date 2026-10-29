@@ -2,7 +2,7 @@
 title: Broadcasts — สิทธิ์การเข้าถึง (Permissions)
 description: สี่คีย์ broadcast.* (read/send/update/delete) กั้นหน้าจอ List/Compose/Edit และ endpoint ฝั่ง server ที่ตรงกัน — เนื้อหาถูกล็อกเมื่อออกอากาศแล้ว
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, broadcasts, permissions
 editor: markdown
 dateCreated: 2026-06-10T16:00:00.000Z
@@ -113,4 +113,4 @@ Delivery/การมองเห็นยังคงรูปแบบ filter 
 
 **แหล่งอ้างอิง:** `../carmen-backstage/src/App.tsx` (route guard) · `src/components/nav/backstageNav.ts` (รายการ nav) · `src/pages/BroadcastManagement.tsx`, `src/pages/broadcastManagement/broadcastColumns.tsx` (gate ของ row action) · `src/pages/BroadcastCompose.tsx` (`canSendSystem`/`canSend`, `<Can>`) · `src/pages/BroadcastEdit.tsx` (`contentEditable`, `<Can permission="broadcast.update">`) · `src/utils/permissions.ts` (`PERMISSIONS.BROADCAST.SEND`) · `../carmen-turborepo-backend/apps/backend-gateway/src/notification/notification.controller.ts` (ทั้งหก route ที่ถูก guard) · `apps/backend-gateway/src/auth/guards/backstage-permission.guard.ts`, `src/auth/services/backstage-permission.service.ts` (check แบบหยาบ platform-or-any-cluster ไม่เปลี่ยนตั้งแต่ PR วันที่ 2026-06-10) · `../micro-notification/src/notification/broadcast-admin.service.ts` (กฎ `content_locked`/`conflict`) · `../micro-notification/src/notification/schedule.worker.ts` (worker push เฉพาะแบบระบุผู้รับ) · `packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts`, `seed.backstage-role-permission.data.ts` (สี่ key และการมอบสิทธิ์ตาม role) · `packages/error-catalog/src/catalog.ts` (`COMMON_BUSINESS_UNIT_NOT_FOUND`, 404)
 
-**Cross-links:** [หน้าแรก Broadcasts](/th/backstage/broadcasts) &nbsp;·&nbsp; [Data Model](/th/backstage/broadcasts/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/broadcasts/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Business Units](/th/backstage/business-units)
+**Cross-links:** [หน้าแรก Broadcasts](/th/backstage/broadcasts) &nbsp;·&nbsp; [Data Model](/th/backstage/broadcasts/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/broadcasts/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Business Units](/th/backstage/business-units)

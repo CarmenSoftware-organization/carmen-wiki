@@ -2,7 +2,7 @@
 title: News — Permissions
 description: The news.* gate matrix for authors (including bulk publish/archive/delete), the reader-side visibility rules on the anonymous public endpoints (status, published_at cutoff, global vs BU targeting), and the edge-case matrix for testers.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, news, permissions
 editor: markdown
 dateCreated: 2026-06-10T13:00:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-06-10T13:00:00.000Z
 
 ## 1. Overview
 
-Two independent authorization stories meet in this module. The first is ordinary [Backstage RBAC](/en/backstage/rbac): the four `news.*` keys (seeded in `seed.backstage-permission.ts`) that decide which *authors* may see and mutate articles in the admin SPA (§2). The second is what the rows themselves encode: the **reader-side visibility rules** — which articles the anonymous public endpoints serve to which audience, governed by `status`, `published_at`, soft deletion, and the `business_unit_ids` targeting list (§3). No RBAC key plays any part in delivery, and no bearer token or `x-app-id` is checked on the public controller — an author with zero `news.*` keys can still read every published article through `/api/public/news`, like anyone else.
+Two independent authorization stories meet in this module. The first is ordinary [Backstage Roles](/en/backstage/rbac): the four `news.*` keys (seeded in `seed.backstage-permission.ts`) that decide which *authors* may see and mutate articles in the admin SPA (§2). The second is what the rows themselves encode: the **reader-side visibility rules** — which articles the anonymous public endpoints serve to which audience, governed by `status`, `published_at`, soft deletion, and the `business_unit_ids` targeting list (§3). No RBAC key plays any part in delivery, and no bearer token or `x-app-id` is checked on the public controller — an author with zero `news.*` keys can still read every published article through `/api/public/news`, like anyone else.
 
 Machine callers of the authenticated `/api/news` CRUD (including the tag-list and summary endpoints) are gated on a third, parallel axis: `AppIdGuard` grants (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete`) checked against the calling application's allowlist — see [Applications](/en/backstage/applications).
 
@@ -23,7 +23,7 @@ Machine callers of the authenticated `/api/news` CRUD (including the tag-list an
 
 ## 2. Gate matrix
 
-All SPA gates resolve through the single permission resolver documented in [Backstage RBAC — Permissions](/en/backstage/rbac/permissions); a failed route guard renders the dedicated `Forbidden` page (renamed from the earlier inline `AccessDenied`; still a 403 "Access Denied" heading, now with Go Back / Go to Dashboard actions) inside the normal `Layout` shell.
+All SPA gates resolve through the single permission resolver documented in [Backstage Roles — Permissions](/en/backstage/rbac/permissions); a failed route guard renders the dedicated `Forbidden` page (renamed from the earlier inline `AccessDenied`; still a 403 "Access Denied" heading, now with Go Back / Go to Dashboard actions) inside the normal `Layout` shell.
 
 | Surface | Mechanism | Key | Source |
 |---|---|---|---|
@@ -119,4 +119,4 @@ Consequences for testers:
 - **Treat the ignored list sort as a known issue** — verify behaviour matches [Data Model](/en/backstage/news/data-model) §5 rather than filing a duplicate; it is an affordance/UX gap with server-side enforcement (the `updated_at DESC` override) intact. The empty-state CTA is **not** a known issue any more — it is `<Can>`-gated the same as the header button.
 
 **References:** `../carmen-backstage/src/App.tsx` (the three route guards) · `src/components/nav/backstageNav.ts` (sidebar entry, line 32 — not `Layout.tsx`, which defines no nav rows) · `src/pages/NewsManagement.tsx` / `NewsEdit.tsx` (`<Can>` gates, bulk toolbar, View History) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/news.controller.ts` (KeycloakGuard on every route; `AppIdGuard` per route including `GET tags`/`summary`; `BackstagePermissionGuard` + `RequireBackstagePermission` added to the three write routes only, commit `9b474a3fc1c4478ef18d5e5caf9b62d9098f1344`, 2026-08-20) · `public-news.controller.ts` (no guards) · `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` (BU validation, tag normalization, `doc_version` lock, soft-delete filtering, `findPublicAll`/`findPublicOne` filters) · `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts` (the four keys) · `seed.backstage-role-permission.data.ts` (Backstage Admin holds all four; Support Manager holds read/create/update, not delete; Support Staff holds read only; Security Officer holds none).
-**Cross-links:** [News landing](/en/backstage/news) &nbsp;·&nbsp; [Data Model](/en/backstage/news/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/news/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Applications](/en/backstage/applications)
+**Cross-links:** [News landing](/en/backstage/news) &nbsp;·&nbsp; [Data Model](/en/backstage/news/data-model) &nbsp;·&nbsp; [UI Screens](/en/backstage/news/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/en/backstage/rbac/permissions) &nbsp;·&nbsp; [Applications](/en/backstage/applications)

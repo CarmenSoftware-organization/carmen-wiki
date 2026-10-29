@@ -2,7 +2,7 @@
 title: News — สิทธิ์ (Permissions)
 description: เมทริกซ์ gate ของ news.* สำหรับผู้เขียน (รวม bulk action), กฎการมองเห็นฝั่งผู้อ่านบน public endpoint แบบ anonymous และเมทริกซ์กรณีพิเศษสำหรับผู้ทดสอบ
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, news, permissions
 editor: markdown
 dateCreated: 2026-06-10T15:45:00.000Z
@@ -15,7 +15,7 @@ dateCreated: 2026-06-10T15:45:00.000Z
 
 ## 1. ภาพรวม
 
-สองเรื่องราว authorization ที่เป็นอิสระต่อกันมาบรรจบกันในโมดูลนี้ เรื่องแรกคือ [Backstage RBAC](/th/backstage/rbac) แบบธรรมดา: key `news.*` ทั้งสี่ (seed ใน `seed.backstage-permission.ts`) ที่ตัดสินว่า*ผู้เขียน*คนใดมองเห็นและแก้ไขบทความใน admin SPA ได้ (§2) เรื่องที่สองคือสิ่งที่ตัว row เอง encode ไว้: **กฎการมองเห็นฝั่งผู้อ่าน** — บทความตัวไหนที่ public endpoint แบบ anonymous เสิร์ฟให้ผู้ชมกลุ่มไหน ควบคุมโดย `status`, `published_at`, soft delete และรายการกำหนดเป้าหมาย `business_unit_ids` (§3) ไม่มี RBAC key ใดมีบทบาทในการส่งมอบ และไม่มี bearer token หรือ `x-app-id` ถูกตรวจสอบบน public controller — ผู้เขียนที่มี key `news.*` เป็นศูนย์ยังคงอ่านทุกบทความที่ published ผ่าน `/api/public/news` ได้ เหมือนกับใครก็ตาม
+สองเรื่องราว authorization ที่เป็นอิสระต่อกันมาบรรจบกันในโมดูลนี้ เรื่องแรกคือ [Backstage Roles](/th/backstage/rbac) แบบธรรมดา: key `news.*` ทั้งสี่ (seed ใน `seed.backstage-permission.ts`) ที่ตัดสินว่า*ผู้เขียน*คนใดมองเห็นและแก้ไขบทความใน admin SPA ได้ (§2) เรื่องที่สองคือสิ่งที่ตัว row เอง encode ไว้: **กฎการมองเห็นฝั่งผู้อ่าน** — บทความตัวไหนที่ public endpoint แบบ anonymous เสิร์ฟให้ผู้ชมกลุ่มไหน ควบคุมโดย `status`, `published_at`, soft delete และรายการกำหนดเป้าหมาย `business_unit_ids` (§3) ไม่มี RBAC key ใดมีบทบาทในการส่งมอบ และไม่มี bearer token หรือ `x-app-id` ถูกตรวจสอบบน public controller — ผู้เขียนที่มี key `news.*` เป็นศูนย์ยังคงอ่านทุกบทความที่ published ผ่าน `/api/public/news` ได้ เหมือนกับใครก็ตาม
 
 caller ที่เป็น machine ของ CRUD `/api/news` แบบ authenticated (รวมถึง endpoint รายการ tag และ summary) ถูก gate บนแกนที่สามคู่ขนานกัน: grant ของ `AppIdGuard` (`news.findAll`, `news.findOne`, `news.create`, `news.update`, `news.delete`) ที่ถูกตรวจสอบกับ allowlist ของ application ที่เรียก — ดู [Applications](/th/backstage/applications)
 
@@ -23,7 +23,7 @@ caller ที่เป็น machine ของ CRUD `/api/news` แบบ authen
 
 ## 2. เมทริกซ์ของ gate
 
-gate ทั้งหมดของ SPA resolve ผ่าน permission resolver ตัวเดียวที่ document ไว้ใน [Backstage RBAC — Permissions](/th/backstage/rbac/permissions); route guard ที่ไม่ผ่านจะ render หน้า `Forbidden` แบบเฉพาะ (เปลี่ยนชื่อจาก `AccessDenied` แบบ inline เดิม ยังคงเป็นหัวข้อ 403 "Access Denied" เหมือนเดิม ตอนนี้มี action Go Back / Go to Dashboard เพิ่มมา) ภายใน shell `Layout` ปกติ
+gate ทั้งหมดของ SPA resolve ผ่าน permission resolver ตัวเดียวที่ document ไว้ใน [Backstage Roles — Permissions](/th/backstage/rbac/permissions); route guard ที่ไม่ผ่านจะ render หน้า `Forbidden` แบบเฉพาะ (เปลี่ยนชื่อจาก `AccessDenied` แบบ inline เดิม ยังคงเป็นหัวข้อ 403 "Access Denied" เหมือนเดิม ตอนนี้มี action Go Back / Go to Dashboard เพิ่มมา) ภายใน shell `Layout` ปกติ
 
 | Surface | กลไก | Key | แหล่งที่มา |
 |---|---|---|---|
@@ -119,4 +119,4 @@ visible(article, bu_id?):
 - **ปฏิบัติกับ sort ของ list ที่ถูกเพิกเฉยเป็น issue ที่ทราบกัน** — ตรวจสอบว่าพฤติกรรมตรงกับ [Data Model](/th/backstage/news/data-model) §5 แทนที่จะยื่น defect ซ้ำซ้อน; เป็นช่องว่างของ affordance/UX โดยการบังคับใช้ฝั่ง server (การ override เป็น `updated_at DESC`) ยังสมบูรณ์ CTA ของ empty-state **ไม่ใช่** issue ที่ทราบกันอีกต่อไป — มันถูก gate ด้วย `<Can>` เหมือนกับปุ่มใน header
 
 **แหล่งข้อมูลอ้างอิง:** `../carmen-backstage/src/App.tsx` (route guard ทั้งสาม) · `src/components/nav/backstageNav.ts` (รายการ sidebar, บรรทัด 32 — ไม่ใช่ `Layout.tsx` ซึ่งไม่ได้กำหนดรายการ nav ใด ๆ) · `src/pages/NewsManagement.tsx` / `NewsEdit.tsx` (gate `<Can>`, bulk toolbar, View History) · `src/utils/permissions.ts` (`PLATFORM_SCOPED_RECORD`) · `src/components/activityTrail/{ActivityTrailSheet,useRowActivityTrail,constants}.tsx` (View History; `AUDIT_RECORDING_STARTED_ON_PHASE_2` = 2026-08-31) · `../carmen-turborepo-backend/apps/backend-gateway/src/application/news/news.controller.ts` (KeycloakGuard บนทุก route; `AppIdGuard` ราย route รวมถึง `GET tags`/`summary`; `BackstagePermissionGuard` + `RequireBackstagePermission` เพิ่มบน route เขียนสามตัวเท่านั้น commit `9b474a3fc1c4478ef18d5e5caf9b62d9098f1344`, 2026-08-20) · `public-news.controller.ts` (ไม่มี guard) · `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/news/news.service.ts` (การตรวจสอบ BU, การ normalize tag, lock ของ `doc_version`, filter soft-delete, filter ของ `findPublicAll`/`findPublicOne`) · `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts` (key ทั้งสี่) · `seed.backstage-role-permission.data.ts` (Backstage Admin ถือทั้งสี่; Support Manager ถือ read/create/update ไม่มี delete; Support Staff ถือ read เท่านั้น; Security Officer ไม่มีเลย)
-**Cross-link:** [หน้า landing ของ News](/th/backstage/news) &nbsp;·&nbsp; [Data Model](/th/backstage/news/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/news/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Applications](/th/backstage/applications)
+**Cross-link:** [หน้า landing ของ News](/th/backstage/news) &nbsp;·&nbsp; [Data Model](/th/backstage/news/data-model) &nbsp;·&nbsp; [UI Screens](/th/backstage/news/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Applications](/th/backstage/applications)

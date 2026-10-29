@@ -2,7 +2,7 @@
 title: Feature Flags
 description: The single screen that sets every feature's visibility (active/inactive/hide) across the Platform and Cluster-admin consoles — ungated by any feature key of its own.
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, feature-flags
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -96,7 +96,7 @@ The practical consequence for a tester: setting a route's feature to `hide` or `
 ## 5. Related Modules
 
 - [Backstage Config](/en/backstage/backstage-config) and its [data model](/en/backstage/backstage-config/data-model) — the shared `tb_backstage_config` table this key's row lives on, including the general-purpose write-path mechanics (validation, the non-enforced `doc_version` column, the duplicate-live-row race) this module inherits without modification.
-- [Backstage RBAC](/en/backstage/rbac) — the permission catalog where `feature_flag.manage` and the four seeded role bundles referenced in §4.1 are defined and browsable in full.
+- [Backstage Roles](/en/backstage/rbac) — the permission catalog where `feature_flag.manage` and the four seeded role bundles referenced in §4.1 are defined and browsable in full.
 - Every other module in this book — each states the feature key that gates its own menu row; this page is where a reader learns what setting that key to `active`/`inactive`/`hide` actually does.
 
 ## 6. Reference Sources

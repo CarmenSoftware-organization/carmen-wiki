@@ -2,7 +2,7 @@
 title: Report Templates — แบบจำลองข้อมูล (Data Model)
 description: tb_report_template และ tb_report_template_version — XML ของ dialog/content/export ชื่อ EN/TH การผูก source ขอบเขต BU และวิธีคิดต้นทุน สวิตช์ run/export template_type is_default และ doc_version
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, report-templates, data-model
 editor: markdown
 dateCreated: 2026-06-10T17:00:00.000Z
@@ -104,7 +104,7 @@ dateCreated: 2026-06-10T17:00:00.000Z
 
 Index: `(report_template_id, created_at DESC)` (`idx_report_template_version_template_created`) **Restore** (`POST .../versions/:version_no/restore`, body `{ doc_version }`) คัดลอก snapshot กลับไปที่ row ที่ live ภายใต้ optimistic lock ปกติ และเขียน version `restore` ใหม่; มันจงใจไม่แตะ `is_default` (partial unique index อนุญาตหนึ่ง default ต่อกลุ่ม) ตรวจ `source_name` ซ้ำกับ pattern ของ identifier และคง `calculation_methods` ปัจจุบันไว้เมื่อ snapshot เก่ากว่าฟิลด์นั้น version ที่ไม่มีอยู่ตอบ `REPORT_TEMPLATE_VERSION_NOT_FOUND` (`report-template.service.ts` `restoreVersion`)
 
-เพราะ flow set-default บน [Report Form Groups](/th/backstage/report-form-groups) เป็น `PUT` บางส่วนสองครั้ง การสลับ default แต่ละครั้งจึงเขียน version `update` **สอง**รายการ (หนึ่งต่อเทมเพลตที่ได้รับผล)
+เพราะ flow set-default บน [Form Groups](/th/backstage/report-form-groups) เป็น `PUT` บางส่วนสองครั้ง การสลับ default แต่ละครั้งจึงเขียน version `update` **สอง**รายการ (หนึ่งต่อเทมเพลตที่ได้รับผล)
 
 การตรวจ `source_name` (ใหม่): service ปฏิเสธด้วย `COMMON_VALIDATION_FAILED` ทุก `source_name` ที่ไม่ใช่ identifier เปล่า (`^[A-Za-z_][A-Za-z0-9_]*$` ยาวไม่เกิน 63 ตัวอักษร) ตอน create, update และ restore เพราะ micro-report ใส่มันลงใน SQL โดยไม่ใส่ quote (`report-template-source-name.ts`, commit `bb2530c12`)
 
@@ -245,7 +245,7 @@ interface `ReportTemplate` ใน `../carmen-backstage/src/services/reportTempla
 
 **Cross-link:**
 - [report-templates](/th/backstage/report-templates) — หน้า landing ของโมดูล
-- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/backstage/report-form-groups) แบบ standalone
+- **Print Template Mapping** — ถูกลบออกจากผลิตภัณฑ์เมื่อ 2026-07-24 (carmen-backstage commit `de11377`); เคยเป็นเจ้าของ `tb_print_template_mapping` ที่ถูก drop โดย migration `20260723120000_print_form_default` เดียวกับที่เพิ่ม `is_default` ที่นี่ หน้าที่ของมันตอนนี้ทำโดย `template_type = "form"` + `report_group` + `is_default` บนตารางนี้ แสดงผลผ่านโมดูล [กลุ่มฟอร์ม (Form Groups)](/th/backstage/report-form-groups) แบบ standalone
 - [business-units](/th/backstage/business-units) — BU code ที่อ้างอิงใน chip list ของ allow/deny ตรงกับ `tb_business_unit.code`
 - [clusters](/th/backstage/clusters) — surface พี่น้องของ Platform; เทมเพลตรายงานเป็น tenant-global และไม่ scope ต่อ cluster
 - [Permissions](/th/backstage/report-templates/permissions) — การควบคุมการเข้าถึงของ surface การจัดการ report-templates

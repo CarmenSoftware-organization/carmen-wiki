@@ -2,7 +2,7 @@
 title: การตั้งค่าอีเมล (Email Settings)
 description: หน้าจอเดียว สอง section ที่เป็น peer กัน — รายการโปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ กับแผนที่เส้นทางที่ตัดสินว่าอีเมลขาออกทั้งห้าเส้นทางส่งด้วยโปรไฟล์ไหน
 published: true
-date: 2026-10-29T05:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, email-settings
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -117,7 +117,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [Backstage Config](/th/backstage/backstage-config) — เจ้าของคีย์ registry `email_routing` และ endpoint กลาง `/api-system/backstage/configs` ที่การ์ด routing ของโมดูลนี้อ่านและเขียนผ่าน (§4.2) พร้อมทั้งบันทึกความไม่ตรงกันของ permission เดียวกันนี้ไว้จากฝั่งของตัวเองด้วย
-- [Backstage RBAC](/th/backstage/rbac) — แคตตาล็อก permission ที่ `email_setting.read`/`.manage` และ `backstage_config.read`/`.manage` ปรากฏเป็น resource อิสระจากกันทั้งคู่
+- [Backstage Roles](/th/backstage/rbac) — แคตตาล็อก permission ที่ `email_setting.read`/`.manage` และ `backstage_config.read`/`.manage` ปรากฏเป็น resource อิสระจากกันทั้งคู่
 
 ## 6. แหล่งอ้างอิง
 

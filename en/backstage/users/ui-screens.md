@@ -2,7 +2,7 @@
 title: User — UI Screens
 description: UserManagement (list) and UserEdit (BU assignment matrix).
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, users, ui
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -19,7 +19,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 ## 1. Overview
 
-The Platform SPA follows a consistent two-screen pattern for every admin entity: a list page (`UserManagement`) with a server-side `DataTable`, filters in a slide-over Sheet, and header action buttons; and an edit page (`UserEdit`) that starts in read-only view mode and transitions to an editable form on demand — this module, unlike [clusters](/en/backstage/clusters)/[business-units](/en/backstage/business-units), kept the view/edit toggle rather than moving to a one-document always-editable page. The three routes under the `/users` prefix carry `requiredPermission` guards (`user.read` / `user.create` / `user.update`), and individual mutating buttons are wrapped in `<Can>` gates — none of which pass a `clusterId` at the route/row level, unlike the Clusters/Business Units pages (the two BU-assignment actions inside the Access card are the exception — see §4.2). See [Backstage RBAC — Permissions](/en/backstage/rbac/permissions) for how the gates compose.
+The Platform SPA follows a consistent two-screen pattern for every admin entity: a list page (`UserManagement`) with a server-side `DataTable`, filters in a slide-over Sheet, and header action buttons; and an edit page (`UserEdit`) that starts in read-only view mode and transitions to an editable form on demand — this module, unlike [clusters](/en/backstage/clusters)/[business-units](/en/backstage/business-units), kept the view/edit toggle rather than moving to a one-document always-editable page. The three routes under the `/users` prefix carry `requiredPermission` guards (`user.read` / `user.create` / `user.update`), and individual mutating buttons are wrapped in `<Can>` gates — none of which pass a `clusterId` at the route/row level, unlike the Clusters/Business Units pages (the two BU-assignment actions inside the Access card are the exception — see §4.2). See [Backstage Roles — Permissions](/en/backstage/rbac/permissions) for how the gates compose.
 
 Users carry several additions not found on simpler entities. The list page exposes a **Fetch Keycloak** button that pulls user records from the Keycloak identity provider into the platform database (gated `<Can permission="user.create">`) and a **Directory** summary strip (`UserDirectorySummary`, §2.1a). The view/edit page exposes a **Change Password** button (living in the `UserIdentityHero`'s actions slot, view mode only, and — since a recent fix — gated `<Can permission="user.update">` like its neighbouring Edit button) and, within the merged Access card, an **Add BU** button gated by a real per-cluster permission check (`canAddBU`, §4.2) rather than merely "the user belongs to at least one cluster." Both the list row menu and the edit-page hero also gained a **View History** action (`activity_log.read`, scoped to the whole platform record rather than any one cluster — the cross-cutting Activity Trail feature also documented for [clusters](/en/backstage/clusters)/[business-units](/en/backstage/business-units)). For super-admin sessions, the list page also offers bulk soft/hard delete (§2.4a).
 
@@ -114,7 +114,7 @@ The create mode renders a single card titled **"Account details"** (`isNew ? "Ac
 
 **`firstname` and `lastname` are now required** — both carry the HTML `required` attribute and are checked by a client-side preflight (`validateOne`) before submit; this is new since the last sync, when all fields but `username`/`email` were optional. A footer hint below the Save/Cancel buttons in create mode reads "Next you will set a password and assign business units" — the account created here has no password and no BU assignment yet.
 
-There is no `password` field on the create form — credentials are set later via the Change Password admin-reset dialog or via Keycloak — and no access/role field: the legacy `platform_role` select was removed with the RBAC migration. Granting Backstage access is a separate step on `/backstage/user-backstage` (see [Backstage RBAC](/en/backstage/rbac)).
+There is no `password` field on the create form — credentials are set later via the Change Password admin-reset dialog or via Keycloak — and no access/role field: the legacy `platform_role` select was removed with the RBAC migration. Granting Backstage access is a separate step on `/backstage/user-backstage` (see [Backstage Roles](/en/backstage/rbac)).
 
 Submit calls `POST /api-system/user`. On success, if the response includes an `id`, the page redirects to `/users/:id/edit` with `{ replace: true }` (so Back goes to the list, not the create form). If no `id` is returned, it redirects to `/users`.
 

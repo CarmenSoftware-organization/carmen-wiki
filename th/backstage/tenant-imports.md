@@ -2,7 +2,7 @@
 title: การนำเข้าเทแนนต์ (Tenant Imports)
 description: TenantImportWizard ที่ /tenant-imports — sidebar ใช้ป้าย "Data Import" gate ด้วย data_import.manage — นำข้อมูลหลักจาก Preconfig.xlsx เข้าฐานข้อมูล tenant ทีละขั้นตอน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, tenant-imports
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -123,7 +123,7 @@ regex ตัวกลางตรงกับถ้อยคำความล�
 - [Business Units](/th/backstage/business-units) — เป็นเจ้าของ `tb_business_unit` และ endpoint `PUT /api-system/business-units/:id` ที่ Company Profile เขียนผ่าน (§3.5); หน้าแก้ไขปกติแท็บ Technical และตัวเลือก BU ของ wizard นี้ล้วนอ่าน `businessUnitService.getAll()`
 - [Clusters](/th/backstage/clusters) — คีย์ `cluster.read`/`cluster.update` ที่ถูกอ้างเปรียบเทียบตลอด §1 และ §3.5; ไม่ได้ถูกใช้โดยโมดูลนี้เอง
 - [Tenant Migrations](/th/backstage/tenant-migrations) — โมดูล Organization ข้างเคียงที่ endpoint `/deploy/stream` ระดับ fleet ของมันมี regex ความล้มเหลวการเชื่อมต่อค้างชนิดเดียวกัน (§4.4 ที่นั่น) เกิดจากการ refactor pool ฐานข้อมูล `af2437074` ชุดเดียวกัน
-- [Backstage RBAC](/th/backstage/rbac) — แคตตาล็อก permission ระดับแพลตฟอร์มที่ทั้ง `data_import.manage` และ `cluster.update` อาศัยอยู่; โมดูลนี้ไม่ได้ประกาศคีย์ permission ของตัวเองเลยนอกจาก `data_import.manage`
+- [Backstage Roles](/th/backstage/rbac) — แคตตาล็อก permission ระดับแพลตฟอร์มที่ทั้ง `data_import.manage` และ `cluster.update` อาศัยอยู่; โมดูลนี้ไม่ได้ประกาศคีย์ permission ของตัวเองเลยนอกจาก `data_import.manage`
 
 ## 6. แหล่งอ้างอิง
 

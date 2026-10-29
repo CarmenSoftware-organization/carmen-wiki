@@ -2,7 +2,7 @@
 title: ผู้ดูแลคลัสเตอร์ — สิทธิ์ (Permissions)
 description: ไม่มี RBAC permission key เลยในโมดูลนี้ — กั้นด้วยสมาชิกภาพของคลัสเตอร์ผ่าน isClusterAdminOf แทน ตรวจก่อน feature flag เสมอบนทุก route และ backend ตรวจสมาชิกภาพซ้ำเป็นอิสระในทุกการเขียน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: book/backstage, cluster-admin, permissions
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -86,4 +86,4 @@ Action การเขียนในหน้าจอ กั้นด้วย
 - **การเข้าถึง route ได้ไม่ใช่โมเดล permission ในตัวมันเอง** — `ClusterProfile`/`BusinessUnitForm`'s `canEdit = !accessLost` (§2) หมายความว่าผู้ดูแลทุกคนของคลัสเตอร์หนึ่งเขียนทุกอย่างที่หน้าจอของโมดูลนี้เปิดให้สำหรับคลัสเตอร์นั้นได้ อย่าทดสอบหา permission แบบละเอียดกว่านี้ที่ไม่มีอยู่ในซอร์สวันนี้
 
 **อ้างอิง:** path ทั้งหมดคือ `../carmen-backstage` (HEAD `8405788f`) เว้นแต่ระบุไว้ `src/App.tsx:625-652` (route) · `src/components/{AuthedRoute,ClusterAdminRoute}.tsx` (guard) · `src/components/nav/clusterAdminNav.ts` (nav) · `src/context/AuthContext.tsx` (`isClusterAdminOf`, `adminScope`, `hasClusterAdminScope`) · `src/pages/clusterAdmin/{ClusterProfile,BusinessUnitForm,ClusterUsers,ClusterAdminLicenses}.tsx` (gate ในหน้าจอ) · `../carmen-turborepo-backend/apps/micro-cluster/src/common/cluster-admin-authz.service.ts` (ภาพสะท้อนฝั่ง backend, HEAD `c9d788829`) · `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_me-admin-clusters/backstage_me-admin-clusters.controller.ts` และ `packages/prisma-shared-schema-backstage/prisma/check.api-system-permission-coverage.ts` (การอ่านแบบ self-scope ที่ตั้งใจไม่กั้นด้วย permission)
-**ลิงก์ที่เกี่ยวข้อง:** [หน้าหลัก Cluster Admin](/th/backstage/cluster-admin) &nbsp;·&nbsp; [UI Screens](/th/backstage/cluster-admin/ui-screens) &nbsp;·&nbsp; [Backstage RBAC — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Licenses — Permissions](/th/backstage/licenses/permissions) &nbsp;·&nbsp; [Dashboard](/th/backstage/dashboard) &nbsp;·&nbsp; [Profile](/th/backstage/profile)
+**ลิงก์ที่เกี่ยวข้อง:** [หน้าหลัก Cluster Admin](/th/backstage/cluster-admin) &nbsp;·&nbsp; [UI Screens](/th/backstage/cluster-admin/ui-screens) &nbsp;·&nbsp; [Backstage Roles — Permissions](/th/backstage/rbac/permissions) &nbsp;·&nbsp; [Licenses — Permissions](/th/backstage/licenses/permissions) &nbsp;·&nbsp; [Dashboard](/th/backstage/dashboard) &nbsp;·&nbsp; [Profile](/th/backstage/profile)

@@ -2,7 +2,7 @@
 title: บันทึกการเปลี่ยนแปลง (Changelog)
 description: บันทึกการเปลี่ยนแปลงของแพลตฟอร์มแบบมีเวอร์ชัน — ดึงข้อมูลจาก JSON, เปิดเป็นหน้า public /changelog (ตอนนี้ค้นหาได้แล้ว) เข้าถึงผ่าน version badge ในแถบด้านข้างและหน้า landing page
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: backstage, changelog, versioning, carmen-software
 editor: markdown
 dateCreated: 2026-06-09T00:00:00.000Z
@@ -69,4 +69,4 @@ JSON มีบัฟเฟอร์ `unreleased` พร้อมกับ `versi
 
 ไม่ใช่ทุกการลบออกจากผลิตภัณฑ์จะมีรายการใน `unreleased`/`versions` ของ `changelog.json` — `src/data/changelog.json` ไม่เคยใช้หมวดหมู่ `Removed` เลย ดังนั้นรายการด้านล่างนี้จึงไม่ปรากฏบนหน้า `/changelog` จริง บันทึกไว้ที่นี่แทน เพราะหน้าอื่นใน Backstage book อ้างอิงถึงมัน:
 
-- **Print Template Mapping** — หน้าจอ, service, route, และ permission key ของโมดูล Print Template Mapping ถูกลบออกจากผลิตภัณฑ์เมื่อ **2026-07-24** (carmen-backstage commit `de11377`; backend-gateway proxy และแถว permission catalog `print_template_mapping.*` ถูกลบก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend commit `c135bb21e`) ตอนนี้ฟิลด์ `template_type` บน `tb_report_template` บวกโมดูล [กลุ่มฟอร์มรายงาน (Report Form Groups)](/th/backstage/report-form-groups) แบบ standalone ทำหน้าที่แทนความต้องการเดิม — migration แยกต่างหาก `20260723120000_print_form_default` (2026-07-23) คือตัวที่เพิ่ม `template_type`/`is_default` และ drop `tb_print_template_mapping`
+- **Print Template Mapping** — หน้าจอ, service, route, และ permission key ของโมดูล Print Template Mapping ถูกลบออกจากผลิตภัณฑ์เมื่อ **2026-07-24** (carmen-backstage commit `de11377`; backend-gateway proxy และแถว permission catalog `print_template_mapping.*` ถูกลบก่อนหน้าหนึ่งวันคือ 2026-07-23, carmen-turborepo-backend commit `c135bb21e`) ตอนนี้ฟิลด์ `template_type` บน `tb_report_template` บวกโมดูล [กลุ่มฟอร์ม (Form Groups)](/th/backstage/report-form-groups) แบบ standalone ทำหน้าที่แทนความต้องการเดิม — migration แยกต่างหาก `20260723120000_print_form_default` (2026-07-23) คือตัวที่เพิ่ม `template_type`/`is_default` และ drop `tb_print_template_mapping`
