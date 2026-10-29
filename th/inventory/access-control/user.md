@@ -2,7 +2,7 @@
 title: ผู้ใช้ (User)
 description: Account ผู้ใช้พร้อมตาราง profile และ login-session — รหัสผ่านอยู่ใน Keycloak; email verification, partial unique index, Google sign-in; แก้สิทธิ์ผ่าน PATCH /api/config/:bu_code/users/:id
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -68,7 +68,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 
 ## 4. กรณีพิเศษ
 
-- **คอลัมน์ enum `platform_role` ไม่มีอยู่แล้ว** ถูกลบไป 2026-06-10 (`06d8a921` "remove legacy platform_role column and API surface") พร้อมกับฟิลด์ใน login response (`433b5e77`) Role ระดับ platform ตอนนี้เป็นระบบ RBAC แบบ relational ที่ scope ตาม cluster — `tb_backstage_role` (role ที่ตั้งชื่อ) + `tb_backstage_role_tb_permission` (bundle) + `tb_user_tb_backstage_role` (assignment; `cluster_id = null` หมายถึง platform-wide, ถ้าตั้งค่าจะ scope เฉพาะ cluster นั้น) — พร้อมแคตตาล็อก `tb_backstage_permission` ของตัวเอง แยกจาก `tb_permission` ฝั่ง tenant ที่หน้านี้ documented การจัดการ platform role/cluster เป็นขอบเขตของ Carmen Blue Backstage admin (ดู Platform book) ไม่ใช่ record `tb_user` ของ inventory frontend นี้
+- **คอลัมน์ enum `platform_role` ไม่มีอยู่แล้ว** ถูกลบไป 2026-06-10 (`06d8a921` "remove legacy platform_role column and API surface") พร้อมกับฟิลด์ใน login response (`433b5e77`) Role ระดับ platform ตอนนี้เป็นระบบ RBAC แบบ relational ที่ scope ตาม cluster — `tb_backstage_role` (role ที่ตั้งชื่อ) + `tb_backstage_role_tb_permission` (bundle) + `tb_user_tb_backstage_role` (assignment; `cluster_id = null` หมายถึง platform-wide, ถ้าตั้งค่าจะ scope เฉพาะ cluster นั้น) — พร้อมแคตตาล็อก `tb_backstage_permission` ของตัวเอง แยกจาก `tb_permission` ฝั่ง tenant ที่หน้านี้ documented การจัดการ platform role/cluster เป็นขอบเขตของ Carmen Blue Backstage admin (ดู Backstage book) ไม่ใช่ record `tb_user` ของ inventory frontend นี้
 - **Online presence เป็น best-effort** `is_online` / `socket_id` เป็น cache ที่เขียนโดย realtime channel — **ไม่ใช่** authoritative สำหรับ security
 - **ไม่มีประวัติรหัสผ่านฝั่งนี้** hash เก่า / นโยบาย rotation อยู่ใน external identity provider Platform schema ของ carmen เห็นเพียง token ที่ออกใน `tb_user_login_session`
 - **ความเป็นหนึ่งเดียวของ session** `token` unique globally ดังนั้นการ reuse token ตรวจจับได้

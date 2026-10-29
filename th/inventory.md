@@ -2,7 +2,7 @@
 title: Carmen Blue
 description: Carmen Blue ERP — เอกสารอ้างอิงโมดูลสำหรับนักพัฒนาและทีมทดสอบ
 published: true
-date: '2026-09-23T01:30:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: book/inventory, home
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -66,4 +66,4 @@ dateCreated: 2026-05-19T00:00:00.000Z
 
 - เริ่มจากหน้า home ของแต่ละโมดูลเพื่อภาพรวม
 - เจาะลึก sub-pages สำหรับ data model, UI flow, edge cases
-- ดู [global wiki landing](/th/home) สำหรับ Platform book
+- ดู [global wiki landing](/th/home) สำหรับ Backstage book

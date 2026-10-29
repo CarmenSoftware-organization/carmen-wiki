@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service ที่ UI คือ Backstage SPA ทั้งห้า route gate ด้วยสิทธิ์ backstage sql_workbench.read/manage; execute รัน SQL อะไรก็ได้
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Query Dataset
 
 > **At a Glance**
-> **เจ้าของ:** Gate ด้วย backstage permission สองตัว — `sql_workbench.read` (เรียกดู) และ `sql_workbench.manage` (รัน / บันทึก / drop) ครบ **ทั้ง 5 route** ตั้งแต่ 2026-08-20 &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอใน*ผลิตภัณฑ์นี้*** — console อยู่ที่หน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Backstage SPA ไม่มี route/component/hook ที่ตรงกันใน `carmen-frontend` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
+> **เจ้าของ:** Gate ด้วย backstage permission สองตัว — `sql_workbench.read` (เรียกดู) และ `sql_workbench.manage` (รัน / บันทึก / drop) ครบ **ทั้ง 5 route** ตั้งแต่ 2026-08-20 &nbsp;·&nbsp; **การจัดเก็บ:** PostgreSQL catalog (`pg_class`, `pg_proc`) ใน tenant schema — **ไม่มี `tb_query_dataset`** &nbsp;·&nbsp; **ไม่มีหน้าจอใน*ผลิตภัณฑ์นี้*** — console อยู่ที่หน้าจอ [SQL Workbench](/th/backstage/sql-workbench) ของ Backstage SPA ไม่มี route/component/hook ที่ตรงกันใน `carmen-frontend` &nbsp;·&nbsp; **`execute` ไม่ใช่ read-only** — รัน SQL อะไรก็ได้ รวมถึง DDL และ multi-statement
 
 ## สถานะการ implement (ตรวจสอบ 2026-07-16; ตรวจสอบ permission และ UI ใหม่ 2026-09-06 และ 2026-09-22)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 สาม claim ในเวอร์ชันก่อนหน้าของหน้านี้ไม่ตรงกับ source ปัจจุบัน และถูกแก้ไขด้านล่าง ข้อ 1 และ 2 แก้เมื่อ 2026-07-16 ข้อ 3 แก้เมื่อ 2026-09-06:
 
-1. **ไม่พบ frontend implementation ใดๆ** ไฟล์ที่เคยอ้างถึง `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts` และ `lib/sql-validator.ts` (frontend mirror) **ไม่มีอยู่จริงเลยใน `carmen-frontend`** — การค้นทั่ว repo หา `query-dataset` และ `sql-query` ใน repo นั้นคืนค่าศูนย์ไฟล์ และ `routes/router.tsx` ไม่มี path `query-dataset` ใต้ `/system-admin` เลย backend service และ endpoint ของมัน (ด้านล่าง) มีจริง และ **มี UI อยู่ — เพียงแต่ไม่ได้อยู่ในผลิตภัณฑ์นี้** Backstage SPA (`carmen-backstage`) มีหน้าจอ [SQL Workbench](/th/platform/sql-workbench) เต็มรูปแบบที่ `/sql-workbench` (เพิ่มเมื่อ 2026-07-09) ซึ่ง `sqlQueryService.ts` ของมันเรียก `/api/config/${buCode}/sql-query` — endpoint ชุดเดียวกันทั้ง 5 ตัวที่หน้านี้บันทึกไว้ ให้อ่านว่า "ไม่มีหน้าจอใน Carmen Blue" ไม่ใช่ "ไม่มีหน้าจอที่ไหนเลย"; ข้อความเดิมเขียนก่อนที่จะมีใครไปตรวจ SPA อีกตัว
+1. **ไม่พบ frontend implementation ใดๆ** ไฟล์ที่เคยอ้างถึง `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts` และ `lib/sql-validator.ts` (frontend mirror) **ไม่มีอยู่จริงเลยใน `carmen-frontend`** — การค้นทั่ว repo หา `query-dataset` และ `sql-query` ใน repo นั้นคืนค่าศูนย์ไฟล์ และ `routes/router.tsx` ไม่มี path `query-dataset` ใต้ `/system-admin` เลย backend service และ endpoint ของมัน (ด้านล่าง) มีจริง และ **มี UI อยู่ — เพียงแต่ไม่ได้อยู่ในผลิตภัณฑ์นี้** Backstage SPA (`carmen-backstage`) มีหน้าจอ [SQL Workbench](/th/backstage/sql-workbench) เต็มรูปแบบที่ `/sql-workbench` (เพิ่มเมื่อ 2026-07-09) ซึ่ง `sqlQueryService.ts` ของมันเรียก `/api/config/${buCode}/sql-query` — endpoint ชุดเดียวกันทั้ง 5 ตัวที่หน้านี้บันทึกไว้ ให้อ่านว่า "ไม่มีหน้าจอใน Carmen Blue" ไม่ใช่ "ไม่มีหน้าจอที่ไหนเลย"; ข้อความเดิมเขียนก่อนที่จะมีใครไปตรวจ SPA อีกตัว
 2. **`execute` คือ admin SQL console ที่ไม่จำกัด ไม่ใช่ Run แบบ read-only** `SqlQueryService.execute()` เรียก `validateSqlSafety(sql_text, { allowMultiple: true, allowDangerous: true })` — `allowDangerous: true` ข้าม blocklist keyword ต้องห้ามทั้งหมด (`DROP`, `TRUNCATE`, `ALTER`, `GRANT`, `REVOKE`, `COPY`, `VACUUM`, `CLUSTER`, `REASSIGN`, `REINDEX`) และไม่มีการส่งข้อจำกัด `allowedLeading` เลย ดังนั้น `INSERT`/`UPDATE`/`DELETE`/`CREATE`/`DROP`/`ALTER` ผ่านหมด และ `allowMultiple: true` อนุญาต multi-statement script คำอธิบาย Swagger ของ controller เองบอกไว้ตรงๆ: *"Runs any SQL against the tenant DB — SELECT, DML (INSERT/UPDATE/DELETE) and DDL (CREATE/ALTER/DROP/…), one or more statements."* คอมเมนต์ในโค้ดอธิบายเหตุผลไว้ชัดเจน: *"Access is gated by the `sql_workbench.manage` backstage permission at the gateway; this validator only rejects empty/unparseable input here — it is not the security boundary."* มีแค่ `saveDdl()` (สัญญา "Save" ใน §5.3) ที่ยังคง validation แบบเข้มงวด (`SELECT`/`WITH` เท่านั้น หรือ `CREATE`-only) ที่หน้านี้เคยระบุไว้ผิดว่าเป็นของ `execute`
 
 3. **ช่องโหว่ permission ที่หน้านี้เคยรายงานถูกปิดแล้ว — อย่าใช้ข้อความเดิมเป็นแนวทาง** ระหว่าง 2026-07-16 ถึง 2026-08-20 หน้านี้รายงานถูกต้องว่ามีแค่ `POST .../execute` ที่มี guard และ `save`, `db-objects` (list), `db-objects/definition` (get) กับ `db-objects` (drop, `DELETE`) เข้าถึงได้โดยผู้เรียกที่ authenticated คนใดก็ได้ **ตอนนี้ไม่จริงแล้ว** commit `525597688` (2026-08-20, `carmen-turborepo-backend`, *fix(security): คุมสิทธิ์ 4 endpoint ของ SQL Workbench ที่เปิดให้สมาชิก BU ทุกคน* ปิด issue #321) เพิ่ม `@UseGuards(BackstagePermissionGuard)` + `@RequireBackstagePermission(...)` ครบทั้งสี่ route:
@@ -42,13 +42,13 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Query Dataset (เรียกภายในว่า "SQL Workbench") คือ **backend admin-SQL-console service** สำหรับการรัน SQL ใดๆ ก็ได้ และการสร้าง / browse / drop object ฐานข้อมูลที่ใช้ซ้ำได้ — **view**, **stored procedure** และ **function** — โดยตรงภายในฐานข้อมูล tenant ปัจจุบัน **ไม่มีหน้าจอ frontend ที่เรียกมันเลย** (ดูสถานะการ implement) ผลลัพธ์มีเจตนาให้กลายเป็นแหล่งข้อมูลสำหรับ template รายงานและ tile dashboard consume ณ run time โดย service **micro-data** ที่แยกต่างหาก
 
-**กลุ่มเป้าหมายวันนี้:** ผู้ปฏิบัติงานที่ถือ `sql_workbench.read` (เรียกดู) หรือ `sql_workbench.manage` (รัน / บันทึก / drop) ไม่ว่าจะทำงานผ่านหน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Backstage SPA หรือเรียก API โดยตรง (เช่นผ่าน Bruno) ไม่มีกลุ่มเป้าหมายใน*ผลิตภัณฑ์นี้* เพราะ Carmen Blue ไม่มีหน้าจอสำหรับมัน ไม่เหมือนตาราง Carmen Blue ส่วนใหญ่ **ไม่มี row `tb_query_dataset`** สำหรับแต่ละ object ที่บันทึก — registry คือ PostgreSQL catalog ที่ live scope ตาม tenant schema
+**กลุ่มเป้าหมายวันนี้:** ผู้ปฏิบัติงานที่ถือ `sql_workbench.read` (เรียกดู) หรือ `sql_workbench.manage` (รัน / บันทึก / drop) ไม่ว่าจะทำงานผ่านหน้าจอ [SQL Workbench](/th/backstage/sql-workbench) ของ Backstage SPA หรือเรียก API โดยตรง (เช่นผ่าน Bruno) ไม่มีกลุ่มเป้าหมายใน*ผลิตภัณฑ์นี้* เพราะ Carmen Blue ไม่มีหน้าจอสำหรับมัน ไม่เหมือนตาราง Carmen Blue ส่วนใหญ่ **ไม่มี row `tb_query_dataset`** สำหรับแต่ละ object ที่บันทึก — registry คือ PostgreSQL catalog ที่ live scope ตาม tenant schema
 
 view, stored procedure และ function ที่สร้างที่นี่มีเจตนาเป็นแหล่งข้อมูลที่ service **micro-data** เรียกใช้งานจริง ณ run time: รายงานหรือ dashboard ควรระบุชื่อ object นั้น (ผ่าน `builder_key` หรือ template `name`) และ micro-data จะ resolve ผ่าน `POST /api/datasets/execute`, ประกอบ WHERE clause จาก filter ที่ส่งมา, กระจาย query ไปยัง business unit ที่ร้องขอ, และส่งคืน `Dataset` (columns + rows + totals + summary) ดู [reporting-audit/report](/th/inventory/reporting-audit/report) สำหรับฝั่งการแสดงผล ความเชื่อมโยงนี้ยังไม่ได้ re-verify แยกในรอบนี้
 
 ## 2. งานทั่วไป
 
-ไม่มี UI *ใน Carmen Blue* (ดูสถานะการ implement) — นี่คือ API operation ที่อยู่เบื้องหลัง ซึ่งเข้าถึงได้ผ่านหน้าจอ [SQL Workbench](/th/platform/sql-workbench) ของ Backstage SPA หรือเรียกโดยตรง (เช่นผ่าน Bruno)
+ไม่มี UI *ใน Carmen Blue* (ดูสถานะการ implement) — นี่คือ API operation ที่อยู่เบื้องหลัง ซึ่งเข้าถึงได้ผ่านหน้าจอ [SQL Workbench](/th/backstage/sql-workbench) ของ Backstage SPA หรือเรียกโดยตรง (เช่นผ่าน Bruno)
 
 | งาน | API call | หมายเหตุ |
 |---|---|---|
@@ -71,7 +71,7 @@ view, stored procedure และ function ที่สร้างที่น�
 | "Database is busy" | Connection pool หมด; ลองซ้ำหนึ่งครั้งแล้วหลัง 500 ms | ลองใหม่ทีหลัง; ตรวจสอบ load พร้อมกัน |
 | คอลัมน์ `BigInt` ส่งคืนเป็น string ในผลลัพธ์ | คาดหวัง — JSON ไม่สามารถพา `bigint` แบบดั้งเดิม | Cast ใน SQL ถ้าจำเป็นต้องจัดการเชิงตัวเลขปลายทาง |
 | รายงาน error หลัง drop | View / procedure ที่ผูกถูกลบจาก catalog | สร้าง object ใหม่หรืออัปเดต binding ของรายงาน |
-| 403 ตอน `execute`, `save` หรือ `DELETE db-objects` | ผู้เรียกไม่มี `sql_workbench.manage` | Grant ผ่านระบบ permission ของ backstage — ดู [Platform RBAC](/th/platform/rbac) |
+| 403 ตอน `execute`, `save` หรือ `DELETE db-objects` | ผู้เรียกไม่มี `sql_workbench.manage` | Grant ผ่านระบบ permission ของ backstage — ดู [Backstage RBAC](/th/backstage/rbac) |
 | 403 ตอน `GET db-objects` หรือ `db-objects/definition` | ผู้เรียกไม่มี `sql_workbench.read` | เช่นเดียวกัน; `.read` คือ grant สำหรับเรียกดูอย่างเดียว |
 | `save` / list / get-definition / drop สำเร็จสำหรับผู้เรียกที่ authenticated ใครก็ได้ | **เป็นเรื่องในอดีตเท่านั้น — แก้แล้วเมื่อ 2026-08-20 โดย `525597688`** ถ้าพบอาการนี้วันนี้ แสดงว่าคุณอยู่บน build ที่เก่ากว่า commit นั้น | อัปเกรด อย่าถือว่าเป็นพฤติกรรมที่คาดหวัง |
 

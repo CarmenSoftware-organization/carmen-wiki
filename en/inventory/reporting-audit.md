@@ -2,7 +2,7 @@
 title: Reporting and Audit
 description: Activity log (with per-record Activity sheet), MinIO-backed file attachments, notifications (2026-08 redesign), report templates and print forms, dashboard widgets; pointer to Platform-book telemetry pages.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -60,6 +60,6 @@ The entities that remain are intentionally generic / polymorphic. Activity links
 - **Design spec:** `.specs/2026-05-16-master-config-design.md`.
 - **Plan:** `.specs/2026-05-16-master-config-plan.md`.
 
-## 6. UI telemetry — documented in the Platform book
+## 6. UI telemetry — documented in the Backstage book
 
-Click and page-view events from the inventory app (`lib/analytics.ts` → `POST /api/analytics-events`, batches of ≤ 100, deduplicated by `event_id`, 2026-07-30) are stored in the Backstage table `tb_activity_event`, rolled up daily into `tb_activity_event_daily` by the micro-cronjobs `activity_rollup` job and purged after 365 days by `activity_retention`. This is product telemetry, not the audit log, and it is administered from the platform admin — see [Activity Events](/en/platform/activity-events) and [Usage Analytics](/en/platform/usage-analytics) in the Platform book.
+Click and page-view events from the inventory app (`lib/analytics.ts` → `POST /api/analytics-events`, batches of ≤ 100, deduplicated by `event_id`, 2026-07-30) are stored in the Backstage table `tb_activity_event`, rolled up daily into `tb_activity_event_daily` by the micro-cronjobs `activity_rollup` job and purged after 365 days by `activity_retention`. This is product telemetry, not the audit log, and it is administered from the platform admin — see [Activity Events](/en/backstage/activity-events) and [Usage Analytics](/en/backstage/usage-analytics) in the Backstage book.

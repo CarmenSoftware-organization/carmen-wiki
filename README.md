@@ -10,7 +10,7 @@ This repo is the **source of truth** for the Wiki.js content; the rendered site 
 | Surface | URL |
 | --- | --- |
 | Source repo | <https://github.com/CarmenSoftware-organization/carmen-wiki> |
-| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/home`, books at `/en/inventory` and `/en/platform` |
+| Rendered wiki (dev) | <http://dev.blueledgers.com:3987/> — landing at `/en/home`, books at `/en/inventory` and `/en/backstage` |
 
 ## Repository Layout
 
@@ -29,8 +29,8 @@ carmen-wiki/
 │   │   │   ├── 04-test-scenarios.md
 │   │   │   └── 04-test-scenarios-<role>.md
 │   │   └── ...                    # good-receive-note, physical-count, etc.
-│   ├── platform.md                # Book landing (sibling of platform/)
-│   └── platform/                  # Carmen Blue Backstage book
+│   ├── backstage.md               # Book landing (sibling of backstage/)
+│   └── backstage/                 # Carmen Blue Backstage book
 │       ├── clusters.md            # Module landing
 │       ├── clusters/              # Topical sub-pages (no numeric prefix)
 │       │   ├── data-model.md
@@ -43,7 +43,7 @@ carmen-wiki/
 ├── th/                            # Thai translation tracking (mirrors en/ shape)
 │   ├── home.md                    # Locale landing (URL: /th/home)
 │   ├── inventory.md, inventory/
-│   └── platform.md,  platform/
+│   └── backstage.md, backstage/
 ├── assets/
 │   └── screenshots/<book>/<module>/<slug>.png   # Wiki URL: /screenshots/<module>/<file>
 ├── scripts/                       # Tooling (sync_nav.py mirrors EN nav into TH)
@@ -76,7 +76,7 @@ Inventory modules document a workflow with multiple personas, so sub-pages are n
 
 ### Carmen Blue Backstage — topical, no numeric prefix
 
-Platform modules describe an admin SPA without per-persona workflows, so sub-pages are named topically. Full convention in [`.specs/platform-sub-page-template.md`](./.specs/platform-sub-page-template.md):
+Backstage modules describe an admin SPA without per-persona workflows, so sub-pages are named topically. Full convention in [`.specs/platform-sub-page-template.md`](./.specs/platform-sub-page-template.md):
 
 | File | Content |
 | --- | --- |
@@ -135,7 +135,7 @@ Content is synthesised from these sibling repos under the CarmenSoftware organis
 | --- | --- |
 | `../carmen/docs/` | Primary concept and design references for every Inventory module |
 | `../carmen-frontend/` | Vite + React SPA inventory UI — source of truth for Inventory screen behaviour |
-| `../carmen-backstage/` | React/TypeScript SPA — source of truth for the Platform book |
+| `../carmen-backstage/` | React/TypeScript SPA — source of truth for the Backstage book |
 | `../carmen-turborepo-backend/` | Turborepo monorepo, REST API surface. Platform Prisma schema lives at `packages/prisma-shared-schema-platform/`. |
 | `../micro-report/`, `../micro-cronjobs/` | Go microservices for reporting and scheduled jobs |
 | `../carmen-turborepo-backend-bruno/` | Bruno API collections, exact request/response shapes |

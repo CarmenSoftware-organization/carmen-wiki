@@ -19,12 +19,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ASSETS = ROOT / "assets" / "screenshots"
 LOCALES = ("en", "th")
-URL_PREFIX = {"inventory": "/screenshots", "platform": "/screenshots/platform"}
+# The backstage book was named platform until 2026-10-29; its asset URLs keep the old slug.
+URL_PREFIX = {"inventory": "/screenshots", "backstage": "/screenshots/platform"}
 SKIP_NAME = re.compile(r"(data-model|business-rules|test-scenarios|user-flow|permissions)")
 SKIP_PAGES = {
     "inventory/costing", "inventory/costing/calculation-methods",
     "inventory/general-ledger/gl-posting", "inventory/system-config/doc-version",
-    "platform/users/lifecycle", "platform/report-templates/xml-spec",
+    "backstage/users/lifecycle", "backstage/report-templates/xml-spec",
     # No screen in Carmen Blue: the SQL Workbench UI moved to the Platform SPA on 2026-07-09.
     "inventory/system-config/query-dataset",
 }

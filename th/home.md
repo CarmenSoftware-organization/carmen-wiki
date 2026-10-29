@@ -1,8 +1,8 @@
 ---
 title: Carmen Blue Wiki
-description: เอกสารอ้างอิงสำหรับนักพัฒนาและทีมทดสอบของ Carmen Blue ครอบคลุมทั้ง Inventory และ Platform
+description: เอกสารอ้างอิงสำหรับนักพัฒนาและทีมทดสอบของ Carmen Blue ครอบคลุมทั้ง Inventory และ Backstage book
 published: true
-date: 2026-09-23T08:30:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: home, landing
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
@@ -22,9 +22,9 @@ dateCreated: 2026-05-16T14:00:00.000Z
 
 ## 2. Carmen Blue Backstage
 
-Platform admin — clusters, business units, users และ report templates ที่เป็นรากฐานของทุก Carmen Blue deployment
+คอนโซลผู้ดูแลระบบ — clusters, business units, users, RBAC, licenses และ report templates ที่เป็นรากฐานของทุก Carmen Blue deployment
 
-[เปิด Platform book →](/th/platform)
+[เปิด Backstage book →](/th/backstage)
 
 ---
 

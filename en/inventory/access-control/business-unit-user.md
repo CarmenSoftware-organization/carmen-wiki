@@ -2,7 +2,7 @@
 title: Business Unit User
 description: The per-BU membership pivot (tb_user_tb_business_unit) plus the cluster-scoped invitation flow (tb_user_invitation + _business_unit) that replaced the dropped tb_temp_bu_user on 2026-08-05; /api/auth/invite-user is gone.
 published: true
-date: 2026-09-28T12:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -22,7 +22,7 @@ The 2026-07-15 finding ("`tb_temp_bu_user` is schema-only; `/api/auth/invite-use
 - **`tb_temp_bu_user` was dropped** (platform migration `20260805100000_drop_temp_bu_user`) and **`/api/auth/invite-user` was removed** (BE `7f93ce6ad`, 2026-08-05, "remove the invite flow that never worked").
 - **A real invitation flow replaced them** (migration `20260805000000_user_invitation`; BE `3592a420e` 2026-08-05, `2945a4d04` 2026-08-08): `tb_user_invitation` is a cluster-scoped, **email-bound** offer (`cluster_id`, `email`, `token_hash`, `cluster_role`, `status` `pending|accepted|declined|revoked`, `invited_by_id`, `expires_at`, `accepted_at`/`accepted_user_id`, `declined_*`, `revoked_*`), with one `tb_user_invitation_business_unit` row per BU the invitation grants (`business_unit_id`, `role` = `enum_user_business_unit_role`, `is_default`). A partial unique index enforces one *pending* invitation per `(cluster, email)` — SQL only, Prisma cannot express it. `expired` is deliberately not a stored status; it is derived from `expires_at`.
 - **Who does what:** a cluster admin creates / lists / revokes / resends from the Platform (`api-system/clusters/:cluster_id/invitations`, `backstage_cluster-invitations.controller.ts:74-266`, platform permissions); the recipient reads `GET api/invitations/:token` and `GET api/invitations/mine` and answers with `POST …/accept`, `POST …/accept-with-signup` (public — `@IgnoreGuards(KeycloakGuard)`, `invitations.controller.ts:107,206` — for an address with no account yet) or `POST …/decline`. On accept, `user-invitation.service.ts` (micro-cluster) creates the cluster membership and one `tb_user_tb_business_unit` row per invited BU with the invited `role` and `is_default` (`:480-500`, `:577-578`). Seats are counted against the **cluster** pool (`v_business_unit_seat`, `SEAT_LIMIT_EXCEEDED`; pending invitations are reported alongside `used`/`cap` in `GET /api/license` `seat.pending_invites`).
-- The membership table itself is unchanged; the `admin` RBAC bypass in `PermissionGuard` still holds. There is still **no BU-membership admin CRUD screen in `carmen-frontend`** — grant/revoke and the invitation UI live in the Platform SPA (see the Platform book).
+- The membership table itself is unchanged; the `admin` RBAC bypass in `PermissionGuard` still holds. There is still **no BU-membership admin CRUD screen in `carmen-frontend`** — grant/revoke and the invitation UI live in the Platform SPA (see the Backstage book).
 
 ## 1. What & Who
 
@@ -150,4 +150,4 @@ stateDiagram-v2
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_user_tb_business_unit`, `tb_user_invitation`, `tb_user_invitation_business_unit`, `enum_user_business_unit_role`, `enum_user_invitation_status`; migrations `20260805000000_user_invitation`, `20260805100000_drop_temp_bu_user`.
 - **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/invitations/invitations.controller.ts` (`mine` `:70`, `:token` `:106`, `accept` `:148`, `accept-with-signup` `:201`, `decline` `:257`); `apps/backend-gateway/src/backstage/backstage_cluster-invitations/` (`POST` `:74`, `GET` `:147`, `DELETE :id` `:202`, `POST :id/resend` `:266`); `apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts`; `apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`POST default`, `GET`, `PUT`, `PATCH`).
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/platform/cluster-invitations/`, `user-management/`.
-- **Frontend:** `../carmen-frontend/components/navbar/bu-switcher.tsx` + `hooks/use-switch-bu.ts` (switch/default); `../carmen-frontend/routes/profile/bu-section.tsx` (self-view). No BU-membership admin CRUD or invitation screen exists in this frontend — see the Platform book.
+- **Frontend:** `../carmen-frontend/components/navbar/bu-switcher.tsx` + `hooks/use-switch-bu.ts` (switch/default); `../carmen-frontend/routes/profile/bu-section.tsx` (self-view). No BU-membership admin CRUD or invitation screen exists in this frontend — see the Backstage book.

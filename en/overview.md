@@ -2,7 +2,7 @@
 title: System Overview
 description: What Carmen Blue is, why it exists, its requirements, tech stack and architecture diagrams — the starting point for new developers and testers.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: overview, architecture, landing
 editor: markdown
 dateCreated: 2026-09-23T08:30:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-09-23T08:30:00.000Z
 
 # System Overview
 
-One page to orient yourself before diving into the [Inventory](/en/inventory) or [Platform](/en/platform) books: what Carmen Blue does, why it exists, what it must satisfy, what it is built with, and how the pieces connect.
+One page to orient yourself before diving into the [Inventory](/en/inventory) or [Backstage](/en/backstage) books: what Carmen Blue does, why it exists, what it must satisfy, what it is built with, and how the pieces connect.
 
 > **At a glance** — Carmen Blue is a multi-tenant SaaS ERP that runs the procurement → receiving → inventory → costing chain for hotels and restaurants in Thailand. Browsers talk to one NestJS **backend gateway**, which fans out to domain microservices and Go sidecar services over PostgreSQL with one **platform schema** plus one **tenant schema per business unit**.
 
@@ -26,7 +26,7 @@ Carmen Blue is a procurement-to-inventory ERP for hospitality operators — hote
 | Master data | Products, categories, units and conversions, vendors, locations, recipes | [Inventory](/en/inventory) |
 | Accounting | General Ledger foundation — chart of accounts, journal vouchers, GL periods, budgets | [General Ledger](/en/inventory/general-ledger) |
 | Reporting | Templated reports (FastReport `.frx`), dashboards, scheduled exports | [Reporting & Audit](/en/inventory/reporting-audit) |
-| Platform administration | Clusters, business units, users, RBAC, licenses, report templates | [Platform](/en/platform) |
+| Backstageistration | Clusters, business units, users, RBAC, licenses, report templates | [Backstage](/en/backstage) |
 
 Currency throughout is Thai Baht (฿).
 
@@ -38,7 +38,7 @@ Hospitality purchasing is high-volume, perishable and spread across many outlets
 |------------------|-------------------------|
 | Purchasing without control — anyone can order from any vendor at any price | Purchase requests go through a configurable approval **workflow** (`tb_workflow` stages) before becoming purchase orders; vendor price lists drive the price |
 | Food and beverage cost is invisible until month-end | Every receipt and issue creates an inventory transaction with a **cost layer**, so stock value and cost are known per movement |
-| Multi-property groups cannot see or govern all outlets | A **cluster** groups business units; users, roles and licenses are managed centrally in the Platform admin |
+| Multi-property groups cannot see or govern all outlets | A **cluster** groups business units; users, roles and licenses are managed centrally in the Backstage |
 | Stock on the books differs from stock on the shelf | **Physical count** posts the variance as stock in/out; **spot check** compares balances without posting |
 | Finance needs defensible numbers | **Period close** snapshots cost layers; a General Ledger foundation holds journal vouchers and GL periods |
 | Changes need traceability | Soft deletes, `doc_version` optimistic locking, comment threads and activity logs on documents |
@@ -61,7 +61,7 @@ Target users (from the Master PRD in `carmen/docs/prd`): procurement managers, i
 | F8 | Value stock with FIFO or weighted average per business unit | [Costing](/en/inventory/costing) |
 | F9 | Maintain products, units, vendors, locations, price lists and recipes | [Product](/en/inventory/product), [Master Data](/en/inventory/master-data), [Vendor Pricelist](/en/inventory/vendor-pricelist), [Recipe](/en/inventory/recipe) |
 | F10 | Produce templated and scheduled reports and dashboards | [Reporting & Audit](/en/inventory/reporting-audit), [Dashboard](/en/inventory/dashboard) |
-| F11 | Administer clusters, business units, users, roles and licenses | [Platform](/en/platform) |
+| F11 | Administer clusters, business units, users, roles and licenses | [Backstage](/en/backstage) |
 
 ### 3.2 Non-Functional Requirements
 
@@ -82,7 +82,7 @@ Versions are as declared in each repository's manifest (`package.json`, `go.mod`
 | Layer | Component | Technology |
 |-------|-----------|------------|
 | Client | Inventory web app | React 19, Vite 7, TypeScript 5.9, Tailwind 4, React Router 7, TanStack Query 5, react-hook-form + Zod, Radix UI |
-| Client | Platform admin | React 19, Vite 8, TypeScript 5.9, Tailwind 4, shadcn/ui, React Router 7 |
+| Client | Backstage | React 19, Vite 8, TypeScript 5.9, Tailwind 4, shadcn/ui, React Router 7 |
 | Client | Mobile app | Expo 56, React Native 0.85 |
 | Edge | Reverse proxy | nginx (TLS termination, proxy to gateway and web apps) |
 | API | Backend gateway | NestJS 11 on Bun, Swagger, WebSocket |
@@ -105,7 +105,7 @@ Versions are as declared in each repository's manifest (`package.json`, `go.mod`
 ```mermaid
 graph TD
     SPA[Inventory web app<br/>React 19 + Vite]
-    ADMIN[Platform admin<br/>React 19 + Vite]
+    ADMIN[Backstage<br/>React 19 + Vite]
     MOB[Mobile app<br/>Expo / React Native]
     NGINX[nginx edge<br/>TLS + reverse proxy]
     GW[backend-gateway<br/>NestJS 11 on Bun]
@@ -199,7 +199,7 @@ graph LR
     POOL --> T2[(Tenant schema<br/>BU B)]
 ```
 
-Everything except the tenant schemas lives in the shared **platform schema** and is managed in the [Platform](/en/platform) book. Each business unit's documents — PRs, POs, GRNs, stock, cost layers, GL — live in its own **tenant schema**. The BU's `calculation_method` decides whether its stock is costed FIFO or weighted average.
+Everything except the tenant schemas lives in the shared **platform schema** and is managed in the [Backstage](/en/backstage) book. Each business unit's documents — PRs, POs, GRNs, stock, cost layers, GL — live in its own **tenant schema**. The BU's `calculation_method` decides whether its stock is costed FIFO or weighted average.
 
 ### 5.4 Procurement-to-Inventory Flow
 
@@ -227,7 +227,7 @@ Where to look when this wiki is not enough. Implementation and E2E tests are the
 | Repository | Source of truth for |
 |------------|---------------------|
 | `carmen-frontend` | Inventory screens, routes and client-side validation |
-| `carmen-backstage` | Platform admin screens (clusters, BUs, users, RBAC, report templates) |
+| `carmen-backstage` | Backstage screens (clusters, BUs, users, RBAC, report templates) |
 | `carmen-mobile` | Mobile screens |
 | `carmen-turborepo-backend` | Gateway routes and guards, domain logic, Prisma schemas (`packages/prisma-shared-schema-backstage`, `-tenant`), nginx and k8s config |
 | `micro-report`, `report-render` | Report data building and `.frx` rendering |
@@ -242,6 +242,6 @@ Adjacent systems outside this wiki's scope: the Knowledge Base / AI chat (`knowl
 ## 7. Where to Go Next
 
 - [Carmen Blue book](/en/inventory) — module-by-module reference for inventory, procurement and costing
-- [Carmen Blue Backstage book](/en/platform) — clusters, business units, users, RBAC and report templates
+- [Carmen Blue Backstage book](/en/backstage) — clusters, business units, users, RBAC and report templates
 - [Costing](/en/inventory/costing) — how FIFO and weighted-average cost layers are calculated
 - [Access Control](/en/inventory/access-control) — how permissions apply inside a business unit

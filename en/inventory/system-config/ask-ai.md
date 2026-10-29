@@ -2,7 +2,7 @@
 title: Ask AI
 description: Per-business-unit settings for the "Ask AI" menu on the Purchase Request page — which AI providers are offered and the prompt each one is sent. Stored as the ask_ai row of tb_application_config; provider catalogue is owned by Backstage.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: system-config, ask-ai, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-10-27T00:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-10-27T00:00:00.000Z
 
 The PR page has an **Ask AI** dropdown. Picking a provider builds a prompt from the provider's template plus a table of the PR's items (`#`, item name with local name, quantity and unit, quoted price with currency) and opens the provider's site in a new tab with the prompt pre-filled. The warehouse name is deliberately not sent (`build-pr-ai-query.ts`). Nothing is sent from Carmen's servers — the browser opens the provider URL.
 
-This screen lets a Sysadmin decide, **for their own BU**, which of the platform's active providers appear and what prompt each uses. **Maintained by** Sysadmin; **provider catalogue** (label, icon, URL template, default prompt, default-enabled flag, sort order) by the platform operator in Backstage ([AI providers](/en/platform/ai-providers)).
+This screen lets a Sysadmin decide, **for their own BU**, which of the platform's active providers appear and what prompt each uses. **Maintained by** Sysadmin; **provider catalogue** (label, icon, URL template, default prompt, default-enabled flag, sort order) by the platform operator in Backstage ([AI providers](/en/backstage/ai-providers)).
 
 ## 2. Common Tasks
 

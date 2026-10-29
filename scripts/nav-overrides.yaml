@@ -95,12 +95,12 @@ books:
             label_en: "Templates"
             label_th: "Templates"
 
-  platform:
+  backstage:
     label_en: "Carmen Blue Backstage"
     label_th: "Carmen Blue Backstage"
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
-      # documented on en/platform.md (Task 29 rebuild), which in turn mirror
+      # documented on en/backstage.md (Task 29 rebuild), which in turn mirror
       # `../carmen-backstage/src/components/nav/backstageNav.ts` groupKey order
       # (re-checked 2026-10-27: Platform group → Backstage, new AI group).
       # `sql-workbench` and `dashboard` are intentionally not nav-overrides

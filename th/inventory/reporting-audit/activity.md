@@ -2,7 +2,7 @@
 title: บันทึกกิจกรรม (Activity)
 description: บันทึก activity ระดับ tenant — ทุกการเปลี่ยนสถานะเป็นหนึ่งแถวพร้อม actor, entity, snapshot ก่อน/หลัง, IP และ user agent; อ่านผ่าน /system-admin/activity-log และ Activity sheet ต่อระเบียน
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -156,4 +156,4 @@ changes: {
 
 ## 9. ไม่ใช่ตารางนี้ — UI telemetry
 
-event การคลิกและ page-view ที่ frontend จับไว้ (`lib/analytics.ts`: batch ละไม่เกิน 50, flush ทุก 10 วินาที, `POST /api/analytics-events`, สูงสุด 100 event ต่อ request, dedup ด้วย `event_id`, ประทับ user/app/domain ฝั่งเซิร์ฟเวอร์) ลงที่ตาราง **Backstage** `tb_activity_event`, ถูก roll up ทุกคืนเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ `micro-cronjobs` และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` (ทั้งคู่ 2026-07-30) pipeline นั้นไม่เกี่ยวอะไรกับ `tb_activity` เลย — บันทึกไว้ในเล่ม Platform: [Activity Events](/th/platform/activity-events) (explorer ต่อ event, `activity_event.detail`) และ [Usage Analytics](/th/platform/usage-analytics) (dashboard, `activity_event.read`)
+event การคลิกและ page-view ที่ frontend จับไว้ (`lib/analytics.ts`: batch ละไม่เกิน 50, flush ทุก 10 วินาที, `POST /api/analytics-events`, สูงสุด 100 event ต่อ request, dedup ด้วย `event_id`, ประทับ user/app/domain ฝั่งเซิร์ฟเวอร์) ลงที่ตาราง **Backstage** `tb_activity_event`, ถูก roll up ทุกคืนเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ `micro-cronjobs` และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` (ทั้งคู่ 2026-07-30) pipeline นั้นไม่เกี่ยวอะไรกับ `tb_activity` เลย — บันทึกไว้ในเล่ม Platform: [Activity Events](/th/backstage/activity-events) (explorer ต่อ event, `activity_event.detail`) และ [Usage Analytics](/th/backstage/usage-analytics) (dashboard, `activity_event.read`)

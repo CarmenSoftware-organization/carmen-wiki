@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: สองหน้าจอ system-admin ที่แก้ไขกลุ่มฟิลด์ที่แยกกันของแถว tb_business_unit เดียวกัน — Company Profile (identity, address, format) และ Default Setting (config PR/SI/PO + print form)
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -71,7 +71,7 @@ dateCreated: 2026-07-29T10:30:00.000Z
 - **`si.cost-from` มี option ที่มีเงื่อนไขจาก calculation-method** option `average` ใน dropdown "Default price for added items" ของ Stock-In จะแสดงเมื่อ `data.calculation_method` เป็น `average` หรือ `average_per_location` เท่านั้น (`visibleWhenCalcMethod` เป็น array ตั้งแต่ FE `83bb0624`) — **ยกเว้น** ถ้าค่าที่เก็บไว้ของ BU เป็น `average` อยู่แล้วบน tenant ที่ใช้ method `fifo` ซึ่งกรณีนี้มันจะยังแสดงอยู่ เพื่อไม่ให้ค่าที่เก็บไว้หายไปเงียบ ๆ (`resolveConfigOptions()`)
 - **Branding เป็น read-only ทั้งสองหน้าจอ** Logo/avatar render ผ่าน `<img>` ธรรมดา ไม่มีปุ่ม upload — flow upload จริงอยู่ที่อื่น (หน้า profile ของผู้ใช้เอง ตาม code comment ของ component เอง) ไม่ใช่ที่นี่
 - **ฟิลด์ number-format มีโครงสร้าง ไม่ใช่ string ดิบ** `amount_format`/`quantity_format`/`recipe_format` แต่ละตัวเป็น `{ locales, minimumIntegerDigits }` — UI แสดงเป็น locale string สไตล์ `Intl` บวกจำนวนหลัก ไม่ใช่ pattern แบบ free-text เหมือนฟิลด์ `date_format`/`time_format` (ซึ่งเป็น string ที่ enumerate ไว้แล้วจาก `company-profile-options.ts`)
-- **การแสดงฟิลด์ที่อยู่ของ `master-data/business-unit.md` ล้าสมัยเทียบกับการอ่าน source ของหน้านี้เอง** หน้านั้น §5.1 (แก้ไขล่าสุดโดย resync pass ก่อนหน้า) ยังคงระบุคอลัมน์เดี่ยว `hotel_address`/`company_address`/`*_zip_code` — แต่ type `BusinessUnitDetail` จริงและฟอร์มของหน้าจอนี้ยืนยันว่ามี 10 คอลัมน์แบบมีโครงสร้างต่อที่อยู่ (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) บวก `*_postal_code` (ไม่ใช่ `*_zip_code`) — ตรงกับสิ่งที่ resync pass ของ Platform book พบเองอย่างเป็นอิสระสำหรับ `BusinessUnitEdit.tsx` กำลัง flag ไว้สำหรับรอบแก้ไขในอนาคตของ `master-data/business-unit.md` เอง ไม่ได้แก้ในที่นี้ (อยู่นอกขอบเขตของหน้านี้)
+- **การแสดงฟิลด์ที่อยู่ของ `master-data/business-unit.md` ล้าสมัยเทียบกับการอ่าน source ของหน้านี้เอง** หน้านั้น §5.1 (แก้ไขล่าสุดโดย resync pass ก่อนหน้า) ยังคงระบุคอลัมน์เดี่ยว `hotel_address`/`company_address`/`*_zip_code` — แต่ type `BusinessUnitDetail` จริงและฟอร์มของหน้าจอนี้ยืนยันว่ามี 10 คอลัมน์แบบมีโครงสร้างต่อที่อยู่ (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) บวก `*_postal_code` (ไม่ใช่ `*_zip_code`) — ตรงกับสิ่งที่ resync pass ของ Backstage book พบเองอย่างเป็นอิสระสำหรับ `BusinessUnitEdit.tsx` กำลัง flag ไว้สำหรับรอบแก้ไขในอนาคตของ `master-data/business-unit.md` เอง ไม่ได้แก้ในที่นี้ (อยู่นอกขอบเขตของหน้านี้)
 
 ---
 

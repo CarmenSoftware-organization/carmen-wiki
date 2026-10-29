@@ -2,7 +2,7 @@
 title: ภาพรวมระบบ
 description: Carmen Blue คืออะไร ทำไมต้องมี requirement ของระบบ tech stack และ architecture diagram — จุดเริ่มต้นสำหรับนักพัฒนาและทีมทดสอบที่เพิ่งเข้ามา
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: overview, architecture, landing
 editor: markdown
 dateCreated: 2026-09-23T08:30:00.000Z
@@ -10,7 +10,7 @@ dateCreated: 2026-09-23T08:30:00.000Z
 
 # ภาพรวมระบบ
 
-หน้าเดียวสำหรับทำความเข้าใจระบบก่อนเข้าไปอ่าน [Inventory](/th/inventory) หรือ [Platform](/th/platform) book ว่า Carmen Blue ทำอะไร ทำไมต้องมี ต้องตอบ requirement อะไร สร้างด้วยอะไร และแต่ละส่วนเชื่อมกันอย่างไร
+หน้าเดียวสำหรับทำความเข้าใจระบบก่อนเข้าไปอ่าน [Inventory](/th/inventory) หรือ [Backstage](/th/backstage) book ว่า Carmen Blue ทำอะไร ทำไมต้องมี ต้องตอบ requirement อะไร สร้างด้วยอะไร และแต่ละส่วนเชื่อมกันอย่างไร
 
 > **สรุปสั้น** — Carmen Blue เป็น ERP แบบ multi-tenant SaaS ที่ดูแลห่วงโซ่ จัดซื้อ → รับสินค้า → คลัง → ต้นทุน ให้โรงแรมและร้านอาหารในประเทศไทย เบราว์เซอร์คุยกับ **backend gateway** (NestJS) เพียงจุดเดียว ซึ่งกระจายงานไปยัง domain microservices และ Go sidecar services บน PostgreSQL ที่มี **platform schema** หนึ่งชุด และ **tenant schema แยกต่อ business unit**
 
@@ -26,7 +26,7 @@ Carmen Blue คือ ERP ด้านจัดซื้อถึงคลัง
 | Master data | สินค้า หมวดหมู่ หน่วยและการแปลงหน่วย ผู้ขาย location สูตรอาหาร | [Inventory](/th/inventory) |
 | บัญชี | รากฐาน General Ledger — ผังบัญชี, journal voucher, GL period, งบประมาณ | [General Ledger](/th/inventory/general-ledger) |
 | รายงาน | รายงานจาก template (FastReport `.frx`), dashboard, รายงานตามกำหนดเวลา | [Reporting & Audit](/th/inventory/reporting-audit) |
-| ดูแลแพลตฟอร์ม | Cluster, business unit, ผู้ใช้, RBAC, license, report template | [Platform](/th/platform) |
+| ดูแลแพลตฟอร์ม | Cluster, business unit, ผู้ใช้, RBAC, license, report template | [Backstage](/th/backstage) |
 
 สกุลเงินที่ใช้ทั้งระบบคือบาท (฿)
 
@@ -38,7 +38,7 @@ Carmen Blue คือ ERP ด้านจัดซื้อถึงคลัง
 |---------------|------------------|
 | การจัดซื้อไม่มีการควบคุม — ใครก็สั่งจากผู้ขายรายไหนก็ได้ ในราคาเท่าไรก็ได้ | Purchase request ต้องผ่าน **workflow** อนุมัติที่ตั้งค่าได้ (stage ใน `tb_workflow`) ก่อนกลายเป็น purchase order และราคาอ้างอิงจาก vendor price list |
 | มองไม่เห็นต้นทุนอาหารและเครื่องดื่มจนกว่าจะปิดเดือน | ทุกการรับและเบิกสร้าง inventory transaction พร้อม **cost layer** จึงรู้มูลค่าสต็อกและต้นทุนทุกครั้งที่มีการเคลื่อนไหว |
-| กลุ่มที่มีหลาย property มองไม่เห็นและควบคุมทุก outlet ไม่ได้ | **Cluster** รวม business unit เข้าด้วยกัน ผู้ใช้ role และ license จัดการจากส่วนกลางใน Platform admin |
+| กลุ่มที่มีหลาย property มองไม่เห็นและควบคุมทุก outlet ไม่ได้ | **Cluster** รวม business unit เข้าด้วยกัน ผู้ใช้ role และ license จัดการจากส่วนกลางใน Backstage |
 | สต็อกในระบบไม่ตรงกับของบนชั้น | **Physical count** ลงผลต่างเป็น stock in/out ส่วน **spot check** เทียบยอดโดยไม่ลงรายการ |
 | ฝ่ายบัญชีต้องการตัวเลขที่ตรวจสอบได้ | **Period close** เก็บ snapshot ของ cost layer และมีรากฐาน General Ledger สำหรับ journal voucher และ GL period |
 | การเปลี่ยนแปลงต้องตรวจย้อนได้ | Soft delete, optimistic locking ด้วย `doc_version`, comment thread และ activity log บนเอกสาร |
@@ -61,7 +61,7 @@ Carmen Blue คือ ERP ด้านจัดซื้อถึงคลัง
 | F8 | ประเมินมูลค่าสต็อกแบบ FIFO หรือ weighted average ต่อ business unit | [Costing](/th/inventory/costing) |
 | F9 | ดูแลสินค้า หน่วย ผู้ขาย location price list และสูตรอาหาร | [Product](/th/inventory/product), [Master Data](/th/inventory/master-data), [Vendor Pricelist](/th/inventory/vendor-pricelist), [Recipe](/th/inventory/recipe) |
 | F10 | ออกรายงานจาก template รายงานตามกำหนดเวลา และ dashboard | [Reporting & Audit](/th/inventory/reporting-audit), [Dashboard](/th/inventory/dashboard) |
-| F11 | ดูแล cluster, business unit, ผู้ใช้, role และ license | [Platform](/th/platform) |
+| F11 | ดูแล cluster, business unit, ผู้ใช้, role และ license | [Backstage](/th/backstage) |
 
 ### 3.2 Non-Functional Requirements
 
@@ -82,7 +82,7 @@ Version ตามที่ประกาศใน manifest ของแต่�
 | Layer | Component | Technology |
 |-------|-----------|------------|
 | Client | Inventory web app | React 19, Vite 7, TypeScript 5.9, Tailwind 4, React Router 7, TanStack Query 5, react-hook-form + Zod, Radix UI |
-| Client | Platform admin | React 19, Vite 8, TypeScript 5.9, Tailwind 4, shadcn/ui, React Router 7 |
+| Client | Backstage | React 19, Vite 8, TypeScript 5.9, Tailwind 4, shadcn/ui, React Router 7 |
 | Client | Mobile app | Expo 56, React Native 0.85 |
 | Edge | Reverse proxy | nginx (TLS termination, proxy ไปยัง gateway และ web app) |
 | API | Backend gateway | NestJS 11 บน Bun, Swagger, WebSocket |
@@ -105,7 +105,7 @@ Version ตามที่ประกาศใน manifest ของแต่�
 ```mermaid
 graph TD
     SPA[Inventory web app<br/>React 19 + Vite]
-    ADMIN[Platform admin<br/>React 19 + Vite]
+    ADMIN[Backstage<br/>React 19 + Vite]
     MOB[Mobile app<br/>Expo / React Native]
     NGINX[nginx edge<br/>TLS + reverse proxy]
     GW[backend-gateway<br/>NestJS 11 on Bun]
@@ -199,7 +199,7 @@ graph LR
     POOL --> T2[(Tenant schema<br/>BU B)]
 ```
 
-ทุกอย่างยกเว้น tenant schema อยู่ใน **platform schema** ที่ใช้ร่วมกัน และจัดการผ่าน [Platform](/th/platform) book เอกสารของแต่ละ business unit — PR, PO, GRN, สต็อก, cost layer, GL — อยู่ใน **tenant schema** ของ BU นั้นเอง ค่า `calculation_method` ของ BU เป็นตัวกำหนดว่าสต็อกคิดต้นทุนแบบ FIFO หรือ weighted average
+ทุกอย่างยกเว้น tenant schema อยู่ใน **platform schema** ที่ใช้ร่วมกัน และจัดการผ่าน [Backstage](/th/backstage) book เอกสารของแต่ละ business unit — PR, PO, GRN, สต็อก, cost layer, GL — อยู่ใน **tenant schema** ของ BU นั้นเอง ค่า `calculation_method` ของ BU เป็นตัวกำหนดว่าสต็อกคิดต้นทุนแบบ FIFO หรือ weighted average
 
 ### 5.4 Procurement-to-Inventory Flow
 
@@ -227,7 +227,7 @@ graph LR
 | Repository | เป็นแหล่งความจริงของ |
 |------------|---------------------|
 | `carmen-frontend` | หน้าจอ, route และ validation ฝั่ง client ของ Inventory |
-| `carmen-backstage` | หน้าจอ Platform admin (cluster, BU, ผู้ใช้, RBAC, report template) |
+| `carmen-backstage` | หน้าจอ Backstage (cluster, BU, ผู้ใช้, RBAC, report template) |
 | `carmen-mobile` | หน้าจอ mobile |
 | `carmen-turborepo-backend` | Route และ guard ของ gateway, domain logic, Prisma schema (`packages/prisma-shared-schema-backstage`, `-tenant`), config ของ nginx และ k8s |
 | `micro-report`, `report-render` | การเตรียมข้อมูลรายงานและการ render `.frx` |
@@ -242,6 +242,6 @@ graph LR
 ## 7. อ่านต่อ
 
 - [Carmen Blue book](/th/inventory) — คู่มือรายโมดูลของคลังสินค้า จัดซื้อ และต้นทุน
-- [Carmen Blue Backstage book](/th/platform) — cluster, business unit, ผู้ใช้, RBAC และ report template
+- [Carmen Blue Backstage book](/th/backstage) — cluster, business unit, ผู้ใช้, RBAC และ report template
 - [Costing](/th/inventory/costing) — วิธีคำนวณ cost layer แบบ FIFO และ weighted average
 - [Access Control](/th/inventory/access-control) — permission ทำงานอย่างไรภายใน business unit

@@ -19,7 +19,7 @@ Work is organized as `<locale>/<book>/<module>/`. Two books are defined: **Carme
 | Book | Location | Audience |
 |------|----------|----------|
 | Inventory | `en/inventory/`, `th/inventory/` | Developers and QA working on Carmen Blue ERP |
-| Platform | `en/platform/`, `th/platform/` | Developers and support working on the platform admin product |
+| Backstage | `en/backstage/`, `th/backstage/` | Developers and support working on the Backstage admin product (renamed from `platform/` on 2026-10-29; screenshot asset URLs keep `/screenshots/platform/`) |
 
 Screenshots live under `assets/screenshots/<book>/<module>/<slug>.png`.
 
@@ -65,7 +65,7 @@ Sibling directories under `/Users/samutpra/GitHub/carmensoftware-organize/`. Bef
 |------|------|---------|
 | **Concepts / design docs** | `../carmen/docs/` | Canonical concept reference. Topic folders for inventory-management, costing, recipe, purchase-request/order-management, GRN, store-requisitions, vendor-pricelist, product-management, workflow-permissions, business-rules, API/technical specs, prd, use-cases, mobile-app, prisma-schema, etc. Carmen-wiki pages should synthesize from here. |
 | **Frontend** | `../carmen-frontend/` | Vite + React SPA inventory UI — React Router, TypeScript, Tailwind, Bun, Vitest, Playwright. Source of truth for screen/component behavior. Has its own `CLAUDE.md` and `DESIGN.md`. |
-| **Platform admin** | `../carmen-backstage/` | React/TypeScript SPA for cluster/BU/user/report-template management — source of truth for the Platform book |
+| **Backstage admin** | `../carmen-backstage/` | React/TypeScript SPA for cluster/BU/user/report-template management — source of truth for the Backstage book |
 | **Backend (main)** | `../carmen-turborepo-backend/` | Turborepo monorepo (`apps/`, `packages/`, Bun, Docker, k8s). REST API surface. |
 | **Backend (reports)** | `../micro-report/` | Go microservice for reporting (controllers, services, queues, migrations). |
 | **Backend (cron)** | `../micro-cronjobs/` | Go microservice for scheduled inventory jobs. |

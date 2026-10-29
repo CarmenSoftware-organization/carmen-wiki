@@ -2,7 +2,7 @@
 title: User
 description: Core user account with profile and login-session tables — the identity behind every audit column. Passwords in Keycloak; email verification + partial unique indexes since 2026-08; access edited via PATCH /api/config/:bu_code/users/:id.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: access-control, user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -68,7 +68,7 @@ The entity is split across three platform tables: `tb_user` (account), `tb_user_
 
 ## 4. Edge Cases
 
-- **`platform_role` (the enum column) no longer exists.** It was dropped 2026-06-10 (`06d8a921` "remove legacy platform_role column and API surface") along with the login response field (`433b5e77`). Platform-wide roles are now a fully relational, cluster-scoped RBAC system — `tb_backstage_role` (named roles) + `tb_backstage_role_tb_permission` (bundle) + `tb_user_tb_backstage_role` (assignment; `cluster_id = null` means platform-wide, a set value scopes the grant to one cluster) — with its own `tb_backstage_permission` catalogue, distinct from the tenant-side `tb_permission` this page documents. Managing platform roles/clusters is Carmen Blue Backstage admin territory (see the Platform book), not this inventory-frontend `tb_user` record.
+- **`platform_role` (the enum column) no longer exists.** It was dropped 2026-06-10 (`06d8a921` "remove legacy platform_role column and API surface") along with the login response field (`433b5e77`). Platform-wide roles are now a fully relational, cluster-scoped RBAC system — `tb_backstage_role` (named roles) + `tb_backstage_role_tb_permission` (bundle) + `tb_user_tb_backstage_role` (assignment; `cluster_id = null` means platform-wide, a set value scopes the grant to one cluster) — with its own `tb_backstage_permission` catalogue, distinct from the tenant-side `tb_permission` this page documents. Managing platform roles/clusters is Carmen Blue Backstage admin territory (see the Backstage book), not this inventory-frontend `tb_user` record.
 - **Online presence is best-effort.** `is_online` / `socket_id` are caches written by the realtime channel — **not** authoritative for security.
 - **No password history on this side.** Past hashes / rotation policy live in the external identity provider. The carmen platform schema only sees the issued token in `tb_user_login_session`.
 - **Session uniqueness.** `token` is globally unique so token reuse is detectable.

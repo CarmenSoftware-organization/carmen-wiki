@@ -2,7 +2,7 @@
 title: Costing — Business Rules
 description: Validation, calculation, authorization, posting, period-end, and cross-module rules for costing.
 published: true
-date: '2026-10-27T00:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: costing, business-rules, carmen-software
 editor: markdown
 dateCreated: 2026-05-15T12:30:00.000Z
@@ -121,7 +121,7 @@ Authorization on the costing module is genuinely **thin** — the engine is a sy
 | Anyone holding `inventory_management.period_end.view` | View the current period and the pre-close review checklist | `AppIdGuard('period_end.findOne' / 'findReview')` |
 | Anyone with permission to save/commit a GRN (`procurement.goods_received_note.commit` — one key covers both), approve an SR issue, commit an inventory adjustment, or approve a credit-note | Indirectly triggers the cost-pick engine as a side effect of that document's own permission gate (`procurement.*`, `inventory_management.*`) — there is no additional costing-specific authorization check on top | Per source-document permission; see that module's own business-rules page |
 | Anyone with `product.last-cost` / `product.last-receiving` / `product.last-receiving-by-unit` / `product.cost-estimate` | Reads the last GRN / stock-in cost or a cost estimate through `GET /api/:bu_code/cost/products/:product_id/*` (gateway `application/cost`) | `AppIdGuard` keys as listed; read-only |
-| Platform / cluster admin | Sets `tb_business_unit.calculation_method` on the business-unit record (`backstage_business-units.controller.ts`) | Outside this wiki module's routes — see [platform/business-units](/en/platform/business-units) if that book covers it |
+| Platform / cluster admin | Sets `tb_business_unit.calculation_method` on the business-unit record (`backstage_business-units.controller.ts`) | Outside this wiki module's routes — see [platform/business-units](/en/backstage/business-units) if that book covers it |
 | Everyone | Cannot edit `cost_per_unit`, `average_cost_per_unit`, or `extra_cost_amount` on a posted `tb_inventory_transaction_cost_layer` row through any UI or API found in this pass | No update/patch endpoint exists for the cost-layer table; corrections flow through a credit-note-amount adjustment (`diff_amount`), a compensating stock-in/stock-out, or — for an average-unit GRN still in `saved` — a void / re-post of the whole movement, all of which write new rows rather than editing existing ones |
 
 There is still no "who reviews the cost-pick preview before approving" step. **Updated 2026-09-22:** [inventory-adjustment](/en/inventory/inventory-adjustment) now has a draft state — `StockInService.create()` writes `doc_status = draft` (`stock-in.service.ts:534`), and only `PATCH …/stock-ins/:id/commit` (`commit()` `stock-in.service.ts:596`, guarded like any other `inventory_management.*` action) calls the ledger and sets `completed` — but there is no approval queue or separate approver: the same permission that creates the draft commits it, and no screen shows which FIFO lots would be consumed before it posts.
