@@ -2,8 +2,8 @@
 title: การตั้งค่าแพลตฟอร์ม — โมเดลข้อมูล (Data Model)
 description: tb_backstage_config ตาราง namespace-ต่อ-แถว, BACKSTAGE_CONFIG_REGISTRY ทั้งสิบสองคีย์ (สิบคีย์อยู่บนหน้าจอนี้ สองคีย์เป็นของโมดูลอื่น) และแผนที่ผู้อ่านหลายกระบวนการเบื้องหลังผลของแต่ละคีย์
 published: true
-date: 2026-10-29T03:30:00.000Z
-tags: book/backstage, platform-config, data-model
+date: 2026-10-29T05:00:00.000Z
+tags: book/backstage, backstage-config, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # การตั้งค่าแพลตฟอร์ม — โมเดลข้อมูล (Data Model)
 
 > **At a Glance**
-> **`tb_backstage_config`** — หนึ่งแถวต่อหนึ่ง config *namespace* (ออบเจกต์ JSON) ไม่เคยเป็นสเกลาร์เดี่ยว &nbsp;·&nbsp; **`BACKSTAGE_CONFIG_REGISTRY`** (micro-cluster) — แหล่งความจริงเดียวว่ามีคีย์อะไรบ้าง schema ฝั่งอ่าน/เขียนของแต่ละคีย์เป็น Zod แบบไหน และ default คืออะไร รวมสิบสองคีย์ สิบคีย์ render โดยหน้าจอของโมดูลนี้เอง (§3) &nbsp;·&nbsp; **ตรวจสองชั้นอิสระต่อกัน:** controller ฝั่ง gateway ตรวจส่วน `:config_key` ของ path ด้วย regex ก่อนถึงชั้น service ใด ๆ; `BackstageConfigService` ของ micro-cluster ตรวจการเป็นสมาชิกของ registry และค่ากับ Zod schema ของคีย์นั้นแยกต่างหากอีกที &nbsp;·&nbsp; **Concurrency:** `doc_version` มีเป็นคอลัมน์แต่**ไม่มี**เส้นทางเขียนไหนบังคับใช้เป็น optimistic lock ในวันนี้ &nbsp;·&nbsp; **หน้าจอเองไม่มี cache** — `GET /api-system/backstage/configs` อ่านสดเสมอ ส่วน cache 60 วินาทีที่เอกสารไว้ใน [หน้าลงจอด](/th/backstage/platform-config) §3.2 เป็นของ*ผู้อ่านฝั่งบังคับใช้*สามตัวที่เฉพาะเจาะจง ไม่ใช่ของ service อ่าน/เขียนตารางนี้เอง
+> **`tb_backstage_config`** — หนึ่งแถวต่อหนึ่ง config *namespace* (ออบเจกต์ JSON) ไม่เคยเป็นสเกลาร์เดี่ยว &nbsp;·&nbsp; **`BACKSTAGE_CONFIG_REGISTRY`** (micro-cluster) — แหล่งความจริงเดียวว่ามีคีย์อะไรบ้าง schema ฝั่งอ่าน/เขียนของแต่ละคีย์เป็น Zod แบบไหน และ default คืออะไร รวมสิบสองคีย์ สิบคีย์ render โดยหน้าจอของโมดูลนี้เอง (§3) &nbsp;·&nbsp; **ตรวจสองชั้นอิสระต่อกัน:** controller ฝั่ง gateway ตรวจส่วน `:config_key` ของ path ด้วย regex ก่อนถึงชั้น service ใด ๆ; `BackstageConfigService` ของ micro-cluster ตรวจการเป็นสมาชิกของ registry และค่ากับ Zod schema ของคีย์นั้นแยกต่างหากอีกที &nbsp;·&nbsp; **Concurrency:** `doc_version` มีเป็นคอลัมน์แต่**ไม่มี**เส้นทางเขียนไหนบังคับใช้เป็น optimistic lock ในวันนี้ &nbsp;·&nbsp; **หน้าจอเองไม่มี cache** — `GET /api-system/backstage/configs` อ่านสดเสมอ ส่วน cache 60 วินาทีที่เอกสารไว้ใน [หน้าลงจอด](/th/backstage/backstage-config) §3.2 เป็นของ*ผู้อ่านฝั่งบังคับใช้*สามตัวที่เฉพาะเจาะจง ไม่ใช่ของ service อ่าน/เขียนตารางนี้เอง
 
 > **Source of truth:** Prisma schema ฝั่ง backend และ registry ของ micro-cluster ที่นิยามทุกคีย์ อ่านสองไฟล์นี้ก่อนเสมอเมื่อจะเขียนหรือปรับหน้านี้:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
@@ -22,7 +22,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. ภาพรวม
 
-`tb_backstage_config` คือตารางเดียวที่รับหน้าที่แทนอย่างน้อยสิบสองค่าตั้งที่ไม่เกี่ยวข้องกันเลย แยกกันด้วยสตริง `key` กับ JSONB `value` เท่านั้น ไม่มีตารางแยกต่อคีย์ ไม่มีชุดคอลัมน์แยกต่อคีย์ — ทุกฟิลด์ของทุกค่าตั้งอยู่ในออบเจกต์ JSON ก้อนเดียวนั้น และสิ่งเดียวที่บอกว่าฟิลด์ไหนถูกต้อง ต้องเป็นชนิดอะไร และควรคืนอะไรเมื่อแถวยังไม่มี คือ registry ในโค้ดตัวเดียว `BACKSTAGE_CONFIG_REGISTRY` (§3) ซึ่งอยู่ใน service ของ **micro-cluster** ไม่ใช่ใน controller ของ gateway ที่ UI ของโมดูลนี้คุยด้วยตรง ๆ gateway (`backstage_configs.controller.ts`) เป็นแค่ตัวส่งต่อบาง ๆ: บังคับสองด่าน RBAC ที่เอกสารไว้ใน[หน้าลงจอด](/th/backstage/platform-config) §4 แล้วส่งต่อไป micro-cluster ผ่าน RPC ซึ่งเป็นที่ที่ค่าทุกตัวถูกตรวจ เติม default และเขียนจริง
+`tb_backstage_config` คือตารางเดียวที่รับหน้าที่แทนอย่างน้อยสิบสองค่าตั้งที่ไม่เกี่ยวข้องกันเลย แยกกันด้วยสตริง `key` กับ JSONB `value` เท่านั้น ไม่มีตารางแยกต่อคีย์ ไม่มีชุดคอลัมน์แยกต่อคีย์ — ทุกฟิลด์ของทุกค่าตั้งอยู่ในออบเจกต์ JSON ก้อนเดียวนั้น และสิ่งเดียวที่บอกว่าฟิลด์ไหนถูกต้อง ต้องเป็นชนิดอะไร และควรคืนอะไรเมื่อแถวยังไม่มี คือ registry ในโค้ดตัวเดียว `BACKSTAGE_CONFIG_REGISTRY` (§3) ซึ่งอยู่ใน service ของ **micro-cluster** ไม่ใช่ใน controller ของ gateway ที่ UI ของโมดูลนี้คุยด้วยตรง ๆ gateway (`backstage_configs.controller.ts`) เป็นแค่ตัวส่งต่อบาง ๆ: บังคับสองด่าน RBAC ที่เอกสารไว้ใน[หน้าลงจอด](/th/backstage/backstage-config) §4 แล้วส่งต่อไป micro-cluster ผ่าน RPC ซึ่งเป็นที่ที่ค่าทุกตัวถูกตรวจ เติม default และเขียนจริง
 
 ## 2. Entity: `tb_backstage_config`
 
@@ -98,7 +98,7 @@ Schema บรรทัด 1793 (`../carmen-turborepo-backend/packages/prisma-sha
 | สถานการณ์ | สิ่งที่เกิดขึ้นจริง |
 | --- | --- |
 | แอดมินสองคน `PATCH` คนละฟิลด์ของคีย์เดียวกันภายในวินาทีเดียวกัน | สำเร็จทั้งคู่ ใครก็ตามที่ `findFirst` ทำงานทีหลังจะชนะฐานที่ตัวเองผสานทับ — เป็น race แบบ last-write-wins จริง ๆ บน JSON ก้อนทั้งหมด ไม่ใช่รายฟิลด์ เพราะ `doc_version` ไม่ถูกบังคับใช้ (§5) |
-| แถวถูกแก้ตรงในฐานข้อมูลเป็นรูปที่ไม่ตรงกับ schema อีกต่อไป | ผู้อ่าน `invitation`/`signup`/`email_verification`/`password_reset` **throw** ในการอ่านครั้งถัดไป (ล้มดัง ๆ โดยตั้งใจ); ผู้อ่าน `license`/`backstage_migration` ถือว่าเป็น `false` (fail ไปทางที่ปลอดภัยของตัวเอง, §4); `GET` ของหน้าจอ admin เอง (`findAll`/`findOne`) ก็เรียก `parseStored()` เช่นกัน แถวที่พังจริงจึงทำให้**ทั้งหน้าจอ Platform Config โหลดไม่ขึ้น** ไม่ใช่แค่การ์ดเดียว — นี่คือความเสี่ยงเดียวกับที่คอมเมนต์ `.default()` บนทุกฟิลด์ของ schema เอง (§3) มีไว้ลดให้กับวิวัฒนาการปกติของ schema แต่มันไม่ป้องกันค่าที่ไม่เคยตรง schema ตั้งแต่แรก |
+| แถวถูกแก้ตรงในฐานข้อมูลเป็นรูปที่ไม่ตรงกับ schema อีกต่อไป | ผู้อ่าน `invitation`/`signup`/`email_verification`/`password_reset` **throw** ในการอ่านครั้งถัดไป (ล้มดัง ๆ โดยตั้งใจ); ผู้อ่าน `license`/`backstage_migration` ถือว่าเป็น `false` (fail ไปทางที่ปลอดภัยของตัวเอง, §4); `GET` ของหน้าจอ admin เอง (`findAll`/`findOne`) ก็เรียก `parseStored()` เช่นกัน แถวที่พังจริงจึงทำให้**ทั้งหน้าจอ Backstage Config โหลดไม่ขึ้น** ไม่ใช่แค่การ์ดเดียว — นี่คือความเสี่ยงเดียวกับที่คอมเมนต์ `.default()` บนทุกฟิลด์ของ schema เอง (§3) มีไว้ลดให้กับวิวัฒนาการปกติของ schema แต่มันไม่ป้องกันค่าที่ไม่เคยตรง schema ตั้งแต่แรก |
 | ถามหาคีย์ก่อนที่แถวจะเคยถูกบันทึก | ทุกเส้นทางอ่านคืนค่า default ในตัวจาก registry พร้อม `id: null` — ไม่เคยเป็น 404 ไม่เคยเป็นออบเจกต์ว่าง |
 | ส่ง `PATCH` เป็น `{}` ว่างเปล่า | ถูกปฏิเสธ — `rejectBadPatchShape()` ถือว่าออบเจกต์ว่างคือ "ไม่มีอะไรจะทำ" ไม่ใช่ "ปล่อยทุกอย่างไว้เหมือนเดิม" |
 | ส่ง `PATCH` ที่มีชื่อฟิลด์ที่ schema ของคีย์ปลายทางไม่รู้จัก | ถูกปฏิเสธโดยระบุชื่อ (เช่น `unknown field(s) foo (supported: base_url, expiry_days, ...)`) ไม่เคยถูกทิ้งเงียบ ๆ |
@@ -126,4 +126,4 @@ Schema บรรทัด 1793 (`../carmen-turborepo-backend/packages/prisma-sha
 - `../carmen-backstage/src/services/backstageConfigService.ts` — REST client ฝั่ง frontend รวมข้อสังเกตเรื่อง `doc_version` (§5)
 - `../carmen-backstage/src/context/ExpiryThresholdContext.tsx` — ผู้อ่าน `expiry_thresholds` ของ frontend เองและพฤติกรรม fallback ของมัน (§4)
 
-**Cross-links:** [หน้าลงจอด Platform Config](/th/backstage/platform-config) &nbsp;·&nbsp; [Licenses](/th/backstage/licenses)
+**Cross-links:** [หน้าลงจอด Backstage Config](/th/backstage/backstage-config) &nbsp;·&nbsp; [Licenses](/th/backstage/licenses)

@@ -2,7 +2,7 @@
 title: Carmen Blue Backstage
 description: ภาพรวมผลิตภัณฑ์ Carmen Blue Backstage admin — จุดเริ่มต้นของ book จัดตามแถว Dashboard บวกเจ็ดกลุ่ม groupKey ของ sidebar (รวมแปดส่วน) บวก persona cluster-admin แยกต่างหาก
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -61,15 +61,15 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 |---|---|
 | [Cronjobs](/th/backstage/cronjobs) | คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตาราง Cronjob ที่ใช้ร่วมกัน — ประเภทงาน ใครเป็นคนรัน และจุดที่จะเห็นว่า run ไหนล้มเหลว |
 
-## 7. Platform
+## 7. Backstage
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
-| [Platform Config](/th/backstage/platform-config) | หน้าจอเดียว เก้าการ์ด — คำเชิญ การสมัคร ตั้งรหัสผ่านใหม่ การบังคับใช้ license เกณฑ์เตือนใกล้หมดอายุ และอื่น ๆ |
+| [Backstage Config](/th/backstage/backstage-config) | หน้าจอเดียว เก้าการ์ด — คำเชิญ การสมัคร ตั้งรหัสผ่านใหม่ การบังคับใช้ license เกณฑ์เตือนใกล้หมดอายุ และอื่น ๆ |
 | [Email Settings](/th/backstage/email-settings) | โปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ และแผนที่เส้นทางที่ตัดสินว่าอีเมลขาออกทั้งห้าเส้นทางใช้โปรไฟล์ไหน |
 | [Applications](/th/backstage/applications) | API client ที่ลงทะเบียน — identity แบบ `x-app-id` และการมอบสิทธิ์เข้าถึงแบบ allow-all เทียบกับ `api_name` ที่ระบุชัด |
 | [Backstage RBAC](/th/backstage/rbac) | permission catalog, role, การ assign ผู้ใช้แบบมี scope และ super-admin bypass |
-| [User Platform](/th/backstage/user-platform) | มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว |
+| [Backstage Users](/th/backstage/user-backstage) | มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว |
 | [Super Admins](/th/backstage/super-admins) | บัญชีดำ god-mode ของแพลตฟอร์ม — ทะเบียน add/remove ของผู้ใช้ที่ bypass ทุกการตรวจสอบ permission |
 | [Feature Flags](/th/backstage/feature-flags) | หน้าเดียวที่ตั้งค่าการมองเห็นของทุกฟีเจอร์ (active/inactive/hide) ทั้งฝั่ง Backstage และ Cluster-admin |
 
@@ -77,7 +77,7 @@ dateCreated: '2026-05-19T00:00:00.000Z'
 
 | โมดูล | ครอบคลุมเรื่อง |
 |---|---|
-| [Platform Migrations](/th/backstage/platform-migrations) | คอนโซลสำหรับ super-admin รัน Prisma migration ต่อฐานข้อมูลแพลตฟอร์มที่ใช้ร่วมกัน พร้อม seed และ drift check |
+| [Backstage Migrations](/th/backstage/backstage-migrations) | คอนโซลสำหรับ super-admin รัน Prisma migration ต่อฐานข้อมูลแพลตฟอร์มที่ใช้ร่วมกัน พร้อม seed และ drift check |
 | [SQL Workbench](/th/backstage/sql-workbench) | รัน SQL ใด ๆ ก็ได้ และ browse/สร้าง/drop view, procedure, function กับฐานข้อมูลของ tenant ที่เลือก |
 | [Database Pools](/th/backstage/database-pools) | ทะเบียน CRUD ของ Postgres connection pool ที่แชร์กันระดับแพลตฟอร์ม — แหล่งเดียวของ credential ฐานข้อมูล tenant |
 

@@ -2,7 +2,7 @@
 title: Super Admins
 description: The platform's god-mode allowlist — SuperAdminManagement (/backstage/super-admins), gated by superAdminOnly with no RBAC permission key at all, and its three-column tb_backstage_super_admin table.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, super-admins
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -153,7 +153,7 @@ Treat this page as a break-glass control, not a routine admin screen: every gran
 ## 9. Related Modules
 
 - [RBAC](/en/backstage/rbac) — owns the permission-key/role-bundle axis this module deliberately sits outside of; §2 above shows exactly where `is_super_admin` short-circuits that system on both sides.
-- [User Platform](/en/backstage/user-platform) — the ordinary, RBAC-scoped way to grant platform privileges; contrast with this module's unconditional bypass.
+- [Backstage Users](/en/backstage/user-backstage) — the ordinary, RBAC-scoped way to grant platform privileges; contrast with this module's unconditional bypass.
 - [Cluster Admin](/en/backstage/cluster-admin) — a second axis this same flag also short-circuits: `ClusterAdminAuthzService.isBackstageSuperAdmin` treats every super admin as an administrator of every cluster (§4 above).
 - [Users](/en/backstage/users) — owns the `tb_user`/`tb_user_profile` records this module's roster joins against for display only (§3.1).
 

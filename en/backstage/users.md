@@ -2,7 +2,7 @@
 title: Users
 description: Platform-level user accounts — identity, avatars, and the cluster/BU assignments that scope what the user can reach in the inventory app. Platform-admin access itself is granted via RBAC role assignments.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: backstage/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -27,7 +27,7 @@ The header on the edit screen also exposes a **Change Password** action (admin-i
 
 ## 2. Business Context
 
-A user record is the platform's source of truth for "this person can sign in." What the account can *do* in the Backstage SPA is no longer stored on the user row: the legacy single-value `platform_role` enum was removed (frontend commit `6091ffc`; the column and `enum_platform_role` are gone from the Prisma platform schema). Platform-level access is now granted through RBAC role assignments managed on the separate **User Platform** screen (`/backstage/user-backstage`) — the Users module manages the *account*; role and scope assignment lives in the [RBAC](/en/backstage/rbac) module. At login the SPA validates the account's effective permissions (`GET /api/user/permission/backstage`) and rejects sessions that hold none, with a bootstrap exception while the platform has 0–1 users — so a freshly created account cannot reach the Backstage SPA until someone assigns it a role.
+A user record is the platform's source of truth for "this person can sign in." What the account can *do* in the Backstage SPA is no longer stored on the user row: the legacy single-value `platform_role` enum was removed (frontend commit `6091ffc`; the column and `enum_platform_role` are gone from the Prisma platform schema). Platform-level access is now granted through RBAC role assignments managed on the separate **Backstage Users** screen (`/backstage/user-backstage`) — the Users module manages the *account*; role and scope assignment lives in the [RBAC](/en/backstage/rbac) module. At login the SPA validates the account's effective permissions (`GET /api/user/permission/backstage`) and rejects sessions that hold none, with a bootstrap exception while the platform has 0–1 users — so a freshly created account cannot reach the Backstage SPA until someone assigns it a role.
 
 Beyond identity, the user record also captures **where** the user can operate. Cluster membership lives in `tb_cluster_user` and is mutated from the cluster edit page (Section 5 cross-link); the Users module shows the resulting set read-only, nested inside the `UserAccessTree` card on the edit screen. BU membership is per-cluster — the **Add BU** dialog on this page only lists BUs whose `cluster_id` matches one of the user's current cluster memberships, which keeps the tenant boundary clean: a user cannot be assigned to a BU outside the clusters they already belong to. The BU-user join carries its own `role` (`admin` or `user`, orthogonal to the platform RBAC assignments) and an `is_default` flag that marks the BU the inventory app should land on at login.
 

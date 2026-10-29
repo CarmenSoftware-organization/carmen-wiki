@@ -2,7 +2,7 @@
 title: Licenses
 description: License centre — the per-cluster BU-quota ledger, the per-BU seat ledger, the per-BU interface (INF) licence ledger, and subscriptions with feature-group entitlements, plus expiry thresholds and legacy /subscriptions redirects.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, licenses
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -61,7 +61,7 @@ This module is where all four purchases are recorded, browsed, and (for BU quota
 | Licence-number prefix | `SEAT-YYMM-####` | `BUQ-YYMM-####` | `INF-YYMM-####` (same `nextLicenseNumber()` counter family — counts soft-deleted rows too, a number once issued is never reused) |
 | Edit-path segment | `seats` | `bu-quota` | `interface` |
 | List path after create | `/licenses` | `/licenses` | `/licenses?tab=interface` |
-| Expiry-threshold field read | `thresholds.seat_days` | `thresholds.bu_quota_days` | `thresholds.interface_days` (new key, default 30 — [Platform Config](/en/backstage/platform-config)) |
+| Expiry-threshold field read | `thresholds.seat_days` | `thresholds.bu_quota_days` | `thresholds.interface_days` (new key, default 30 — [Backstage Config](/en/backstage/backstage-config)) |
 | Owner sort key on the fleet table | `tb_business_unit.name` | `tb_cluster.name` | `tb_business_unit.name` |
 
 The counting-rule row is deliberate, not an oversight: seats are additive because a BU can hold several concurrent seat purchases that all count; BU quota is winner-take-all because the intended case is "buy a new, larger quota mid-contract" — the newer licence must fully replace the older one's cap the moment it starts, not add to it; an interface licence is a coverage-window union because renewing one means issuing a new row while the old one stays as history, and the question is only "is there *any* live row." The formulas live in separate places (`utils/buLicense.ts`, `utils/clusterLicense.ts`, and — for interface — the backend only, see §3.6) specifically so nobody is tempted to reuse one for the other.
@@ -76,7 +76,7 @@ A `tb_subscription` row (one per cluster+BU pair, contract dates, `status`) exis
 
 ### 3.4 Expiry thresholds are configurable, not hardcoded
 
-Every "expiring soon" badge on every screen in this module reads one of four independently-configurable day counts — `subscription_days`, `bu_quota_days`, `seat_days`, and (since PR #287) `interface_days` — from `useExpiryThresholds()`, not a hardcoded 30. See [Data Model](/en/backstage/licenses/data-model) §6 for the values, source, and per-ledger effect; the thresholds themselves are edited on the [Platform Config](/en/backstage/platform-config) screen, not here.
+Every "expiring soon" badge on every screen in this module reads one of four independently-configurable day counts — `subscription_days`, `bu_quota_days`, `seat_days`, and (since PR #287) `interface_days` — from `useExpiryThresholds()`, not a hardcoded 30. See [Data Model](/en/backstage/licenses/data-model) §6 for the values, source, and per-ledger effect; the thresholds themselves are edited on the [Backstage Config](/en/backstage/backstage-config) screen, not here.
 
 ### 3.5 Nav and feature gating
 
@@ -104,7 +104,7 @@ The full gate matrix, the read/manage split proven against both frontend and bac
 - [Business Units](/en/backstage/business-units) — owns the seat and interface *consumer* side: `BusinessUnitEdit`'s Licenses tab holds two read-only cards (`BusinessUnitLicensesCard` for seats + the BU's subscriptions, `BusinessUnitInterfaceLicensesCard` for INF licences) with "Manage licences", "New subscription" and "Add interface license" links into this module; neither card mutates licence data itself, to avoid a second source of truth.
 - [License Catalog](/en/backstage/license-catalog) — owns the feature/feature-group *catalog* this module's subscriptions and interface licences select from (§3.2, §3.6), including the group `kind` that decides which of the two may hold a given group. This module has no create/edit surface for catalog entries.
 - [cluster-admin](/en/backstage/cluster-admin) — the membership-scoped, read-only "is this enough?" view of the same three ledgers, with no permission gate and no write path (§4).
-- [Platform Config](/en/backstage/platform-config) — owns the expiry-threshold values this module's "expiring soon" badges read (§3.4).
+- [Backstage Config](/en/backstage/backstage-config) — owns the expiry-threshold values this module's "expiring soon" badges read (§3.4).
 
 ## 6. Reference Sources
 

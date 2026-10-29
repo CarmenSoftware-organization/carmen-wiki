@@ -1,17 +1,17 @@
 ---
-title: Platform Config — Data Model
+title: Backstage Config — Data Model
 description: tb_backstage_config, a namespace-per-row key/value table; the full twelve-key BACKSTAGE_CONFIG_REGISTRY (ten shown on this module's own screen, two owned by other modules); and the multi-process reader map behind each key's real-world effect.
 published: true
-date: 2026-10-29T03:30:00.000Z
-tags: book/backstage, platform-config, data-model
+date: 2026-10-29T05:00:00.000Z
+tags: book/backstage, backstage-config, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# Platform Config — Data Model
+# Backstage Config — Data Model
 
 > **At a Glance**
-> **`tb_backstage_config`** — one row per config *namespace* (a JSON object), never a single scalar value &nbsp;·&nbsp; **`BACKSTAGE_CONFIG_REGISTRY`** (micro-cluster) — the single source of truth for which keys exist, their Zod read/write schemas, and their defaults; twelve keys total, ten rendered by this module's own screen (§3) &nbsp;·&nbsp; **Validated twice, independently:** the gateway controller checks the `:config_key` path segment against a regex before it reaches any service; micro-cluster's `BackstageConfigService` separately checks registry membership and the value against the key's own Zod schema &nbsp;·&nbsp; **Concurrency:** `doc_version` exists as a column but is **not** enforced as an optimistic lock by any write path today &nbsp;·&nbsp; **No cache on the admin screen itself** — `GET /api-system/backstage/configs` always reads live; the 60-second caches documented on the [landing page](/en/backstage/platform-config) §3.2 belong to three specific *downstream enforcement readers*, not to this table's own read/write service
+> **`tb_backstage_config`** — one row per config *namespace* (a JSON object), never a single scalar value &nbsp;·&nbsp; **`BACKSTAGE_CONFIG_REGISTRY`** (micro-cluster) — the single source of truth for which keys exist, their Zod read/write schemas, and their defaults; twelve keys total, ten rendered by this module's own screen (§3) &nbsp;·&nbsp; **Validated twice, independently:** the gateway controller checks the `:config_key` path segment against a regex before it reaches any service; micro-cluster's `BackstageConfigService` separately checks registry membership and the value against the key's own Zod schema &nbsp;·&nbsp; **Concurrency:** `doc_version` exists as a column but is **not** enforced as an optimistic lock by any write path today &nbsp;·&nbsp; **No cache on the admin screen itself** — `GET /api-system/backstage/configs` always reads live; the 60-second caches documented on the [landing page](/en/backstage/backstage-config) §3.2 belong to three specific *downstream enforcement readers*, not to this table's own read/write service
 
 > **Source of truth:** the backend Prisma platform schema and the micro-cluster registry that defines every key. Always read these first when writing or updating this page:
 > - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
@@ -22,7 +22,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. Overview
 
-`tb_backstage_config` is one table doing duty for at least twelve unrelated settings, distinguished only by a `key` string and a `value` JSONB blob. There is no per-key table, no per-key column set — every field of every setting lives inside that one JSON object, and the only thing that says which fields are valid, what type they must be, and what to return when the row does not exist yet is a single in-code registry, `BACKSTAGE_CONFIG_REGISTRY` (§3), that lives in the **micro-cluster** service, not in the gateway controller this module's UI talks to directly. The gateway (`backstage_configs.controller.ts`) is a thin proxy: it enforces the two RBAC gates documented on the [landing page](/en/backstage/platform-config) §4, then forwards to micro-cluster over RPC, which is where every value actually gets validated, defaulted, and written.
+`tb_backstage_config` is one table doing duty for at least twelve unrelated settings, distinguished only by a `key` string and a `value` JSONB blob. There is no per-key table, no per-key column set — every field of every setting lives inside that one JSON object, and the only thing that says which fields are valid, what type they must be, and what to return when the row does not exist yet is a single in-code registry, `BACKSTAGE_CONFIG_REGISTRY` (§3), that lives in the **micro-cluster** service, not in the gateway controller this module's UI talks to directly. The gateway (`backstage_configs.controller.ts`) is a thin proxy: it enforces the two RBAC gates documented on the [landing page](/en/backstage/backstage-config) §4, then forwards to micro-cluster over RPC, which is where every value actually gets validated, defaulted, and written.
 
 ## 2. Entity: `tb_backstage_config`
 
@@ -98,7 +98,7 @@ Both paths perform their **own** independent unknown-key check (`isBackstageConf
 | Scenario | What actually happens |
 | --- | --- |
 | Two admins `PATCH` the same key's different fields within the same second | Both succeed; whichever write's `findFirst` ran last wins the base it merges onto — a genuine last-write-wins race on the whole JSON blob, not per-field, since `doc_version` is not enforced (§5) |
-| A row is edited directly in the database to a shape that no longer matches its schema | `invitation`/`signup`/`email_verification`/`password_reset` readers **throw** on the next read (fail loud, by design); `license`/`backstage_migration` readers treat it as `false` (fail toward their own safe direction, §4); the admin screen's own `GET` (`findAll`/`findOne`) also calls `parseStored()`, so a genuinely broken row would make the **entire Platform Config screen fail to load**, not just the one card — this is the exact risk the schema's own `.default()`-on-every-field comment (§3) exists to minimize for ordinary schema evolution, but it does not protect against a value that never fit the schema in the first place |
+| A row is edited directly in the database to a shape that no longer matches its schema | `invitation`/`signup`/`email_verification`/`password_reset` readers **throw** on the next read (fail loud, by design); `license`/`backstage_migration` readers treat it as `false` (fail toward their own safe direction, §4); the admin screen's own `GET` (`findAll`/`findOne`) also calls `parseStored()`, so a genuinely broken row would make the **entire Backstage Config screen fail to load**, not just the one card — this is the exact risk the schema's own `.default()`-on-every-field comment (§3) exists to minimize for ordinary schema evolution, but it does not protect against a value that never fit the schema in the first place |
 | A key is queried before its row has ever been saved | Every read path returns the registry's built-in default with `id: null` — never a 404, never an empty object |
 | `PATCH` sent with an empty `{}` body | Rejected — `rejectBadPatchShape()` treats an empty object as "nothing to do," not as "leave everything unchanged" |
 | `PATCH` sent with a field name the target key's schema does not recognize | Rejected by name (e.g. `unknown field(s) foo (supported: base_url, expiry_days, ...)`) — never silently dropped |
@@ -126,4 +126,4 @@ Both paths perform their **own** independent unknown-key check (`isBackstageConf
 - `../carmen-backstage/src/services/backstageConfigService.ts` — the frontend REST client, including the `doc_version` note (§5).
 - `../carmen-backstage/src/context/ExpiryThresholdContext.tsx` — the frontend's own `expiry_thresholds` reader and its fallback behavior (§4).
 
-**Cross-links:** [Platform Config landing](/en/backstage/platform-config) &nbsp;·&nbsp; [Licenses](/en/backstage/licenses)
+**Cross-links:** [Backstage Config landing](/en/backstage/backstage-config) &nbsp;·&nbsp; [Licenses](/en/backstage/licenses)

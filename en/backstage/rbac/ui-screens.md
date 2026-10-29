@@ -1,8 +1,8 @@
 ---
 title: Backstage RBAC — UI Screens
-description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and User Platform assignment screens.
+description: RoleManagement/RoleEdit with the catalog-anchored RolesAccessSummary and the resource-row PermissionGrid, the read-only Permission Catalog, and (summary-level) the redesigned Super Admins roster and Backstage Users assignment screens.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-06-10T12:00:00.000Z
 # Backstage RBAC — UI Screens
 
 > **At a Glance**
-> **Screens:** `RoleManagement` (`/backstage/roles`) · `RoleEdit` (`/backstage/roles/new`, `/backstage/roles/:id/edit`) · `PermissionCatalog` (`/backstage/category-permissions`) · `SuperAdminManagement` (`/backstage/super-admins`) · `UserBackstageManagement` (`/backstage/user-backstage`) · `UserBackstageEdit` (`/backstage/user-backstage/:userId`) &nbsp;·&nbsp; **Standard pattern:** Roles and User Platform list use the server-side `DataTable`; Super Admins (rewritten again 2026-09-02) is a card-based roster, not a table; Permission Catalog is a read-only card grid &nbsp;·&nbsp; **Key component:** `PermissionGrid` — every catalog action shown as a per-resource row, toggle buttons in edit mode, withheld actions dimmed rather than hidden (replaced the accordion `PermissionPicker` on 2026-08-20) &nbsp;·&nbsp; **In-page gates:** Roles list/edit gate Add/Edit/Delete and the Edit toggle with `backstage_role.*` keys; `<Can permission="user_backstage.manage">` on the User Platform detail page &nbsp;·&nbsp; **Summary strips:** `RolesAccessSummary` on the Roles list (now catalog-anchored, since 2026-09-02), `BackstageAccessSummary` on the User Platform list
+> **Screens:** `RoleManagement` (`/backstage/roles`) · `RoleEdit` (`/backstage/roles/new`, `/backstage/roles/:id/edit`) · `PermissionCatalog` (`/backstage/category-permissions`) · `SuperAdminManagement` (`/backstage/super-admins`) · `UserBackstageManagement` (`/backstage/user-backstage`) · `UserBackstageEdit` (`/backstage/user-backstage/:userId`) &nbsp;·&nbsp; **Standard pattern:** Roles and Backstage Users list use the server-side `DataTable`; Super Admins (rewritten again 2026-09-02) is a card-based roster, not a table; Permission Catalog is a read-only card grid &nbsp;·&nbsp; **Key component:** `PermissionGrid` — every catalog action shown as a per-resource row, toggle buttons in edit mode, withheld actions dimmed rather than hidden (replaced the accordion `PermissionPicker` on 2026-08-20) &nbsp;·&nbsp; **In-page gates:** Roles list/edit gate Add/Edit/Delete and the Edit toggle with `backstage_role.*` keys; `<Can permission="user_backstage.manage">` on the Backstage Users detail page &nbsp;·&nbsp; **Summary strips:** `RolesAccessSummary` on the Roles list (now catalog-anchored, since 2026-09-02), `BackstageAccessSummary` on the Backstage Users list
 
 ![Backstage RBAC — UI Screens screen](/screenshots/platform/rbac/ui-screens.png)
 
 ![Backstage RBAC — UI Screens form screen](/screenshots/platform/rbac/ui-screens-form.png)
 
-**Scope note:** this page verifies §2 (Roles) and §3 (Permission Catalog) against current source in full. §4 (Super Admins) and §5 (User Platform) are updated at a summary level only — see the scope note on the [module landing page](/en/backstage/rbac).
+**Scope note:** this page verifies §2 (Roles) and §3 (Permission Catalog) against current source in full. §4 (Super Admins) and §5 (Backstage Users) are updated at a summary level only — see the scope note on the [module landing page](/en/backstage/rbac).
 
 ## 1. Overview
 
@@ -25,7 +25,7 @@ dateCreated: 2026-06-10T12:00:00.000Z
 
 **Permission Catalog** is a read-only reference: a responsive grid of cards grouped by resource, no table, no mutations, reached only from a header button on the Roles list. It has no sidebar entry and, unlike every other screen in this module, **no permission gate at the SPA route level at all** — any authenticated platform user can navigate to it directly. Its data fetch is still backend-enforced on `backstage_role.read` (§3).
 
-**User Platform** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`carmen-backstage` PRs #244/#250/#251, all 2026-09-02) that are not verified line-by-line here.
+**Backstage Users** and **Super Admins** are summarized in §4/§5 per the scope note above; both went through further redesigns since the module's last full sync (`carmen-backstage` PRs #244/#250/#251, all 2026-09-02) that are not verified line-by-line here.
 
 All six screens ship the SPA's dev-only **Debug Sheet** — the amber floating button (bottom-right) that opens the raw JSON of the screen's API responses (`import.meta.env.DEV` only, never in production builds). On `RoleEdit` it carries two tabs, Role and Catalog, exposing both endpoint payloads — the fastest way for QA to inspect the actual envelope nesting and audit shapes described below.
 
@@ -115,7 +115,7 @@ Content is a responsive card grid (2 columns at `sm`, 3 at `lg`), one card per r
 
 The list response still nests multi-layer `{ data }` envelopes descended by a local `extractArray` helper. Persisted UI state is just the search term (`search_super_admins`).
 
-## 5. User Platform (summary-level — see the scope note in §1)
+## 5. Backstage Users (summary-level — see the scope note in §1)
 
 Both screens were substantially redesigned since the last full sync (`#250`/`#251`, 2026-09-02, "make this a privilege registry, not a role-edit form").
 
@@ -123,11 +123,11 @@ Both screens were substantially redesigned since the last full sync (`#250`/`#25
 
 **`UserBackstageEdit`** (`/backstage/user-backstage/:userId`) detail: gained an **Access Reach Band** (platform-wide vs. per-cluster reach summary), an inactive-account warning banner when a deactivated user still holds role assignments, an "Email Unverified" badge (`!!userRecord?.email_verified_at` — the `tb_user` email-verification column noted on the [module landing](/en/backstage/rbac)), and a **Membership Card** listing the user's cluster/BU memberships for context. Per-assignment "granted by" attribution is still a workaround: the per-user roles endpoint returns no actor, so the page separately queries the registry list endpoint by search term and matches rows back by `user_id`, falling back to an explicit "provenance unavailable" state on failure rather than guessing. The Roles & Scope card, its `<Can permission="user_backstage.manage">` gate, and the add-role/remove flow are structurally the same as before, though the add-role UI moved from an inline form to a Sheet (`AddRoleSheet`).
 
-Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (columns, exact copy, persisted `localStorage` keys, every component) is left to the standalone [User Platform](/en/backstage/user-platform) and [Super Admins](/en/backstage/super-admins) modules, which now document each screen at that depth.
+Given the depth of this redesign, a full section-by-section rewrite of §4/§5 (columns, exact copy, persisted `localStorage` keys, every component) is left to the standalone [Backstage Users](/en/backstage/user-backstage) and [Super Admins](/en/backstage/super-admins) modules, which now document each screen at that depth.
 
 ## 6. References
 
-- `../carmen-backstage/src/App.tsx` — route registrations for the four Roles/Permission-Catalog routes (lines 450–480, incl. `/backstage/category-permissions`'s bare `<PrivateRoute>`); User Platform and Super Admins routes are elsewhere in the same file.
+- `../carmen-backstage/src/App.tsx` — route registrations for the four Roles/Permission-Catalog routes (lines 450–480, incl. `/backstage/category-permissions`'s bare `<PrivateRoute>`); Backstage Users and Super Admins routes are elsewhere in the same file.
 - `../carmen-backstage/src/pages/RoleManagement.tsx` — list columns (name+description merged, `RoleReachCell`), `backstage_role.*` gates, CSV export incl. audit columns, persisted keys.
 - `../carmen-backstage/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — the catalog-anchored reach summary strip and list-cell bar (2026-09-02).
 - `../carmen-backstage/src/pages/RoleEdit.tsx` — hero + `PermissionGrid` layout (Settings rail edit-mode-only), not-found gating, `doc_version`, the list-endpoint audit fallback (`fetchAudit`), permission delta computation (`handleSubmit`).

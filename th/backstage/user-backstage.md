@@ -1,23 +1,23 @@
 ---
-title: ผู้ใช้แพลตฟอร์ม (User Platform)
+title: ผู้ใช้ Backstage (Backstage Users)
 description: มอบ role แบบ RBAC — ทั้งแพลตฟอร์มหรือเฉพาะ cluster — ให้บัญชีผู้ใช้ที่มีอยู่แล้ว หน้าจอทะเบียนสิทธิ์ที่แยกออกมาจาก RBAC และ Users
 published: true
-date: 2026-10-29T03:30:00.000Z
-tags: book/backstage, user-platform
+date: 2026-10-29T05:00:00.000Z
+tags: book/backstage, user-backstage
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# ผู้ใช้แพลตฟอร์ม (User Platform)
+# ผู้ใช้ Backstage (Backstage Users)
 
 > **At a Glance**
-> **Component:** `UserBackstageManagement` (รายการ) &nbsp;·&nbsp; `UserBackstageEdit` (detail รายบุคคล) &nbsp;·&nbsp; **Route:** `/backstage/user-backstage` &nbsp;·&nbsp; `/backstage/user-backstage/:userId` — **สังเกตว่าพารามิเตอร์คือ `:userId` และไม่มี `/edit` ต่อท้าย** ต่างจาก edit route แทบทุกตัวในหนังสือเล่มนี้ &nbsp;·&nbsp; **Nav:** `permission: 'user_backstage.read'`, `feature: 'user_backstage'`, `groupKey: 'navGroup.backstage'` (`backstageNav.ts:48`) — **ไม่ใช่** `superAdminOnly` &nbsp;·&nbsp; **Permission key:** `user_backstage.read` (ทั้งสอง route) + `user_backstage.manage` (ทุกจุดที่เขียนได้บนทั้งสองหน้าจอ) &nbsp;·&nbsp; **ข้อพึ่งพาที่สองที่ไม่ได้ประกาศไว้:** ส่วนใหญ่ที่หน้า detail แสดงยังต้องการ `user.read` ด้วย ซึ่งเป็นคีย์ของโมดูล [Users](/th/backstage/users) ที่ route guard ของโมดูลนี้เองไม่เคยตรวจ — ดู §4 และ [Permissions](/th/backstage/user-platform/permissions) §3 สำหรับการไล่รอยแบบเต็ม &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs) — มี coverage ต่างจากโมดูลส่วนใหญ่ในชุดนี้ แต่ทั้งสอง spec เล็งไปที่ UI ที่หน้าจอนี้ไม่มีแล้ว — ดู [UI Screens](/th/backstage/user-platform/ui-screens) §4 &nbsp;·&nbsp; **หน้าย่อย:** 2
+> **Component:** `UserBackstageManagement` (รายการ) &nbsp;·&nbsp; `UserBackstageEdit` (detail รายบุคคล) &nbsp;·&nbsp; **Route:** `/backstage/user-backstage` &nbsp;·&nbsp; `/backstage/user-backstage/:userId` — **สังเกตว่าพารามิเตอร์คือ `:userId` และไม่มี `/edit` ต่อท้าย** ต่างจาก edit route แทบทุกตัวในหนังสือเล่มนี้ &nbsp;·&nbsp; **Nav:** `permission: 'user_backstage.read'`, `feature: 'user_backstage'`, `groupKey: 'navGroup.backstage'` (`backstageNav.ts:48`) — **ไม่ใช่** `superAdminOnly` &nbsp;·&nbsp; **Permission key:** `user_backstage.read` (ทั้งสอง route) + `user_backstage.manage` (ทุกจุดที่เขียนได้บนทั้งสองหน้าจอ) &nbsp;·&nbsp; **ข้อพึ่งพาที่สองที่ไม่ได้ประกาศไว้:** ส่วนใหญ่ที่หน้า detail แสดงยังต้องการ `user.read` ด้วย ซึ่งเป็นคีย์ของโมดูล [Users](/th/backstage/users) ที่ route guard ของโมดูลนี้เองไม่เคยตรวจ — ดู §4 และ [Permissions](/th/backstage/user-backstage/permissions) §3 สำหรับการไล่รอยแบบเต็ม &nbsp;·&nbsp; **e2e suite:** `user-platform` (2 specs) — มี coverage ต่างจากโมดูลส่วนใหญ่ในชุดนี้ แต่ทั้งสอง spec เล็งไปที่ UI ที่หน้าจอนี้ไม่มีแล้ว — ดู [UI Screens](/th/backstage/user-backstage/ui-screens) §4 &nbsp;·&nbsp; **หน้าย่อย:** 2
 
-![ผู้ใช้แพลตฟอร์ม (User Platform) screen](/screenshots/platform/user-platform/index.png)
+![ผู้ใช้ Backstage (Backstage Users) screen](/screenshots/platform/user-backstage/index.png)
 
 ## 1. ภาพรวม
 
-User Platform คือจุดที่ role แบบ [RBAC](/th/backstage/rbac) — ทั้งแพลตฟอร์ม หรือเฉพาะ cluster เดียว — ถูกผูกเข้ากับบัญชีผู้ใช้ที่มีอยู่แล้ว มันถูกแยกออกจากหน้าจอของโมดูล RBAC เองมาเป็นรายการ nav และ component คู่ของตัวเอง และทั้งคู่ถูกเขียนใหม่ในวันเดียวกัน 2026-09-02 ให้เป็นสิ่งที่ commit message ของมันเองเรียกว่า "ทะเบียนสิทธิ์" (privilege registry) ไม่ใช่ตาราง CRUD ทั่วไป: `UserBackstageManagement` (`../carmen-backstage` commit `fc690cb`, PR #250) และ `UserBackstageEdit` (`f6e91c9`, PR #251)
+Backstage Users คือจุดที่ role แบบ [RBAC](/th/backstage/rbac) — ทั้งแพลตฟอร์ม หรือเฉพาะ cluster เดียว — ถูกผูกเข้ากับบัญชีผู้ใช้ที่มีอยู่แล้ว มันถูกแยกออกจากหน้าจอของโมดูล RBAC เองมาเป็นรายการ nav และ component คู่ของตัวเอง และทั้งคู่ถูกเขียนใหม่ในวันเดียวกัน 2026-09-02 ให้เป็นสิ่งที่ commit message ของมันเองเรียกว่า "ทะเบียนสิทธิ์" (privilege registry) ไม่ใช่ตาราง CRUD ทั่วไป: `UserBackstageManagement` (`../carmen-backstage` commit `fc690cb`, PR #250) และ `UserBackstageEdit` (`f6e91c9`, PR #251)
 
 `/backstage/user-backstage` แสดงรายการผู้ใช้ทุกคนที่ถือ role แพลตฟอร์มอย่างน้อยหนึ่งตัว — คนที่ไม่มีเลยจะถูกกรองออกฝั่ง backend และไม่ปรากฏที่นี่เลย การคลิกชื่อในแถว (เป็น `<a>` ผ่าน react-router `Link` ไม่ใช่ปุ่ม) หรือ action "Manage roles" จะพาไปที่ `/backstage/user-backstage/:userId` — **id เป็น path segment ธรรมดา ไม่มี `/edit` ต่อท้าย** ผู้อ่านที่จับรูปแบบมาจาก `/users/:id/edit`, `/clusters/:id/edit`, `/applications/:id/edit` และ detail route อื่น ๆ แทบทุกตัวในหนังสือเล่มนี้ อาจพิมพ์ `/backstage/user-backstage/:userId/edit` แล้วเจอ 404 — route แบบนั้นไม่มีอยู่จริง (`../carmen-backstage/src/App.tsx:505-512`) หน้า detail เองก็ไม่มีสวิตช์อ่าน/แก้ด้วย มันเป็นหน้าเดียวที่เพิ่มและลบ role โดยตรง ไม่ใช่ฟอร์มที่มีปุ่ม Save
 
@@ -27,7 +27,7 @@ User Platform คือจุดที่ role แบบ [RBAC](/th/backstage/rb
 
 **ผู้ใช้แพลตฟอร์มไม่ใช่บัญชีชนิดหนึ่ง — มันคือ row ใน `tb_user` ที่บังเอิญมี row อย่างน้อยหนึ่งแถวใน `tb_user_tb_backstage_role`** ไม่มีอะไรบนหน้าจอนี้สร้างบัญชีที่อยู่ข้างใต้เลย คนหนึ่งจะมีสิทธิ์ปรากฏที่นี่ได้ด้วยวิธีเดียวกับที่ใครก็ตามกลายเป็น row ใน `tb_user` — สร้างตรงบน [Users](/th/backstage/users) (`/users/new`) ผ่านคำเชิญ cluster/BU หรือผ่านการสมัคร self-service — และจะเริ่ม*ปรากฏ*ในทะเบียนนี้ก็ต่อเมื่อมีใครที่ถือ `user_backstage.manage` มอบ role แรกให้ ไม่ว่าจะผ่าน **Grant Access** บนหน้ารายการ (ค้นหาผู้ใช้คนไหนก็ได้ด้วยชื่อ) หรือ **Add Role** บนหน้า detail ของผู้ถือสิทธิ์ที่มีอยู่แล้ว
 
-นี่คือความแตกต่างเดียวกับที่ [Users](/th/backstage/users) §2 ระบุไว้จากฝั่งของตัวเองแล้ว: "สิ่งที่บัญชีทำได้ใน Backstage SPA ไม่ได้เก็บอยู่ [บน user row] — นั่นคือ role assignment ของโมดูล RBAC" User Platform คือที่ที่ assignment เหล่านั้นถูกเขียนขึ้นจริง พูดให้เป็นรูปธรรม สิ่งที่แก้ได้ที่นี่และแก้ไม่ได้บน `/users/:id/edit` มีอย่างเดียว — ผู้ใช้ถือ role แพลตฟอร์มตัวไหน ที่ scope ไหนบ้าง — และสิ่งที่แก้ได้บน `/users/:id/edit` แต่แก้ไม่ได้ที่นี่คือทุกอย่างเกี่ยวกับตัวบัญชีเอง: `username`, `email`, ชื่อ, `is_active`, รหัสผ่าน, สมาชิกภาพ cluster/BU การปิดใช้งานหรือลบบัญชีเป็น action ของโมดูล Users ไม่กระทบทะเบียนนี้โดยตรง แม้บัญชีที่ถูกปิดใช้งานจะยังเก็บ role row ไว้ และถูกตั้งค่าสถานะเตือนไว้ที่นี่ (§3.4, [UI Screens](/th/backstage/user-platform/ui-screens) §3)
+นี่คือความแตกต่างเดียวกับที่ [Users](/th/backstage/users) §2 ระบุไว้จากฝั่งของตัวเองแล้ว: "สิ่งที่บัญชีทำได้ใน Backstage SPA ไม่ได้เก็บอยู่ [บน user row] — นั่นคือ role assignment ของโมดูล RBAC" Backstage Users คือที่ที่ assignment เหล่านั้นถูกเขียนขึ้นจริง พูดให้เป็นรูปธรรม สิ่งที่แก้ได้ที่นี่และแก้ไม่ได้บน `/users/:id/edit` มีอย่างเดียว — ผู้ใช้ถือ role แพลตฟอร์มตัวไหน ที่ scope ไหนบ้าง — และสิ่งที่แก้ได้บน `/users/:id/edit` แต่แก้ไม่ได้ที่นี่คือทุกอย่างเกี่ยวกับตัวบัญชีเอง: `username`, `email`, ชื่อ, `is_active`, รหัสผ่าน, สมาชิกภาพ cluster/BU การปิดใช้งานหรือลบบัญชีเป็น action ของโมดูล Users ไม่กระทบทะเบียนนี้โดยตรง แม้บัญชีที่ถูกปิดใช้งานจะยังเก็บ role row ไว้ และถูกตั้งค่าสถานะเตือนไว้ที่นี่ (§3.4, [UI Screens](/th/backstage/user-backstage/ui-screens) §3)
 
 กรอบคิดแบบ "ทะเบียน" ไม่ใช่แค่ความสวยงาม: หน้าจอนี้มีไว้ให้ผู้ตรวจสอบการเข้าถึง (access reviewer) ถามได้ว่า "ใครทำอะไรกับทั้งแพลตฟอร์มได้บ้าง และได้มันมาอย่างไร" โดยไม่ต้องไขว้ทะเบียน Users กับ catalog ของ Roles ด้วยมือ ทุกแถวบอก scope ทุก grant บอกว่าใครเป็นคนให้และเมื่อไหร่ (ในกรณีที่หาได้ — §3.2) และผู้ถือสิทธิ์ที่ไม่ active แต่ยังถือสิทธิ์อยู่จะถูกชี้ให้เห็นชัด ไม่ปล่อยให้กลืนหายไปในรายการที่ดูปกติ
 
@@ -39,7 +39,7 @@ User Platform คือจุดที่ role แบบ [RBAC](/th/backstage/rb
 
 type ฝั่ง frontend ของฟิลด์นี้เป็น optional และคอมเมนต์ของมันเองบอกว่าเป็นสิ่งที่ "จะมาใน backend deploy รอบหลัง" (`types/index.ts:719-722`) และ `BackstageAccessSummary.tsx` ก็ render สถานะ "ยังไม่มี summary" ไว้ถูกต้องสำหรับกรณีนั้น **ณ source HEAD ที่แผนนี้ตรึงไว้ การเปลี่ยนผ่านนั้นเสร็จสมบูรณ์แล้วฝั่ง backend — ทุก response มี `summary` ติดมาเสมอ แต่ไม่ได้มาจากการเรียกแบบไม่มีเงื่อนไขจุดเดียว** `listBackstageUsers()` แยก branch ตามว่ามี assignment ที่ยัง live ตรงกับ filter อยู่หรือไม่: ถ้าไม่มีเลย (`grouped.length === 0`) มันจะคืนค่า `summary` เป็น literal ที่ตั้งเป็นศูนย์ตรง ๆ โดยไม่เรียก `buildRegistrySummary()` เลย (`user_backstage_role.service.ts:340-346`) แต่ในกรณีอื่น `buildRegistrySummary(matched)` จะถูกเรียกครั้งเดียวกับชุดผู้ใช้ที่ผ่านการกรองทั้งหมด (บรรทัด 424) แล้วผลลัพธ์ตัวเดียวกันนั้นถูกส่งต่อไปทุก return path ที่เหลือ ไม่ได้คำนวณใหม่ — ทั้ง branch ที่ pagination ไม่เหลือแถวเลย (`pageIds.length === 0`, บรรทัด 446-452) และ response สุดท้าย (บรรทัด 531-536) ใช้ตัวแปร `summary` ตัวเดียวกันนี้ซ้ำ กล่าวคือทั้งสอง branch ต่างกันตรง*วิธี*ที่ได้ summary มา — อันหนึ่งเป็น literal ศูนย์ที่ hardcode ไว้ อีกอันเรียกฟังก์ชัน aggregate จริง — แต่ทั้งคู่ได้ summary เสมอ gateway proxy จะ forward สิ่งที่ได้รับมาทุกครั้ง (`user-backstage-roles.service.ts:136-144`) ซึ่งตามข้างต้นคือทุกครั้งที่ response มี `summary` ติดมา branch fallback ฝั่ง frontend ยังเป็นโค้ดป้องกันที่ถูกต้อง เพียงแต่ไม่มีทางถูกเรียกใช้จริงกับ backend ที่แผนนี้บันทึกไว้ อย่าอ่านการที่มันยังอยู่ใน source ว่าค่า aggregate นี้ยังทยอย roll out อยู่
 
-รายละเอียดการคำนวณหนึ่งจุดที่ควรระบุให้แม่นยำ เพราะกลับกันได้ง่าย: `holders` กับ `inactive` นับจากชุดที่**ผ่านการกรองแล้ว** (เคารพ filter role/cluster/status ที่ใช้งานอยู่) แต่ `backstage_wide`/`cluster_only` คำนวณจากชุด assignment ที่ยัง live ทั้งหมดของผู้ถือสิทธิ์แต่ละคนที่ผ่านการกรอง โดยตั้งใจไม่จำกัดด้วย filter role/cluster ที่ใช้งานอยู่ — ผู้ถือสิทธิ์ที่ถูกกรองเข้ามาด้วย role หนึ่งจึงยังนับเข้าสัดส่วนทั้งแพลตฟอร์ม/เฉพาะ cluster ตามทุกอย่างที่เขาถือ ไม่ใช่แค่ role ที่ตรงกับ filter (`user_backstage_role.service.ts:534-538`, คอมเมนต์ของ method เอง) เหตุผลที่ระบุไว้ตรงนั้นเหมือนกับที่ [UI Screens](/th/backstage/user-platform/ui-screens) §2 ให้ไว้สำหรับรายการ assignment รายแถว: การแสดงขอบเขตจริงของผู้ถือสิทธิ์ให้น้อยกว่าความจริงบนหน้าจอ access-review คือ failure mode ที่ผิด
+รายละเอียดการคำนวณหนึ่งจุดที่ควรระบุให้แม่นยำ เพราะกลับกันได้ง่าย: `holders` กับ `inactive` นับจากชุดที่**ผ่านการกรองแล้ว** (เคารพ filter role/cluster/status ที่ใช้งานอยู่) แต่ `backstage_wide`/`cluster_only` คำนวณจากชุด assignment ที่ยัง live ทั้งหมดของผู้ถือสิทธิ์แต่ละคนที่ผ่านการกรอง โดยตั้งใจไม่จำกัดด้วย filter role/cluster ที่ใช้งานอยู่ — ผู้ถือสิทธิ์ที่ถูกกรองเข้ามาด้วย role หนึ่งจึงยังนับเข้าสัดส่วนทั้งแพลตฟอร์ม/เฉพาะ cluster ตามทุกอย่างที่เขาถือ ไม่ใช่แค่ role ที่ตรงกับ filter (`user_backstage_role.service.ts:534-538`, คอมเมนต์ของ method เอง) เหตุผลที่ระบุไว้ตรงนั้นเหมือนกับที่ [UI Screens](/th/backstage/user-backstage/ui-screens) §2 ให้ไว้สำหรับรายการ assignment รายแถว: การแสดงขอบเขตจริงของผู้ถือสิทธิ์ให้น้อยกว่าความจริงบนหน้าจอ access-review คือ failure mode ที่ผิด
 
 ### 3.2 สองทางเข้า endpoint เขียนคู่เดียวกัน — และ race ที่มีบันทึกไว้
 
@@ -57,7 +57,7 @@ type ฝั่ง frontend ของฟิลด์นี้เป็น optiona
 
 ### 3.4 ผู้ถือสิทธิ์ที่ไม่ active และความหมายของ "ขอบเขต" บนหน้า detail
 
-ทั้งสองหน้าจอปฏิบัติกับ "ถือสิทธิ์อยู่ทั้งที่ปิดใช้งานบัญชีแล้ว" เป็นข้อค้นพบ ไม่ใช่สถานะปกติ: แถบสรุปของหน้ารายการแสดงจำนวนผู้ถือสิทธิ์ที่ไม่ active เป็นคำเตือนที่กดได้ และหน้า detail ก็ทวนคำเตือนเดียวกันต่อผู้ถือสิทธิ์แต่ละคน (`!isActive && roleAssignments.length > 0`, `UserBackstageEdit.tsx:277-285`) — เพราะผู้ตรวจสอบที่เปิดหน้าของคนคนเดียวไม่ควรต้องจำจำนวนที่เห็นจากอีกหน้าจอ พาดหัว "ขอบเขต" ของหน้า detail เอง (`AccessReachBand`) คำนวณจาก `roleAssignments` ทั้งหมด ซึ่งเป็นคำขอ*แยก*จาก record ของบัญชีเอง (§4) — ดู [Permissions](/th/backstage/user-platform/permissions) §3 ว่าพาดหัวนี้เป็นอย่างไรเมื่อคำขอที่ป้อนมันล้มเหลว
+ทั้งสองหน้าจอปฏิบัติกับ "ถือสิทธิ์อยู่ทั้งที่ปิดใช้งานบัญชีแล้ว" เป็นข้อค้นพบ ไม่ใช่สถานะปกติ: แถบสรุปของหน้ารายการแสดงจำนวนผู้ถือสิทธิ์ที่ไม่ active เป็นคำเตือนที่กดได้ และหน้า detail ก็ทวนคำเตือนเดียวกันต่อผู้ถือสิทธิ์แต่ละคน (`!isActive && roleAssignments.length > 0`, `UserBackstageEdit.tsx:277-285`) — เพราะผู้ตรวจสอบที่เปิดหน้าของคนคนเดียวไม่ควรต้องจำจำนวนที่เห็นจากอีกหน้าจอ พาดหัว "ขอบเขต" ของหน้า detail เอง (`AccessReachBand`) คำนวณจาก `roleAssignments` ทั้งหมด ซึ่งเป็นคำขอ*แยก*จาก record ของบัญชีเอง (§4) — ดู [Permissions](/th/backstage/user-backstage/permissions) §3 ว่าพาดหัวนี้เป็นอย่างไรเมื่อคำขอที่ป้อนมันล้มเหลว
 
 ## 4. บทบาทและสิทธิ์
 
@@ -65,9 +65,9 @@ type ฝั่ง frontend ของฟิลด์นี้เป็น optiona
 | --- | --- | --- |
 | รายการ sidebar, ทั้งสอง route | `user_backstage.read` | `backstageNav.ts:48`; `App.tsx:500,508` |
 | Grant Access (header รายการ + empty state), Revoke all access (row menu รายการ), Add Role (detail), Remove role (แถวใน detail) | `user_backstage.manage` | คีย์**เดียว**อีกตัวที่โมดูลนี้ใช้ — grep ทั้ง repo หา `user_backstage\.` ไม่พบ literal ตัวที่สาม decorator ของ backend ทุก write endpoint ตรงกันเป๊ะ: `POST .../roles`, `POST .../roles/bulk`, `DELETE .../roles/:id` ล้วนเป็น `RequireBackstagePermission('user_backstage.manage')` |
-| การโหลด identity บัญชีและรายการ role บนหน้า detail | **`user.read`** — ไม่ใช่ `user_backstage.read` | route guard ของหน้า detail เองไม่เคยตรวจคีย์นี้เลย ดู [Permissions](/th/backstage/user-platform/permissions) §3 สำหรับการไล่รอยแบบเต็มว่า session ที่ขาดคีย์นี้เห็นอะไรจริง ๆ |
+| การโหลด identity บัญชีและรายการ role บนหน้า detail | **`user.read`** — ไม่ใช่ `user_backstage.read` | route guard ของหน้า detail เองไม่เคยตรวจคีย์นี้เลย ดู [Permissions](/th/backstage/user-backstage/permissions) §3 สำหรับการไล่รอยแบบเต็มว่า session ที่ขาดคีย์นี้เห็นอะไรจริง ๆ |
 
-การกั้นสิทธิ์ฝั่งเขียนของโมดูลนี้สะอาดผิดปกติเมื่อเทียบกับอีกสองโมดูลที่บันทึกไว้แล้วในแผนนี้ ([Platform Config](/th/backstage/platform-config) §4.3, [Email Settings](/th/backstage/email-settings) §4.2): `<Can>` ฝั่ง frontend กับ decorator `@RequireBackstagePermission` ฝั่ง backend ตรวจ resource กับ action **เดียวกันเป๊ะ** คือ `user_backstage.manage` บนทุกจุดที่เขียนได้ทั้งสี่จุดในทั้งสองหน้าจอ ความซับซ้อนที่นี่ไม่ใช่ความไม่ตรงกันระหว่าง frontend/backend — แต่คือการเข้าถึงโมดูลนี้ได้เลย (`user_backstage.read`) ไม่ใช่สิ่งเดียวกับการ*เห็น*อะไรเมื่อไปถึงหน้า detail เมทริกซ์ด่านเต็ม ตาราง backend guard และ key combination ที่ทำให้เกิดช่องว่างนี้พอดี: [Permissions](/th/backstage/user-platform/permissions)
+การกั้นสิทธิ์ฝั่งเขียนของโมดูลนี้สะอาดผิดปกติเมื่อเทียบกับอีกสองโมดูลที่บันทึกไว้แล้วในแผนนี้ ([Backstage Config](/th/backstage/backstage-config) §4.3, [Email Settings](/th/backstage/email-settings) §4.2): `<Can>` ฝั่ง frontend กับ decorator `@RequireBackstagePermission` ฝั่ง backend ตรวจ resource กับ action **เดียวกันเป๊ะ** คือ `user_backstage.manage` บนทุกจุดที่เขียนได้ทั้งสี่จุดในทั้งสองหน้าจอ ความซับซ้อนที่นี่ไม่ใช่ความไม่ตรงกันระหว่าง frontend/backend — แต่คือการเข้าถึงโมดูลนี้ได้เลย (`user_backstage.read`) ไม่ใช่สิ่งเดียวกับการ*เห็น*อะไรเมื่อไปถึงหน้า detail เมทริกซ์ด่านเต็ม ตาราง backend guard และ key combination ที่ทำให้เกิดช่องว่างนี้พอดี: [Permissions](/th/backstage/user-backstage/permissions)
 
 ## 5. โมดูลที่เกี่ยวข้อง
 
@@ -82,7 +82,7 @@ path ทั้งหมดด้านล่างคือ `../carmen-backstage
 
 - `src/pages/UserBackstageManagement.tsx` — หน้ารายการ/ทะเบียน (commit `fc690cb`, PR #250, 2026-09-02)
 - `src/pages/UserBackstageEdit.tsx` — หน้า detail รายบุคคล (commit `f6e91c9`, PR #251, 2026-09-02) รวม field `UserDetailRecord.email_verified_at` (บรรทัด 44) และ badge ที่คำนวณจากมัน (บรรทัด 198)
-- `src/pages/userBackstageManagement/{BackstageAccessSummary,roleChips,GrantAccessDialog}.tsx`, `src/pages/userBackstageEdit/{AccessReachBand,MembershipCard,RoleGrantList,AddRoleSheet}.tsx` — component สนับสนุน บันทึกไว้เต็มใน [UI Screens](/th/backstage/user-platform/ui-screens)
+- `src/pages/userBackstageManagement/{BackstageAccessSummary,roleChips,GrantAccessDialog}.tsx`, `src/pages/userBackstageEdit/{AccessReachBand,MembershipCard,RoleGrantList,AddRoleSheet}.tsx` — component สนับสนุน บันทึกไว้เต็มใน [UI Screens](/th/backstage/user-backstage/ui-screens)
 - `src/services/userBackstageService.ts`, `src/services/userRoleService.ts` — REST client สองตัวที่โมดูลนี้เรียกตรง
 - `src/components/nav/backstageNav.ts:48`, `src/App.tsx:497-512` — รายการ nav และการลงทะเบียน route
 - `src/types/index.ts:700-735` — `Scope`, `BackstageUserScope`, `BackstageUserRoleAssignment`, `BackstageUserRow`, `BackstageUserRegistrySummary`, `BackstageUsersResponse`
@@ -91,9 +91,9 @@ path ทั้งหมดด้านล่างคือ `../carmen-backstage
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/user_backstage_role/user_backstage_role.service.ts` — `assign`/`assignBulk`/`remove`/`listBackstageUsers`/`buildRegistrySummary` (§3.1, §3.2)
 - `../carmen-turborepo-backend/apps/micro-business/src/authen/auth/auth.service.ts` — `createVerifiedUser` (บรรทัด 1176-1183, 1336-1338), `verifyEmail` (1652-1735), `resendVerificationEmail` (1742-1790), ด่าน login (บรรทัด 498) (§3.3)
 - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma:591-593` — คอลัมน์ยืนยันอีเมลสามตัวของ `tb_user`; migration `20260804000000_user_email_verification`
-- `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` และ `pages/UserPlatform{ManagementPage,EditPage}.ts` — ดู [UI Screens](/th/backstage/user-platform/ui-screens) §4 สำหรับจุดที่ suite นี้ไม่ตรงกับ source ปัจจุบันแล้ว
+- `../carmen-backstage-e2e/tests/user-platform/{user-platform-list,user-platform-config}.spec.ts` และ `pages/UserPlatform{ManagementPage,EditPage}.ts` — ดู [UI Screens](/th/backstage/user-backstage/ui-screens) §4 สำหรับจุดที่ suite นี้ไม่ตรงกับ source ปัจจุบันแล้ว
 
 ## 7. หน้าในโมดูลนี้
 
-- [UI Screens](/th/backstage/user-platform/ui-screens) — พฤติกรรมและ layout เต็มของทั้งสองหน้าจอ และข้อค้นพบเรื่องความล้าสมัยของ e2e suite
-- [Permissions](/th/backstage/user-platform/permissions) — เมทริกซ์ด่านเต็ม และการไล่รอยช่องว่าง `user.read` แบบ end-to-end
+- [UI Screens](/th/backstage/user-backstage/ui-screens) — พฤติกรรมและ layout เต็มของทั้งสองหน้าจอ และข้อค้นพบเรื่องความล้าสมัยของ e2e suite
+- [Permissions](/th/backstage/user-backstage/permissions) — เมทริกซ์ด่านเต็ม และการไล่รอยช่องว่าง `user.read` แบบ end-to-end

@@ -2,7 +2,7 @@
 title: Backstage RBAC — Data Model
 description: The five RBAC tables — permission catalog, roles, role-permission join, scoped user assignments, super-admin flag — their 2026-07-16 doc_version rollout, and divergences from the SPA shapes.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T12:00:00.000Z
@@ -105,7 +105,7 @@ M:N join between roles and catalog rows. Each row grants one permission to one r
 
 ### 2.4 `tb_user_tb_backstage_role`
 
-The assignment table: binds a user to a role at a scope. This is the row the User Platform detail screen creates and deletes, and the input to the effective-permissions flattening.
+The assignment table: binds a user to a role at a scope. This is the row the Backstage Users detail screen creates and deletes, and the input to the effective-permissions flattening.
 
 | Field | Prisma Type | Nullable | Description |
 | ----- | ----------- | -------- | ----------- |

@@ -2,7 +2,7 @@
 title: ผู้ใช้ (Users)
 description: บัญชีผู้ใช้ระดับแพลตฟอร์ม — identity, avatar และการ assign cluster/BU ที่กำหนดขอบเขตว่าผู้ใช้เข้าถึงอะไรได้ใน inventory app ส่วนสิทธิ์เข้า Backstage มอบผ่าน role assignment ของ RBAC
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: backstage/users, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -27,7 +27,7 @@ header บนหน้า edit ยังเปิดเผยปุ่ม **Chan
 
 ## 2. บริบททางธุรกิจ
 
-ตาราง user คือ source of truth ของแพลตฟอร์มสำหรับ "คนนี้ login ได้" แต่สิ่งที่บัญชี *ทำได้* ใน Backstage SPA ไม่ได้เก็บบน row ของ user อีกต่อไป: enum `platform_role` ค่าเดี่ยวรุ่นเก่าถูกถอดออกแล้ว (commit `6091ffc` ของ frontend; ทั้งคอลัมน์และ `enum_platform_role` หายไปจาก Prisma backstage schema) สิทธิ์ระดับแพลตฟอร์มมอบผ่าน role assignment ของ RBAC ซึ่งจัดการบนหน้าจอ **User Platform** แยกต่างหาก (`/backstage/user-backstage`) — โมดูล Users จัดการตัว *บัญชี* ส่วนการ assign role และ scope อยู่ในโมดูล [RBAC](/th/backstage/rbac) ตอน login SPA จะ validate effective permission ของบัญชี (`GET /api/user/permission/backstage`) และปฏิเสธ session ที่ไม่ถือ permission ใดเลย โดยมีข้อยกเว้น bootstrap ขณะที่แพลตฟอร์มมี user 0–1 คน — ดังนั้นบัญชีที่เพิ่งสร้างใหม่จะเข้า Backstage SPA ไม่ได้จนกว่าจะมีคน assign role ให้
+ตาราง user คือ source of truth ของแพลตฟอร์มสำหรับ "คนนี้ login ได้" แต่สิ่งที่บัญชี *ทำได้* ใน Backstage SPA ไม่ได้เก็บบน row ของ user อีกต่อไป: enum `platform_role` ค่าเดี่ยวรุ่นเก่าถูกถอดออกแล้ว (commit `6091ffc` ของ frontend; ทั้งคอลัมน์และ `enum_platform_role` หายไปจาก Prisma backstage schema) สิทธิ์ระดับแพลตฟอร์มมอบผ่าน role assignment ของ RBAC ซึ่งจัดการบนหน้าจอ **Backstage Users** แยกต่างหาก (`/backstage/user-backstage`) — โมดูล Users จัดการตัว *บัญชี* ส่วนการ assign role และ scope อยู่ในโมดูล [RBAC](/th/backstage/rbac) ตอน login SPA จะ validate effective permission ของบัญชี (`GET /api/user/permission/backstage`) และปฏิเสธ session ที่ไม่ถือ permission ใดเลย โดยมีข้อยกเว้น bootstrap ขณะที่แพลตฟอร์มมี user 0–1 คน — ดังนั้นบัญชีที่เพิ่งสร้างใหม่จะเข้า Backstage SPA ไม่ได้จนกว่าจะมีคน assign role ให้
 
 นอกจาก identity แล้ว ตาราง user ยังบันทึก **ที่ไหน** ที่ user ทำงานได้ การเป็นสมาชิก cluster เก็บใน `tb_cluster_user` และถูกแก้ไข จากหน้า edit cluster (cross-link ใน Section 5) โมดูล Users แสดงผลลัพธ์แบบ read-only ซ้อนอยู่ในการ์ด `UserAccessTree` บนหน้า edit ส่วนการเป็นสมาชิก BU ทำงานต่อ cluster — dialog **Add BU** บนหน้านี้จะแสดงเฉพาะ BU ที่ `cluster_id` ตรงกับ cluster ที่ user เป็นสมาชิกอยู่แล้ว เพื่อรักษาขอบเขต tenant ให้สะอาด: user ถูก assign ให้ BU นอก cluster ที่ตนเองสังกัด ไม่ได้ ส่วน BU-user join ก็มี `role` ของตัวเอง (`admin` หรือ `user` เป็นอิสระจาก RBAC assignment ของแพลตฟอร์ม) และ flag `is_default` ที่บอกว่า BU ตัวไหน จะเป็น BU ที่ inventory app เปิดให้เมื่อ login
 

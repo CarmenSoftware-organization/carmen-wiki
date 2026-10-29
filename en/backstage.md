@@ -2,7 +2,7 @@
 title: Carmen Blue Backstage
 description: Overview of the Carmen Blue Backstage admin product — entry point for the book, organized by the ungrouped Dashboard row and the SPA's own seven sidebar `groupKey` groups (eight sections in total), plus the separate cluster-admin persona.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, home
 editor: markdown
 dateCreated: '2026-05-19T00:00:00.000Z'
@@ -61,15 +61,15 @@ The sidebar's own top row — ungrouped, above every `groupKey` group, and reach
 |---|---|
 | [Cronjobs](/en/backstage/cronjobs) | The platform's scheduling console over the shared Cronjob table — job types, who runs them, and where a failed run surfaces |
 
-## 7. Platform
+## 7. Backstage
 
 | Module | What it covers |
 |---|---|
-| [Platform Config](/en/backstage/platform-config) | One screen, nine cards — invitations, sign-up, password reset, license enforcement, expiry-warning thresholds, and more |
+| [Backstage Config](/en/backstage/backstage-config) | One screen, nine cards — invitations, sign-up, password reset, license enforcement, expiry-warning thresholds, and more |
 | [Email Settings](/en/backstage/email-settings) | Named SMTP sender profiles and the routing map deciding which of five outbound mail flows uses which profile |
 | [Applications](/en/backstage/applications) | Registered API clients — their `x-app-id` identity and allow-all vs. explicit `api_name` access grants |
 | [Backstage RBAC](/en/backstage/rbac) | Permission catalog, roles, scoped user assignments, and the super-admin bypass |
-| [User Platform](/en/backstage/user-platform) | Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts |
+| [Backstage Users](/en/backstage/user-backstage) | Assigns RBAC platform roles — platform-wide or per-cluster — to existing user accounts |
 | [Super Admins](/en/backstage/super-admins) | The platform's god-mode allowlist — an add/remove roster of users who bypass every permission check |
 | [Feature Flags](/en/backstage/feature-flags) | The single screen that sets every feature's visibility (active/inactive/hide) across both the Platform and Cluster-admin consoles |
 
@@ -77,7 +77,7 @@ The sidebar's own top row — ungrouped, above every `groupKey` group, and reach
 
 | Module | What it covers |
 |---|---|
-| [Platform Migrations](/en/backstage/platform-migrations) | Super-admin console for Prisma migrations against the shared platform database, plus its seed and drift-check operations |
+| [Backstage Migrations](/en/backstage/backstage-migrations) | Super-admin console for Prisma migrations against the shared platform database, plus its seed and drift-check operations |
 | [SQL Workbench](/en/backstage/sql-workbench) | Runs arbitrary SQL and browses/creates/drops views, procedures, and functions against a chosen tenant's database |
 | [Database Pools](/en/backstage/database-pools) | CRUD registry of shared, platform-managed Postgres connection targets — the single source of tenant database credentials |
 

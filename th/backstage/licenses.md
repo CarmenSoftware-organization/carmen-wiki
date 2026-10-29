@@ -2,7 +2,7 @@
 title: ไลเซนส์ (Licenses)
 description: License centre — บัญชีโควตา BU ต่อ cluster, ที่นั่งต่อ BU, interface licence (INF) ต่อ BU และ subscription ที่พก feature-group entitlement พร้อมเกณฑ์ใกล้หมดอายุและ redirect เก่าจาก /subscriptions
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, licenses
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -61,7 +61,7 @@ Carmen Blue ขายลูกค้าโรงแรม/ธุรกิจบ�
 | prefix เลขที่ใบ | `SEAT-YYMM-####` | `BUQ-YYMM-####` | `INF-YYMM-####` (ตัวนับตระกูล `nextLicenseNumber()` เดียวกัน — นับแถวที่ soft-delete ด้วย เลขที่ออกแล้วไม่ถูกใช้ซ้ำ) |
 | segment ของ path แก้ไข | `seats` | `bu-quota` | `interface` |
 | path รายการหลังสร้าง | `/licenses` | `/licenses` | `/licenses?tab=interface` |
-| ฟิลด์เกณฑ์ใกล้หมดอายุที่อ่าน | `thresholds.seat_days` | `thresholds.bu_quota_days` | `thresholds.interface_days` (คีย์ใหม่ default 30 — [Platform Config](/th/backstage/platform-config)) |
+| ฟิลด์เกณฑ์ใกล้หมดอายุที่อ่าน | `thresholds.seat_days` | `thresholds.bu_quota_days` | `thresholds.interface_days` (คีย์ใหม่ default 30 — [Backstage Config](/th/backstage/backstage-config)) |
 | sort key ของเจ้าของบนตาราง fleet | `tb_business_unit.name` | `tb_cluster.name` | `tb_business_unit.name` |
 
 แถวกติกาการนับเป็นเรื่องตั้งใจ ไม่ใช่ความพลาด: ที่นั่งเป็นผลรวมเพราะ BU หนึ่งถือใบซื้อที่นั่งพร้อมกันได้หลายใบและทุกใบนับรวมกันจริง ส่วน BU-quota เป็นแบบชนะใบเดียวเพราะเคสที่ตั้งใจรองรับคือ "ซื้อโควตาใหม่ที่ใหญ่กว่ากลางสัญญา" — ใบใหม่ต้องแทนที่เพดานของใบเก่าทันทีที่ถึงวันเริ่ม ไม่ใช่บวกเพิ่มเข้าไป; interface licence เป็น union ของช่วงความคุ้มครองเพราะการต่ออายุคือการออกแถวใหม่โดยแถวเก่ายังอยู่เป็นประวัติ และคำถามมีแค่ "มีแถวที่ยังมีชีวิต*สักใบ*ไหม" สูตรเหล่านี้อยู่คนละที่ (`utils/buLicense.ts`, `utils/clusterLicense.ts` และ — สำหรับ interface — เฉพาะ backend ดู §3.6) โดยตั้งใจ เพื่อไม่ให้ใครหยิบสูตรหนึ่งไปใช้ผิดที่
@@ -76,7 +76,7 @@ Carmen Blue ขายลูกค้าโรงแรม/ธุรกิจบ�
 
 ### 3.4 เกณฑ์ใกล้หมดอายุตั้งค่าได้ ไม่ใช่ค่าตายตัว
 
-ป้าย "ใกล้หมดอายุ" ทุกป้ายบนทุกหน้าจอของโมดูลนี้อ่านค่าจำนวนวันหนึ่งในสี่ — `subscription_days`, `bu_quota_days`, `seat_days` และ (ตั้งแต่ PR #287) `interface_days` — จาก `useExpiryThresholds()` ไม่ใช่ค่าตายตัว 30 ดู [Data Model](/th/backstage/licenses/data-model) §6 สำหรับค่าจริง แหล่งที่มา และผลกระทบต่อแต่ละบัญชี ตัวเกณฑ์เองแก้ได้จากหน้าจอ [Platform Config](/th/backstage/platform-config) ไม่ใช่ที่นี่
+ป้าย "ใกล้หมดอายุ" ทุกป้ายบนทุกหน้าจอของโมดูลนี้อ่านค่าจำนวนวันหนึ่งในสี่ — `subscription_days`, `bu_quota_days`, `seat_days` และ (ตั้งแต่ PR #287) `interface_days` — จาก `useExpiryThresholds()` ไม่ใช่ค่าตายตัว 30 ดู [Data Model](/th/backstage/licenses/data-model) §6 สำหรับค่าจริง แหล่งที่มา และผลกระทบต่อแต่ละบัญชี ตัวเกณฑ์เองแก้ได้จากหน้าจอ [Backstage Config](/th/backstage/backstage-config) ไม่ใช่ที่นี่
 
 ### 3.5 การกั้นด้วย Nav และ Feature flag
 
@@ -104,7 +104,7 @@ Carmen Blue ขายลูกค้าโรงแรม/ธุรกิจบ�
 - [Business Units](/th/backstage/business-units) — เป็นเจ้าของฝั่ง *ผู้บริโภค* ของ seats และ interface: แท็บ Licenses ของ `BusinessUnitEdit` มีการ์ดอ่านอย่างเดียวสองใบ (`BusinessUnitLicensesCard` สำหรับที่นั่ง + subscription ของ BU, `BusinessUnitInterfaceLicensesCard` สำหรับ INF licence) พร้อมลิงก์ "Manage licences", "New subscription" และ "Add interface license" เข้าโมดูลนี้ ทั้งสองใบไม่แก้ข้อมูล licence เอง เพื่อไม่ให้มีสองแหล่งความจริง
 - [License Catalog](/th/backstage/license-catalog) — เป็นเจ้าของ catalog ของ feature/feature-group ที่ subscription และ interface licence ของโมดูลนี้เลือกใช้ (§3.2, §3.6) รวมถึง `kind` ของกลุ่มที่ตัดสินว่าใครในสองอย่างนั้นถือกลุ่มหนึ่ง ๆ ได้ โมดูลนี้ไม่มีหน้าจอสร้าง/แก้ catalog entry
 - [cluster-admin](/th/backstage/cluster-admin) — มุมมอง "พอไหม" แบบอ่านอย่างเดียวขอบเขตสมาชิกภาพของบัญชีทั้งสามชุดเดียวกัน ไม่มี permission gate และไม่มีทางเขียน (§4)
-- [Platform Config](/th/backstage/platform-config) — เป็นเจ้าของค่าเกณฑ์ใกล้หมดอายุที่ป้าย "expiring soon" ของโมดูลนี้อ่าน (§3.4)
+- [Backstage Config](/th/backstage/backstage-config) — เป็นเจ้าของค่าเกณฑ์ใกล้หมดอายุที่ป้าย "expiring soon" ของโมดูลนี้อ่าน (§3.4)
 
 ## 6. แหล่งข้อมูลอ้างอิง
 

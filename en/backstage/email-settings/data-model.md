@@ -2,7 +2,7 @@
 title: Email Settings — Data Model
 description: tb_email_sender_profile (named SMTP sender profiles, encrypted credentials) and the email_routing config it resolves through, with its own write-path guarantees.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, email-settings, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -22,7 +22,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. Overview
 
-Two things back this screen, and they live in two different tables owned by two different services. `tb_email_sender_profile` (§2) is a named list of SMTP endpoints, CRUD-owned by **micro-cluster** and proxied by the gateway's `backstage_email-settings.controller.ts`. `email_routing` (§3) is one row of the **shared** `tb_backstage_config` table — the same table and the same generic `/api-system/backstage/configs` REST surface the [Platform Config](/en/backstage/platform-config) module's own data model documents in full — read and written through that module's client, `backstageConfigService`, not this module's own `emailSettingService`. Resolving an outbound flow to an actual SMTP send (§4) requires both: the routing row to name a profile id, and that profile row to exist, be active, and decrypt.
+Two things back this screen, and they live in two different tables owned by two different services. `tb_email_sender_profile` (§2) is a named list of SMTP endpoints, CRUD-owned by **micro-cluster** and proxied by the gateway's `backstage_email-settings.controller.ts`. `email_routing` (§3) is one row of the **shared** `tb_backstage_config` table — the same table and the same generic `/api-system/backstage/configs` REST surface the [Backstage Config](/en/backstage/backstage-config) module's own data model documents in full — read and written through that module's client, `backstageConfigService`, not this module's own `emailSettingService`. Resolving an outbound flow to an actual SMTP send (§4) requires both: the routing row to name a profile id, and that profile row to exist, be active, and decrypt.
 
 ## 2. Entity: `tb_email_sender_profile`
 
@@ -56,7 +56,7 @@ Before migration `20260808130000_email_profile_master_and_routing`, this table c
 
 ## 3. The `email_routing` config entry
 
-Not a column on this table — one row of `tb_backstage_config` (`key = 'email_routing'`), validated by the same registry-and-Zod-schema mechanism the [Platform Config](/en/backstage/platform-config) data model documents in full (its own §3 and §5 apply here unchanged: `PATCH` merges, `PUT` replaces-and-requires-every-field, and `doc_version` on that table is **not** an enforced optimistic lock — a real behavioral difference from this module's own `tb_email_sender_profile`, §5 below).
+Not a column on this table — one row of `tb_backstage_config` (`key = 'email_routing'`), validated by the same registry-and-Zod-schema mechanism the [Backstage Config](/en/backstage/backstage-config) data model documents in full (its own §3 and §5 apply here unchanged: `PATCH` merges, `PUT` replaces-and-requires-every-field, and `doc_version` on that table is **not** an enforced optimistic lock — a real behavioral difference from this module's own `tb_email_sender_profile`, §5 below).
 
 ```
 EmailRoutingConfig {
@@ -71,13 +71,13 @@ EmailRoutingConfig {
 
 A flow key that is absent from the stored object — not present at all, distinct from present-and-empty — falls back to `default`; this is why the frontend's routing editor deletes a flow's key entirely when an operator picks "use default" rather than writing the default profile's id into it (`EmailRoutingCard.tsx:93-98`) — a newly added flow with no explicit entry in anyone's already-saved config still resolves through `default`, without needing every existing deployment to be updated.
 
-**Registry default:** `{ default: '00000000-0000-0000-0000-000000000000' }` — an intentionally unusable placeholder, since a real profile id is environment-specific and cannot be baked into the registry (`apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts:340-345`, same entry documented on [Platform Config](/en/backstage/platform-config)'s data model §3). A genuinely fresh deployment with no seeded profile sits on this placeholder until an operator configures a real one; an upgraded deployment never sees it, because the 2026-08-08 migration seeds a real mapping at migration time (§2.1).
+**Registry default:** `{ default: '00000000-0000-0000-0000-000000000000' }` — an intentionally unusable placeholder, since a real profile id is environment-specific and cannot be baked into the registry (`apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts:340-345`, same entry documented on [Backstage Config](/en/backstage/backstage-config)'s data model §3). A genuinely fresh deployment with no seeded profile sits on this placeholder until an operator configures a real one; an upgraded deployment never sees it, because the 2026-08-08 migration seeds a real mapping at migration time (§2.1).
 
 ## 4. Resolving a flow to an SMTP send
 
 `PlatformEmailService.resolveProfile(flow)` (`../micro-notification/src/platform-email/platform-email.service.ts:186-212`) is the single choke point every one of the five flows (landing page §3.2) passes through:
 
-1. Read the live `email_routing` row from `tb_backstage_config` (`findFirst`, `orderBy: updated_at desc` — the same most-recent-wins pattern [Platform Config](/en/backstage/platform-config)'s data model documents for that table's own dead-on-active-rows unique constraint).
+1. Read the live `email_routing` row from `tb_backstage_config` (`findFirst`, `orderBy: updated_at desc` — the same most-recent-wins pattern [Backstage Config](/en/backstage/backstage-config)'s data model documents for that table's own dead-on-active-rows unique constraint).
 2. Validate it against `EmailRoutingSchema` (Zod). An invalid or missing row logs an error and the flow cannot send at all — there is no default-config fallback at this layer, only the per-flow `default` **inside** an already-valid routing object.
 3. Resolve `routing[flow] ?? routing.default` to a profile id.
 4. Load that `tb_email_sender_profile` row **filtered** to `deleted_at: null, is_active: true`. A row that exists but is deleted or deactivated is treated identically to a row that does not exist — both return `null` and log the same "routing points at a profile that is missing/deleted/inactive" warning.
@@ -98,7 +98,7 @@ A flow key that is absent from the stored object — not present at all, distinc
 
 CRUD lives entirely in `EmailSenderProfileService` (micro-cluster), proxied by the gateway over RPC (`EmailSenderProfiles.*`, `backstage_email-settings.service.ts`).
 
-- **`doc_version` is an actively enforced optimistic lock here** — the opposite of `tb_backstage_config`'s same-named column (§3 above, and [Platform Config](/en/backstage/platform-config)'s own data model §5). `update()` rejects a request with a missing/non-numeric `doc_version` outright (`COMMON_DOC_VERSION_REQUIRED`) and issues the actual write as `prisma.update({ where: { id, doc_version } , ... })` — a stale version simply matches no row, and the frontend's `isVersionConflict()`/`notifyVersionConflict()` pair (`utils/docVersion.ts`) turns that into a "someone else changed this — reloaded to the latest" toast while keeping the card open (landing page §1).
+- **`doc_version` is an actively enforced optimistic lock here** — the opposite of `tb_backstage_config`'s same-named column (§3 above, and [Backstage Config](/en/backstage/backstage-config)'s own data model §5). `update()` rejects a request with a missing/non-numeric `doc_version` outright (`COMMON_DOC_VERSION_REQUIRED`) and issues the actual write as `prisma.update({ where: { id, doc_version } , ... })` — a stale version simply matches no row, and the frontend's `isVersionConflict()`/`notifyVersionConflict()` pair (`utils/docVersion.ts`) turns that into a "someone else changed this — reloaded to the latest" toast while keeping the card open (landing page §1).
 - **Uniqueness moved to `name`, and the gateway's own Swagger description has not caught up.** `create()`/`update()` both check `findFirst({ name, deleted_at: null })` before writing and return `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409) on a collision (`email-sender-profile.service.ts:174-180` on create, `:233-240` on update) — enforced at the application layer, backed by the partial unique index (§2). The gateway controller's own `@ApiResponse` text for `POST`/`PUT` still reads "An active profile already exists for this purpose" (`backstage_email-settings.controller.ts:172`) — a leftover from the pre-redesign, one-purpose-per-row model; the actual 409 condition today is a duplicate **name**, not a duplicate purpose, since `purpose` no longer exists as a column at all.
 - **Password-patch semantics** (`passwordPatch()`, `email-sender-profile.service.ts:51-56`): the mask string or `undefined` means "leave unchanged" (no `smtp_password` field is written at all); `null` or `''` means "clear the stored password"; any other string is encrypted and stored. As documented on the landing page §3.4, the frontend's own `PasswordField` component never produces the clear-it value — it treats an emptied field the same as "unchanged" — so a password, once set, is only ever replaceable from this screen, never removable, even though the backend itself supports removal.
 - **Delete is soft** (`deleted_at`/`deleted_by_id`), and a deleted profile is excluded from `findAll`/`findOne` but — as §4 states — is resolved identically to a missing one by the routing layer: any flow still pointing at it silently stops sending, with no error surfaced anywhere in the UI until someone notices mail has stopped or checks the routing panel's "broken lane" warning (`RoutingPanel.tsx`'s `broken` styling, landing page §3.1).
@@ -135,4 +135,4 @@ CRUD lives entirely in `EmailSenderProfileService` (micro-cluster), proxied by t
 - `../carmen-backstage/src/services/emailSettingService.ts` (lines 7-9) — the stale `PERPAGE` justification comment (§6).
 - `../carmen-backstage/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — password-patch UI semantics (§5) and the routing save call (§4 of the landing page).
 
-**Cross-links:** [Email Settings landing](/en/backstage/email-settings) &nbsp;·&nbsp; [Platform Config](/en/backstage/platform-config)
+**Cross-links:** [Email Settings landing](/en/backstage/email-settings) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config)

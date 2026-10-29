@@ -2,7 +2,7 @@
 title: Profile
 description: Self-service page where a signed-in user views and edits their own identity fields and changes their password. Mounted at two routes sharing one component.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: backstage/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -61,7 +61,7 @@ Profile is a self-service maintenance page; it has no external business driver b
 
 These two routes sit next to Profile in `App.tsx` but are not Profile screens.
 
-- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** is where the gateway sends the browser after a Google sign-in. The Login page shows the Google button only when `GET /api/auth/google/status?app=backstage` answers `enabled: true` (`googleSignInService.ts`; the switch is the `google_sign_in.backstage` flag on [Platform Config](/en/backstage/platform-config)), and the button navigates to `/api/auth/google/authorize` (`Login.tsx:182`). The callback reads `access_token`, `refresh_token` and `next` from the URL **fragment** (never sent to a server), immediately strips the fragment with `history.replaceState`, and passes the tokens to `loginWithTokens()`, which applies the same authority gate as password login. On success it navigates to `resolveNextPath(next)`; a missing token, or a failed gate, returns to `/login?error=<code>` (`google_failed`, or `access_denied_backstage` when the gate refuses the account). A `next` value is forwarded only if it is a safe same-site path. The page renders nothing (`return null`) and guards against React StrictMode's double effect with a ref.
+- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** is where the gateway sends the browser after a Google sign-in. The Login page shows the Google button only when `GET /api/auth/google/status?app=backstage` answers `enabled: true` (`googleSignInService.ts`; the switch is the `google_sign_in.backstage` flag on [Backstage Config](/en/backstage/backstage-config)), and the button navigates to `/api/auth/google/authorize` (`Login.tsx:182`). The callback reads `access_token`, `refresh_token` and `next` from the URL **fragment** (never sent to a server), immediately strips the fragment with `history.replaceState`, and passes the tokens to `loginWithTokens()`, which applies the same authority gate as password login. On success it navigates to `resolveNextPath(next)`; a missing token, or a failed gate, returns to `/login?error=<code>` (`google_failed`, or `access_denied_backstage` when the gate refuses the account). A `next` value is forwarded only if it is a safe same-site path. The page renders nothing (`return null`) and guards against React StrictMode's double effect with a ref.
 - **`/403` (`Forbidden`, `App.tsx:617-623`)** is a direct route wrapped in a bare `<PrivateRoute>` (signed-in users only); the same component is what route gates render in place when a permission check fails.
 - Token refresh lives in `services/tokenRefresh.ts` (`refreshAccessToken()` shares one in-flight promise across concurrent callers and uses the stored `refresh_token`).
 
@@ -77,7 +77,7 @@ No `<Can>` gates appear within the `Profile` component itself at either mount, a
 ## 5. Related Modules
 
 - [users](/en/backstage/users) — the administrative counterpart that creates accounts and assigns business units; Profile only reads what Users writes
-- [rbac](/en/backstage/rbac) — owns the permission model that gates every other surface; Profile itself requires only an authenticated session, and role/permission assignment happens in the RBAC module's User Platform screen
+- [rbac](/en/backstage/rbac) — owns the permission model that gates every other surface; Profile itself requires only an authenticated session, and role/permission assignment happens in the RBAC module's Backstage Users screen
 - [business-units](/en/backstage/business-units) — the source of the BU list rendered read-only on the Profile page
 - [Dashboard](/en/backstage/dashboard) — the other route sharing `/profile`'s exact bare `<PrivateRoute>` treatment, including the platform-authority/cluster-admin redirect described in §4
 - [Cluster Admin](/en/backstage/cluster-admin) — the second persona this same `Profile` component serves at `/cluster-admin/:clusterId/profile` (§1.1); that module's own [UI Screens](/en/backstage/cluster-admin/ui-screens) §8 agrees with this page's account of the shared mounting rather than restating it differently

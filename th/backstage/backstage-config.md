@@ -1,21 +1,21 @@
 ---
-title: การตั้งค่าแพลตฟอร์ม (Platform Config)
+title: การตั้งค่า Backstage (Backstage Config)
 description: หน้าจอเดียว สิบเอ็ดการ์ด สิบคีย์ config — คำเชิญ การสมัคร ยืนยันอีเมล รีเซ็ตรหัสผ่าน อีเมลแจ้งเตือน license enforcement เกณฑ์ใกล้หมดอายุ Google sign-in URL ของ external API และสวิตช์ migration API
 published: true
-date: 2026-10-29T03:30:00.000Z
-tags: book/backstage, platform-config
+date: 2026-10-29T05:00:00.000Z
+tags: book/backstage, backstage-config
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
 ---
 
-# การตั้งค่าแพลตฟอร์ม (Platform Config)
+# การตั้งค่า Backstage (Backstage Config)
 
-โมดูล **Backstage Config** (หน้า wiki นี้ยังใช้ชื่อเดิมว่า "Platform Config") คือหน้าจอเดียว `BackstageConfigManagement` ที่ `/backstage/configs` ซึ่งอ่านและเขียนแถวในตารางเดียวที่ใช้ร่วมกัน `tb_backstage_config` แต่ละแถวคือ namespace (ออบเจกต์ JSON) ไม่ใช่ค่าเดี่ยว และหน้าจอนี้ render หนึ่งการ์ดต่อหนึ่ง namespace ที่มันรู้จักวิธีแก้ — สิบเอ็ดการ์ดสำหรับสิบคีย์จากสิบสองคีย์ที่ registry ฝั่ง backend นิยามไว้ (§3.5 อธิบายสองคีย์ที่หน้านี้ไม่แตะ) ทุกอย่างบนหน้าจอนี้เป็นอย่างใดอย่างหนึ่งในสามแบบ: ค่าตั้งลิงก์+อายุที่ย้ายมาจาก environment variable เพื่อให้ผู้ดูแลแก้ได้โดยไม่ต้อง deploy ใหม่, สวิตช์ระดับแพลตฟอร์มที่เป็น kill switch จริง, หรือเกณฑ์แสดงผลล้วน ๆ — และการสับสนสามแบบนี้เข้าด้วยกันคือทางที่ง่ายที่สุดที่จะตัดสินผลของการบันทึกผิด นี่คือเหตุผลที่ §3.2 ไล่ทุกคีย์ตาม*ผล*ของมัน ไม่ใช่แค่ฟิลด์ที่มี
+โมดูล **Backstage Config** คือหน้าจอเดียว `BackstageConfigManagement` ที่ `/backstage/configs` ซึ่งอ่านและเขียนแถวในตารางเดียวที่ใช้ร่วมกัน `tb_backstage_config` แต่ละแถวคือ namespace (ออบเจกต์ JSON) ไม่ใช่ค่าเดี่ยว และหน้าจอนี้ render หนึ่งการ์ดต่อหนึ่ง namespace ที่มันรู้จักวิธีแก้ — สิบเอ็ดการ์ดสำหรับสิบคีย์จากสิบสองคีย์ที่ registry ฝั่ง backend นิยามไว้ (§3.5 อธิบายสองคีย์ที่หน้านี้ไม่แตะ) ทุกอย่างบนหน้าจอนี้เป็นอย่างใดอย่างหนึ่งในสามแบบ: ค่าตั้งลิงก์+อายุที่ย้ายมาจาก environment variable เพื่อให้ผู้ดูแลแก้ได้โดยไม่ต้อง deploy ใหม่, สวิตช์ระดับแพลตฟอร์มที่เป็น kill switch จริง, หรือเกณฑ์แสดงผลล้วน ๆ — และการสับสนสามแบบนี้เข้าด้วยกันคือทางที่ง่ายที่สุดที่จะตัดสินผลของการบันทึกผิด นี่คือเหตุผลที่ §3.2 ไล่ทุกคีย์ตาม*ผล*ของมัน ไม่ใช่แค่ฟิลด์ที่มี
 
 > **At a Glance**
-> **Component:** `BackstageConfigManagement` &nbsp;·&nbsp; **Route:** `/backstage/configs` &nbsp;·&nbsp; **Nav:** `permission: 'backstage_config.read'`, `feature: 'backstage_config'`, `groupKey: 'navGroup.backstage'` (`backstageNav.ts:43`) &nbsp;·&nbsp; **ด่านเขียนพื้นฐาน:** `backstage_config.manage` ที่ backend บังคับกับทุกคีย์ทั้ง `PUT`/`PATCH` ไม่ว่าจะเรียกจากหน้าจอไหน &nbsp;·&nbsp; **สองคีย์ที่ต้องมีด่านที่สองจึงจะบันทึกได้:** `license` ต้องมี `license.manage` เพิ่ม (§4.3 — **ไม่ใช่** คีย์ของโมดูล `licenses`); `backstage_migration` ต้องเป็น super-admin เท่านั้น ไม่รับ permission string ใด ๆ &nbsp;·&nbsp; **การ์ด:** 11 ใบ จาก 10 คีย์ (`invitation` มีสองการ์ด, §3.1) &nbsp;·&nbsp; **e2e suite:** smoke spec แบบ read-only หนึ่งไฟล์ `../carmen-backstage-e2e/tests/platform-configs/platform-configs-smoke.spec.ts` (2 เคส: route render ได้, sidebar แสดง entry) ซึ่งยังชี้ path `/platform/configs`, feature key `platform_config` และหัวข้อ "Platform Config" ก่อน rename จึงล้าสมัยกว่า Backstage rename (SPA ตอนนี้รับ path เก่าผ่าน `LegacyPlatformRedirect`); ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
+> **Component:** `BackstageConfigManagement` &nbsp;·&nbsp; **Route:** `/backstage/configs` &nbsp;·&nbsp; **Nav:** `permission: 'backstage_config.read'`, `feature: 'backstage_config'`, `groupKey: 'navGroup.backstage'` (`backstageNav.ts:43`) &nbsp;·&nbsp; **ด่านเขียนพื้นฐาน:** `backstage_config.manage` ที่ backend บังคับกับทุกคีย์ทั้ง `PUT`/`PATCH` ไม่ว่าจะเรียกจากหน้าจอไหน &nbsp;·&nbsp; **สองคีย์ที่ต้องมีด่านที่สองจึงจะบันทึกได้:** `license` ต้องมี `license.manage` เพิ่ม (§4.3 — **ไม่ใช่** คีย์ของโมดูล `licenses`); `backstage_migration` ต้องเป็น super-admin เท่านั้น ไม่รับ permission string ใด ๆ &nbsp;·&nbsp; **การ์ด:** 11 ใบ จาก 10 คีย์ (`invitation` มีสองการ์ด, §3.1) &nbsp;·&nbsp; **e2e suite:** smoke spec แบบ read-only หนึ่งไฟล์ `../carmen-backstage-e2e/tests/platform-configs/platform-configs-smoke.spec.ts` (2 เคส: route render ได้, sidebar แสดง entry) ซึ่งยังชี้ path `/platform/configs`, feature key `platform_config` และหัวข้อ "Backstage Config" ก่อน rename จึงล้าสมัยกว่า Backstage rename (SPA ตอนนี้รับ path เก่าผ่าน `LegacyPlatformRedirect`); ทุกคำกล่าวอ้างด้านล่างมาจากการอ่าน implementation ของ `../carmen-backstage` และ `../carmen-turborepo-backend` โดยตรง &nbsp;·&nbsp; **หน้าย่อย:** 1
 
-![การตั้งค่าแพลตฟอร์ม (Platform Config) screen](/screenshots/platform/platform-config/index.png)
+![การตั้งค่า Backstage (Backstage Config) screen](/screenshots/platform/backstage-config/index.png)
 
 ## 1. ภาพรวม
 
@@ -166,4 +166,4 @@ path ทั้งหมดด้านล่างคือ `../carmen-backstage
 
 ## 7. หน้าย่อยของโมดูลนี้
 
-- [Data Model](/th/backstage/platform-config/data-model) — entity `tb_backstage_config`, `BACKSTAGE_CONFIG_REGISTRY` เต็มรูปแบบ (ทั้งสิบสองคีย์ รวมสองคีย์ที่หน้าจอนี้ไม่เคยแสดง) และแผนที่ผู้อ่านหลายกระบวนการที่อยู่เบื้องหลังผลของ §3.2
+- [Data Model](/th/backstage/backstage-config/data-model) — entity `tb_backstage_config`, `BACKSTAGE_CONFIG_REGISTRY` เต็มรูปแบบ (ทั้งสิบสองคีย์ รวมสองคีย์ที่หน้าจอนี้ไม่เคยแสดง) และแผนที่ผู้อ่านหลายกระบวนการที่อยู่เบื้องหลังผลของ §3.2

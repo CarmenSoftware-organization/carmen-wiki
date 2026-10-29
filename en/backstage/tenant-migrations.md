@@ -2,7 +2,7 @@
 title: Tenant Migrations
 description: Fleet-wide screen that checks and applies pending tenant-database schema migrations (and dashboard views) across every business unit; viewing needs tenant_migration.read, changing anything needs tenant_migration.apply.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -94,7 +94,7 @@ There is no persisted "migration status" row anywhere in the platform's own sche
 
 ### 3.4 Kill switch and the CI deploy-token path
 
-The entire tenant-migration controller sits behind `TENANT_MIGRATION_API_ENABLED`, an environment-variable boolean that **defaults to `false`** when unset (`boolFromString(false)`, `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209`) — every call, including a plain status check, 403s with "Tenant migration API is disabled" until an operator explicitly sets it to the literal string `true`. This is a plain env var, unlike its similarly-named sibling on the separate [Platform Migrations](/en/backstage/platform-migrations) module, whose own on/off switch was moved into `tb_backstage_config` (`backstage_migration.api_enabled`) — the comment above `BACKSTAGE_DEPLOY_TOKEN` in `config.env.ts` (lines 199-206) is about that other module, not this one; this module's switch has not moved.
+The entire tenant-migration controller sits behind `TENANT_MIGRATION_API_ENABLED`, an environment-variable boolean that **defaults to `false`** when unset (`boolFromString(false)`, `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209`) — every call, including a plain status check, 403s with "Tenant migration API is disabled" until an operator explicitly sets it to the literal string `true`. This is a plain env var, unlike its similarly-named sibling on the separate [Backstage Migrations](/en/backstage/backstage-migrations) module, whose own on/off switch was moved into `tb_backstage_config` (`backstage_migration.api_enabled`) — the comment above `BACKSTAGE_DEPLOY_TOKEN` in `config.env.ts` (lines 199-206) is about that other module, not this one; this module's switch has not moved.
 
 Besides a session holding the route's `tenant_migration.*` key, the backend also accepts an `x-deploy-token` header (compared with `timingSafeEqual`, matched against `TENANT_DEPLOY_TOKEN`) as an alternative credential, intended for a CI/CD pipeline to trigger deploys without a human session. This SPA screen never exercises that path — it only ever authenticates as the signed-in operator — so the deploy-token route is invisible from this UI entirely; using it requires calling the API directly (e.g. via the Bruno collection, §6).
 

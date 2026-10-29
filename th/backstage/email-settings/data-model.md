@@ -2,7 +2,7 @@
 title: การตั้งค่าอีเมล — โมเดลข้อมูล (Data Model)
 description: tb_email_sender_profile (โปรไฟล์ผู้ส่ง SMTP ที่ตั้งชื่อได้ credential เข้ารหัส) และโครงสร้าง config email_routing ที่มันถูก resolve ผ่าน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, email-settings, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -22,7 +22,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 1. ภาพรวม
 
-หน้าจอนี้อาศัยสองสิ่งที่อยู่คนละตาราง เป็นของคนละ service `tb_email_sender_profile` (§2) คือรายการที่ตั้งชื่อได้ของปลายทาง SMTP เป็นของ **micro-cluster** ทั้ง CRUD และถูกส่งต่อโดย `backstage_email-settings.controller.ts` ฝั่ง gateway `email_routing` (§3) คือหนึ่งแถวของตาราง `tb_backstage_config` ที่**ใช้ร่วมกัน** — ตารางเดียวกันและ endpoint กลาง `/api-system/backstage/configs` เดียวกับที่ data model ของโมดูล [Platform Config](/th/backstage/platform-config) บันทึกไว้แบบเต็ม อ่านและเขียนผ่าน client ของโมดูลนั้น `backstageConfigService` ไม่ใช่ `emailSettingService` ของโมดูลนี้ การ resolve เส้นทางขาออกให้กลายเป็นการส่ง SMTP จริง (§4) ต้องใช้ทั้งสองอย่าง: แถว routing ต้องระบุ id โปรไฟล์ และแถวโปรไฟล์นั้นต้องมีอยู่จริง ใช้งานอยู่ และถอดรหัสได้
+หน้าจอนี้อาศัยสองสิ่งที่อยู่คนละตาราง เป็นของคนละ service `tb_email_sender_profile` (§2) คือรายการที่ตั้งชื่อได้ของปลายทาง SMTP เป็นของ **micro-cluster** ทั้ง CRUD และถูกส่งต่อโดย `backstage_email-settings.controller.ts` ฝั่ง gateway `email_routing` (§3) คือหนึ่งแถวของตาราง `tb_backstage_config` ที่**ใช้ร่วมกัน** — ตารางเดียวกันและ endpoint กลาง `/api-system/backstage/configs` เดียวกับที่ data model ของโมดูล [Backstage Config](/th/backstage/backstage-config) บันทึกไว้แบบเต็ม อ่านและเขียนผ่าน client ของโมดูลนั้น `backstageConfigService` ไม่ใช่ `emailSettingService` ของโมดูลนี้ การ resolve เส้นทางขาออกให้กลายเป็นการส่ง SMTP จริง (§4) ต้องใช้ทั้งสองอย่าง: แถว routing ต้องระบุ id โปรไฟล์ และแถวโปรไฟล์นั้นต้องมีอยู่จริง ใช้งานอยู่ และถอดรหัสได้
 
 ## 2. Entity: `tb_email_sender_profile`
 
@@ -56,7 +56,7 @@ Schema บรรทัด 1764-1788 (`../carmen-turborepo-backend/packages/prism
 
 ## 3. entry ของ config `email_routing`
 
-ไม่ใช่คอลัมน์บนตารางนี้ — เป็นแถวหนึ่งของ `tb_backstage_config` (`key = 'email_routing'`) ตรวจสอบด้วยกลไก registry-กับ-Zod-schema เดียวกับที่ data model ของ [Platform Config](/th/backstage/platform-config) บันทึกไว้แบบเต็ม (§3 และ §5 ของหน้านั้นใช้ได้ตรงนี้เหมือนกันไม่เปลี่ยนแปลง: `PATCH` merge ฟิลด์ `PUT` แทนที่ทั้งหมดและต้องมีทุกฟิลด์ ส่วน `doc_version` บนตารางนั้น**ไม่ใช่** optimistic lock ที่บังคับใช้จริง — ต่างจาก `tb_email_sender_profile` ของโมดูลนี้เองอย่างแท้จริง, §5 ด้านล่าง)
+ไม่ใช่คอลัมน์บนตารางนี้ — เป็นแถวหนึ่งของ `tb_backstage_config` (`key = 'email_routing'`) ตรวจสอบด้วยกลไก registry-กับ-Zod-schema เดียวกับที่ data model ของ [Backstage Config](/th/backstage/backstage-config) บันทึกไว้แบบเต็ม (§3 และ §5 ของหน้านั้นใช้ได้ตรงนี้เหมือนกันไม่เปลี่ยนแปลง: `PATCH` merge ฟิลด์ `PUT` แทนที่ทั้งหมดและต้องมีทุกฟิลด์ ส่วน `doc_version` บนตารางนั้น**ไม่ใช่** optimistic lock ที่บังคับใช้จริง — ต่างจาก `tb_email_sender_profile` ของโมดูลนี้เองอย่างแท้จริง, §5 ด้านล่าง)
 
 ```
 EmailRoutingConfig {
@@ -71,13 +71,13 @@ EmailRoutingConfig {
 
 คีย์เส้นทางที่*ไม่มีอยู่*ในออบเจกต์ที่เก็บไว้ — ไม่มีเลย ต่างจากมีอยู่แต่ว่างเปล่า — จะถอยไปใช้ `default` นี่คือเหตุผลที่ตัวแก้ไข routing ฝั่ง frontend ลบคีย์ของเส้นทางนั้นทิ้งทั้งหมดเมื่อผู้ดูแลเลือก "ใช้ค่าเริ่มต้น" แทนที่จะเขียน id ของโปรไฟล์ default ลงไป (`EmailRoutingCard.tsx:93-98`) — เส้นทางใหม่ที่ยังไม่มี entry ชัดเจนใน config ที่บันทึกไว้แล้วของทุก deployment จะยัง resolve ผ่าน `default` ได้โดยไม่ต้องอัปเดต deployment เดิมสักตัว
 
-**Default ของ registry:** `{ default: '00000000-0000-0000-0000-000000000000' }` — placeholder ที่ตั้งใจให้ใช้งานไม่ได้ เพราะ id โปรไฟล์จริงเจาะจงตาม environment ใส่ตายตัวใน registry ไม่ได้ (`apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts:340-345`, entry เดียวกับที่ data model ของ [Platform Config](/th/backstage/platform-config) §3 บันทึกไว้) deployment ใหม่ล้วนที่ไม่มีโปรไฟล์ให้ seed จะค้างอยู่กับ placeholder นี้ จนกว่าผู้ดูแลจะตั้งค่าจริง; deployment ที่ upgrade มาจะไม่มีวันเจอมัน เพราะ migration 2026-08-08 seed mapping จริงตอน migrate (§2.1)
+**Default ของ registry:** `{ default: '00000000-0000-0000-0000-000000000000' }` — placeholder ที่ตั้งใจให้ใช้งานไม่ได้ เพราะ id โปรไฟล์จริงเจาะจงตาม environment ใส่ตายตัวใน registry ไม่ได้ (`apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts:340-345`, entry เดียวกับที่ data model ของ [Backstage Config](/th/backstage/backstage-config) §3 บันทึกไว้) deployment ใหม่ล้วนที่ไม่มีโปรไฟล์ให้ seed จะค้างอยู่กับ placeholder นี้ จนกว่าผู้ดูแลจะตั้งค่าจริง; deployment ที่ upgrade มาจะไม่มีวันเจอมัน เพราะ migration 2026-08-08 seed mapping จริงตอน migrate (§2.1)
 
 ## 4. การ resolve เส้นทางให้กลายเป็นการส่ง SMTP
 
 `PlatformEmailService.resolveProfile(flow)` (`../micro-notification/src/platform-email/platform-email.service.ts:186-212`) เป็นจุดคอขวดเดียวที่ทั้งห้าเส้นทาง (หน้า landing §3.2) ไหลผ่าน:
 
-1. อ่านแถว `email_routing` ล่าสุดจาก `tb_backstage_config` (`findFirst`, `orderBy: updated_at desc` — รูปแบบ "ล่าสุดชนะ" เดียวกับที่ data model ของ [Platform Config](/th/backstage/platform-config) บันทึกไว้สำหรับ unique constraint แบบ dead-on-active-rows ของตารางนั้นเอง)
+1. อ่านแถว `email_routing` ล่าสุดจาก `tb_backstage_config` (`findFirst`, `orderBy: updated_at desc` — รูปแบบ "ล่าสุดชนะ" เดียวกับที่ data model ของ [Backstage Config](/th/backstage/backstage-config) บันทึกไว้สำหรับ unique constraint แบบ dead-on-active-rows ของตารางนั้นเอง)
 2. ตรวจสอบด้วย `EmailRoutingSchema` (Zod) แถวที่ไม่ถูกต้องหรือหายไปจะบันทึก error และเส้นทางนั้นส่งไม่ได้เลย — ไม่มี default-config fallback ในชั้นนี้ มีแค่ `default` **ภายใน**ออบเจกต์ routing ที่ถูกต้องแล้วเท่านั้น
 3. resolve `routing[flow] ?? routing.default` เป็น id โปรไฟล์
 4. โหลดแถว `tb_email_sender_profile` นั้น **โดยกรอง** `deleted_at: null, is_active: true` แถวที่มีอยู่แต่ถูกลบหรือปิดใช้งาน จะถูกปฏิบัติเหมือนแถวที่ไม่มีอยู่เลยทุกประการ — ทั้งคู่คืน `null` และบันทึก warning ข้อความเดียวกันว่า "routing ชี้ไปโปรไฟล์ที่หาย/ถูกลบ/ปิดใช้งาน"
@@ -98,7 +98,7 @@ EmailRoutingConfig {
 
 CRUD อยู่ทั้งหมดใน `EmailSenderProfileService` (micro-cluster) ส่งต่อโดย gateway ผ่าน RPC (`EmailSenderProfiles.*`, `backstage_email-settings.service.ts`)
 
-- **`doc_version` เป็น optimistic lock ที่บังคับใช้จริงที่นี่** — ตรงข้ามกับคอลัมน์ชื่อเดียวกันบน `tb_backstage_config` (§3 ด้านบน และ data model ของ [Platform Config](/th/backstage/platform-config) §5 เอง) `update()` ปฏิเสธคำขอที่ `doc_version` หายไป/ไม่ใช่ตัวเลขทันที (`COMMON_DOC_VERSION_REQUIRED`) และเขียนจริงเป็น `prisma.update({ where: { id, doc_version } , ... })` — เวอร์ชันเก่าจะไม่ตรงกับแถวไหนเลย และคู่ `isVersionConflict()`/`notifyVersionConflict()` ฝั่ง frontend (`utils/docVersion.ts`) แปลงมันเป็น toast "มีคนอื่นแก้สิ่งนี้ — โหลดค่าล่าสุดแล้ว" พร้อมทั้งคงการ์ดไว้ในโหมดแก้ (หน้า landing §1)
+- **`doc_version` เป็น optimistic lock ที่บังคับใช้จริงที่นี่** — ตรงข้ามกับคอลัมน์ชื่อเดียวกันบน `tb_backstage_config` (§3 ด้านบน และ data model ของ [Backstage Config](/th/backstage/backstage-config) §5 เอง) `update()` ปฏิเสธคำขอที่ `doc_version` หายไป/ไม่ใช่ตัวเลขทันที (`COMMON_DOC_VERSION_REQUIRED`) และเขียนจริงเป็น `prisma.update({ where: { id, doc_version } , ... })` — เวอร์ชันเก่าจะไม่ตรงกับแถวไหนเลย และคู่ `isVersionConflict()`/`notifyVersionConflict()` ฝั่ง frontend (`utils/docVersion.ts`) แปลงมันเป็น toast "มีคนอื่นแก้สิ่งนี้ — โหลดค่าล่าสุดแล้ว" พร้อมทั้งคงการ์ดไว้ในโหมดแก้ (หน้า landing §1)
 - **ความไม่ซ้ำย้ายไปที่ `name` แล้ว แต่คำบรรยาย Swagger ของ gateway เองยังตามไม่ทัน** `create()`/`update()` ทั้งคู่ตรวจ `findFirst({ name, deleted_at: null })` ก่อนเขียน และคืน `EMAIL_SENDER_PROFILE_NAME_EXISTS` (409) เมื่อชนกัน (`email-sender-profile.service.ts:174-180` ตอน create, `:233-240` ตอน update) — บังคับที่ชั้นแอปพลิเคชัน หนุนหลังด้วย partial unique index (§2) คำบรรยาย `@ApiResponse` ของ controller ฝั่ง gateway เองสำหรับ `POST`/`PUT` ยังเขียนว่า "An active profile already exists for this purpose" (`backstage_email-settings.controller.ts:172`) — ของตกค้างจากดีไซน์แบบหนึ่ง-purpose-ต่อ-หนึ่งแถวก่อนปรับ; เงื่อนไข 409 จริงวันนี้คือ**ชื่อ**ซ้ำ ไม่ใช่ purpose ซ้ำ เพราะ `purpose` ไม่มีเป็นคอลัมน์อีกต่อไปแล้ว
 - **ความหมายของ password-patch** (`passwordPatch()`, `email-sender-profile.service.ts:51-56`): สตริงมาสก์หรือ `undefined` แปลว่า "ไม่เปลี่ยน" (ไม่เขียนฟิลด์ `smtp_password` เลย); `null` หรือ `''` แปลว่า "ล้างรหัสผ่านที่เก็บไว้"; สตริงอื่นถูกเข้ารหัสแล้วเก็บ ตามที่บันทึกไว้ในหน้า landing §3.4 component `PasswordField` ฝั่ง frontend เองไม่เคยสร้างค่าล้างนี้ได้ — มันปฏิบัติต่อ field ที่ว่างเปล่าเหมือน "ไม่เปลี่ยน" — รหัสผ่านเมื่อตั้งแล้วจึงแทนที่ได้อย่างเดียวจากหน้าจอนี้ ไม่มีทางลบออกได้เลย ทั้งที่ backend เองรองรับการลบ
 - **การลบเป็น soft delete** (`deleted_at`/`deleted_by_id`) และโปรไฟล์ที่ถูกลบจะถูกกันออกจาก `findAll`/`findOne` — แต่อย่างที่ §4 บอก ชั้น routing ปฏิบัติต่อมันเหมือนแถวที่หายไปทุกประการ: เส้นทางใดที่ยังชี้มาที่มันจะหยุดส่งเงียบ ๆ ไม่มี error โผล่ที่ไหนใน UI จนกว่าจะมีใครสังเกตว่าเมลหยุดหรือเช็คคำเตือน "เลนพัง" ในผัง routing (สไตล์ `broken` ของ `RoutingPanel.tsx`, หน้า landing §3.1)
@@ -135,4 +135,4 @@ CRUD อยู่ทั้งหมดใน `EmailSenderProfileService` (micro-
 - `../carmen-backstage/src/services/emailSettingService.ts` (บรรทัด 7-9) — คอมเมนต์เหตุผล `PERPAGE` ที่ล้าสมัย (§6)
 - `../carmen-backstage/src/pages/emailSettings/{PasswordField.tsx,EmailRoutingCard.tsx}` — ความหมาย UI ของ password-patch (§5) และการเรียก save ของ routing (§4 ของหน้า landing)
 
-**Cross-links:** [หน้าลงจอด Email Settings](/th/backstage/email-settings) &nbsp;·&nbsp; [Platform Config](/th/backstage/platform-config)
+**Cross-links:** [หน้าลงจอด Email Settings](/th/backstage/email-settings) &nbsp;·&nbsp; [Backstage Config](/th/backstage/backstage-config)

@@ -2,7 +2,7 @@
 title: Backstage RBAC — แบบจำลองข้อมูล (Data Model)
 description: ตาราง RBAC ทั้งห้า — permission catalog, role, join role-permission, assignment แบบมี scope, flag super-admin — การ rollout doc_version เมื่อ 2026-07-16 และความต่างจาก shape ของ SPA
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, rbac, data-model
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -105,7 +105,7 @@ M:N join ระหว่าง role กับ row ของ catalog แต่ล
 
 ### 2.4 `tb_user_tb_backstage_role`
 
-ตาราง assignment: ผูกผู้ใช้เข้ากับ role ที่ scope หนึ่ง นี่คือ row ที่หน้าจอ detail ของ User Platform สร้างและลบ และเป็น input ของการ flatten effective-permissions
+ตาราง assignment: ผูกผู้ใช้เข้ากับ role ที่ scope หนึ่ง นี่คือ row ที่หน้าจอ detail ของ Backstage Users สร้างและลบ และเป็น input ของการ flatten effective-permissions
 
 | Field | Prisma Type | Nullable | คำอธิบาย |
 | ----- | ----------- | -------- | ----------- |

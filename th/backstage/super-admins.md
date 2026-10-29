@@ -2,7 +2,7 @@
 title: ผู้ดูแลระบบสูงสุด (Super Admins)
 description: บัญชีดำ god-mode ของแพลตฟอร์ม — SuperAdminManagement (/backstage/super-admins) กั้นด้วย superAdminOnly โดยไม่มี RBAC permission key เลย พร้อมตาราง tb_backstage_super_admin สามคอลัมน์ที่แท้จริง
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, super-admins
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -153,7 +153,7 @@ await this.prismaSystem.tb_backstage_super_admin.update({
 ## 9. โมดูลที่เกี่ยวข้อง
 
 - [RBAC](/th/backstage/rbac) — เป็นเจ้าของแกน permission-key/role-bundle ที่โมดูลนี้จงใจอยู่นอกเหนือไป §2 ด้านบนแสดงจุดที่ `is_super_admin` short-circuit ระบบนั้นทั้งสองฝั่งไว้ชัดเจน
-- [User Platform](/th/backstage/user-platform) — วิธีปกติที่ให้สิทธิ์ระดับแพลตฟอร์มแบบผูกกับ RBAC เทียบกับการ bypass แบบไม่มีเงื่อนไขของโมดูลนี้
+- [Backstage Users](/th/backstage/user-backstage) — วิธีปกติที่ให้สิทธิ์ระดับแพลตฟอร์มแบบผูกกับ RBAC เทียบกับการ bypass แบบไม่มีเงื่อนไขของโมดูลนี้
 - [Cluster Admin](/th/backstage/cluster-admin) — อีกแกนหนึ่งที่ flag ตัวเดียวกันนี้ short-circuit เช่นกัน: `ClusterAdminAuthzService.isBackstageSuperAdmin` ถือว่า super admin ทุกคนเป็นผู้ดูแลของทุกคลัสเตอร์ (§4 ด้านบน)
 - [Users](/th/backstage/users) — เป็นเจ้าของแถว `tb_user`/`tb_user_profile` ที่ทะเบียนของโมดูลนี้ join มาแค่เพื่อแสดงผลเท่านั้น (§3.1)
 

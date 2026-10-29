@@ -2,7 +2,7 @@
 title: โปรไฟล์ (Profile)
 description: หน้าจัดการตนเองสำหรับผู้ใช้ที่ล็อกอินอยู่ ดูและแก้ไขข้อมูลตัวตนของตน รวมถึงเปลี่ยนรหัสผ่าน mount อยู่สอง route ที่ใช้ component เดียวกัน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: backstage/profile, carmen-software
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -61,7 +61,7 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 
 สอง route นี้อยู่ข้าง Profile ใน `App.tsx` แต่ไม่ใช่หน้าจอ Profile
 
-- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** คือที่ที่ gateway ส่ง browser กลับมาหลัง sign-in ด้วย Google หน้า Login แสดงปุ่ม Google เฉพาะเมื่อ `GET /api/auth/google/status?app=backstage` ตอบ `enabled: true` (`googleSignInService.ts`; สวิตช์คือ flag `google_sign_in.backstage` ใน [Platform Config](/th/backstage/platform-config)) และปุ่มนำทางไปยัง `/api/auth/google/authorize` (`Login.tsx:182`) callback อ่าน `access_token`, `refresh_token` และ `next` จาก **fragment** ของ URL (ไม่เคยถูกส่งไปที่ server) แล้วล้าง fragment ทันทีด้วย `history.replaceState` และส่ง token ให้ `loginWithTokens()` ซึ่งใช้ authority gate เดียวกับการ login ด้วยรหัสผ่าน เมื่อสำเร็จจะนำทางไป `resolveNextPath(next)`; หากไม่มี token หรือ gate ไม่ผ่านจะกลับไป `/login?error=<code>` (`google_failed` หรือ `access_denied_backstage` เมื่อ gate ปฏิเสธบัญชี) ค่า `next` จะถูกส่งต่อเฉพาะเมื่อเป็น path ภายใน site เดียวกันที่ปลอดภัย หน้านี้ไม่ render อะไร (`return null`) และกัน effect ซ้ำสองรอบของ React StrictMode ด้วย ref
+- **`/login/callback` (`AuthCallback`, `App.tsx:105`)** คือที่ที่ gateway ส่ง browser กลับมาหลัง sign-in ด้วย Google หน้า Login แสดงปุ่ม Google เฉพาะเมื่อ `GET /api/auth/google/status?app=backstage` ตอบ `enabled: true` (`googleSignInService.ts`; สวิตช์คือ flag `google_sign_in.backstage` ใน [Backstage Config](/th/backstage/backstage-config)) และปุ่มนำทางไปยัง `/api/auth/google/authorize` (`Login.tsx:182`) callback อ่าน `access_token`, `refresh_token` และ `next` จาก **fragment** ของ URL (ไม่เคยถูกส่งไปที่ server) แล้วล้าง fragment ทันทีด้วย `history.replaceState` และส่ง token ให้ `loginWithTokens()` ซึ่งใช้ authority gate เดียวกับการ login ด้วยรหัสผ่าน เมื่อสำเร็จจะนำทางไป `resolveNextPath(next)`; หากไม่มี token หรือ gate ไม่ผ่านจะกลับไป `/login?error=<code>` (`google_failed` หรือ `access_denied_backstage` เมื่อ gate ปฏิเสธบัญชี) ค่า `next` จะถูกส่งต่อเฉพาะเมื่อเป็น path ภายใน site เดียวกันที่ปลอดภัย หน้านี้ไม่ render อะไร (`return null`) และกัน effect ซ้ำสองรอบของ React StrictMode ด้วย ref
 - **`/403` (`Forbidden`, `App.tsx:617-623`)** เป็น route ตรงที่ห่อด้วย `<PrivateRoute>` เปล่า ๆ (เฉพาะผู้ใช้ที่ sign-in แล้ว); component เดียวกันนี้คือสิ่งที่ route gate render แทนเมื่อการตรวจ permission ไม่ผ่าน
 - การ refresh token อยู่ใน `services/tokenRefresh.ts` (`refreshAccessToken()` ใช้ promise ที่กำลังทำงานอยู่ร่วมกันระหว่างผู้เรียกที่ทำงานพร้อมกัน และใช้ `refresh_token` ที่เก็บไว้)
 
@@ -77,7 +77,7 @@ Profile เป็นหน้าจัดการตนเองแบบ self-
 ## 5. โมดูลที่เกี่ยวข้อง
 
 - [users](/th/backstage/users) — โมดูลฝั่ง administrative ที่สร้างบัญชีและกำหนด business unit; Profile เพียงอ่านสิ่งที่ Users เขียนเท่านั้น
-- [rbac](/th/backstage/rbac) — เป็นเจ้าของโมเดล permission ที่ gate ทุก surface อื่น; ตัว Profile เองต้องการเพียง session ที่ผ่านการพิสูจน์ตัวตน และการ assign role/permission ทำบนหน้าจอ User Platform ของโมดูล RBAC
+- [rbac](/th/backstage/rbac) — เป็นเจ้าของโมเดล permission ที่ gate ทุก surface อื่น; ตัว Profile เองต้องการเพียง session ที่ผ่านการพิสูจน์ตัวตน และการ assign role/permission ทำบนหน้าจอ Backstage Users ของโมดูล RBAC
 - [business-units](/th/backstage/business-units) — แหล่งของรายการ BU ที่แสดงแบบอ่านอย่างเดียวบนหน้า Profile
 - [Dashboard](/th/backstage/dashboard) — อีก route ที่ได้รับการห่อ `<PrivateRoute>` เปล่า ๆ เหมือน `/profile` ทุกประการ รวมถึงการ redirect platform-authority/cluster-admin ที่อธิบายใน §4
 - [ผู้ดูแลคลัสเตอร์ (Cluster Admin)](/th/backstage/cluster-admin) — persona ที่สองที่ component `Profile` เดียวกันนี้ให้บริการที่ `/cluster-admin/:clusterId/profile` (§1.1) [UI Screens](/th/backstage/cluster-admin/ui-screens) §8 ของโมดูลนั้นเห็นตรงกับเรื่องนี้ตามที่หน้านี้บันทึกไว้ แทนที่จะเล่าใหม่ให้ต่างออกไป

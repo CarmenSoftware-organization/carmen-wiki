@@ -2,7 +2,7 @@
 title: Database Pools — Data Model
 description: The full tb_database_pool field table — encrypted password, note vs. description, is_active semantics — plus how it reconciles with what Business Units and Tenant Migrations already document about resolving a tenant connection.
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, database-pools, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -64,7 +64,7 @@ tb_database_pool  1 ─── M  tb_business_unit   (via tb_business_unit.databa
 5. **On use.** Nothing in this module decrypts a pool's password — that happens only when a *consumer* resolves a tenant connection. [Tenant Migrations](/en/backstage/tenant-migrations/data-model) §3 documents that path: `resolveTenantUrl()` (`../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`) calls `decryptSecret()` and, on failure, throws rather than falling back to any plaintext guess — "no fallback on purpose," per that function's own comment — then `buildTenantUrl()` assembles `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` with `host`/`port` validated (`isSafeHost`/`isSafePort`) and every other part percent-encoded.
 6. **Backfill provenance.** The one-off `migrate.database-pool.ts` script (§1) is the only place in the codebase that ever read a plaintext password from `db_connection` directly; it is dry-run by default, requires `--apply` to write, and has a separate `--verify` mode that decrypts every live pool's password and reports which pool *names* (never ciphertext or plaintext) fail to decrypt under the currently configured key — meant to be run once, immediately before the `db_connection`-dropping migration lands. The script is unable to run its scan/backfill path today: it depends on the `db_connection` column that migration `7f825bb20` already removed. It remains in the repository only as a record of how the one-time migration was performed, per its own header comment.
 
-No hardcoded default password, connection string, or encryption key was found anywhere in this module's frontend, backend, or the backfill script — checked `DatabasePoolEdit.tsx`'s `emptyForm`/`buildPayload` (empty strings only, no literal credential), `database-pool.service.ts` (encrypts whatever is supplied, no fallback value), and `crypto.util.ts` (throws rather than defaulting). This is worth stating explicitly because a sibling module in this book was corrected for exactly this kind of claim: see [Platform Migrations](/en/backstage/platform-migrations) §3.1, whose `PLATFORM_DEPLOY_TOKEN` **does** default to an empty string in `config.env.ts`.
+No hardcoded default password, connection string, or encryption key was found anywhere in this module's frontend, backend, or the backfill script — checked `DatabasePoolEdit.tsx`'s `emptyForm`/`buildPayload` (empty strings only, no literal credential), `database-pool.service.ts` (encrypts whatever is supplied, no fallback value), and `crypto.util.ts` (throws rather than defaulting). This is worth stating explicitly because a sibling module in this book was corrected for exactly this kind of claim: see [Backstage Migrations](/en/backstage/backstage-migrations) §3.1, whose `PLATFORM_DEPLOY_TOKEN` **does** default to an empty string in `config.env.ts`.
 
 ## 5. Consistency with Business Units and Tenant Migrations
 

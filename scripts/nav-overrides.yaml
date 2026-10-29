@@ -171,7 +171,7 @@ books:
       - label_en: "Backstage"
         label_th: "Backstage"
         modules:
-          - slug: platform-config
+          - slug: backstage-config
             label_en: "Backstage Config"
             label_th: "Backstage Config"
           - slug: email-settings
@@ -183,9 +183,9 @@ books:
           - slug: rbac
             label_en: "Backstage RBAC"
             label_th: "Backstage RBAC"
-          - slug: user-platform
-            label_en: "User Backstage"
-            label_th: "User Backstage"
+          - slug: user-backstage
+            label_en: "Backstage Users"
+            label_th: "Backstage Users"
           - slug: super-admins
             label_en: "Super Admins"
             label_th: "Super Admins"
@@ -202,7 +202,7 @@ books:
       - label_en: "Database"
         label_th: "Database"
         modules:
-          - slug: platform-migrations
+          - slug: backstage-migrations
             label_en: "Backstage Migrations"
             label_th: "Backstage Migrations"
           - slug: database-pools

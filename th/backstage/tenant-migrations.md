@@ -2,7 +2,7 @@
 title: การย้ายเทแนนต์ (Tenant Migrations)
 description: หน้าจอระดับ fleet ที่ตรวจและ apply schema migration (กับ dashboard view) ของฐานข้อมูล tenant ทั่วทุก business unit ดูต้องมี tenant_migration.read เปลี่ยนแปลงต้องมี tenant_migration.apply
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, tenant-migrations
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -94,7 +94,7 @@ schema tenant ของแต่ละ BU ยังมี dashboard view ที�
 
 ### 3.4 สวิตช์ปิด/เปิด และ path ของ CI deploy-token
 
-ทั้ง controller ของ tenant-migration อยู่หลัง `TENANT_MIGRATION_API_ENABLED` ซึ่งเป็น environment-variable boolean ที่ **ปิดโดยดีฟอลต์** เมื่อไม่ได้ตั้งค่า (`boolFromString(false)`, `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209`) — ทุกการเรียก รวมถึง status check ธรรมดา จะ 403 ด้วย "Tenant migration API is disabled" จนกว่า operator จะตั้งค่าเป็นสตริง `true` อย่างชัดเจน นี่เป็น env var ธรรมดา ต่างจากสวิตช์ชื่อคล้ายกันของโมดูล [Platform Migrations](/th/backstage/platform-migrations) แยกต่างหาก ซึ่งสวิตช์เปิด/ปิดของมันถูกย้ายเข้า `tb_backstage_config` (`backstage_migration.api_enabled`) แล้ว — comment เหนือ `BACKSTAGE_DEPLOY_TOKEN` ใน `config.env.ts` (บรรทัด 199-206) พูดถึงโมดูลอื่นนั้น ไม่ใช่โมดูลนี้; สวิตช์ของโมดูลนี้ยังไม่ได้ย้าย
+ทั้ง controller ของ tenant-migration อยู่หลัง `TENANT_MIGRATION_API_ENABLED` ซึ่งเป็น environment-variable boolean ที่ **ปิดโดยดีฟอลต์** เมื่อไม่ได้ตั้งค่า (`boolFromString(false)`, `../carmen-turborepo-backend/apps/backend-gateway/src/libs/config.env.ts:209`) — ทุกการเรียก รวมถึง status check ธรรมดา จะ 403 ด้วย "Tenant migration API is disabled" จนกว่า operator จะตั้งค่าเป็นสตริง `true` อย่างชัดเจน นี่เป็น env var ธรรมดา ต่างจากสวิตช์ชื่อคล้ายกันของโมดูล [Backstage Migrations](/th/backstage/backstage-migrations) แยกต่างหาก ซึ่งสวิตช์เปิด/ปิดของมันถูกย้ายเข้า `tb_backstage_config` (`backstage_migration.api_enabled`) แล้ว — comment เหนือ `BACKSTAGE_DEPLOY_TOKEN` ใน `config.env.ts` (บรรทัด 199-206) พูดถึงโมดูลอื่นนั้น ไม่ใช่โมดูลนี้; สวิตช์ของโมดูลนี้ยังไม่ได้ย้าย
 
 นอกจาก session ที่ถือ key `tenant_migration.*` ของ route แล้ว backend ยังรับ header `x-deploy-token` (เปรียบเทียบด้วย `timingSafeEqual` เทียบกับ `TENANT_DEPLOY_TOKEN`) เป็น credential ทางเลือก ออกแบบไว้ให้ pipeline CI/CD สั่ง deploy ได้โดยไม่ต้องมี session ของมนุษย์ หน้าจอ SPA นี้ไม่เคยใช้ path นั้นเลย — authenticate ในฐานะ operator ที่ signed-in เท่านั้นเสมอ — ดังนั้น path ของ deploy-token จึงมองไม่เห็นจาก UI นี้เลย การใช้มันต้องเรียก API ตรง ๆ (เช่นผ่าน Bruno collection, §6)
 

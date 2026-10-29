@@ -2,7 +2,7 @@
 title: แฟล็กฟีเจอร์ — โมเดลข้อมูล (Data Model)
 description: FEATURE_CATALOG ฝั่ง frontend (28 รายการที่ gate ได้), แถว feature_flags ใน tb_backstage_config ที่ใช้ร่วมกัน และคู่ REST เฉพาะทาง (PUT เท่านั้น ไม่มี PATCH) ที่อ่านและเขียนมัน
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, feature-flags, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -11,7 +11,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 # แฟล็กฟีเจอร์ — โมเดลข้อมูล (Data Model)
 
 > **At a Glance**
-> **ที่เก็บข้อมูล:** หนึ่งแถวของตาราง `tb_backstage_config` ที่ใช้ร่วมกัน `key = 'feature_flags'` — ตัว entity เองบันทึกไว้แบบเต็มที่[Platform Config](/th/backstage/platform-config/data-model) §2 หน้านี้ครอบคลุมเฉพาะส่วนที่เจาะจงกับคีย์นี้ &nbsp;·&nbsp; **รูปร่าง:** `Record<string, 'active' | 'inactive' | 'hide'>` แบบฟรีฟอร์ม (`FeatureFlagsConfigSchema` เป็น Zod `record` ไม่ใช่ object) — คีย์เดียวใน registry ที่ไม่มีรายชื่อฟิลด์ตายตัว และนั่นคือเหตุผลว่าทำไมมันเป็นคีย์เดียวที่ `PATCH` ไม่ได้เลย (§4) &nbsp;·&nbsp; **แหล่งความจริงว่า *มีอะไรบ้าง*:** `FEATURE_CATALOG` ฝั่ง frontend (`src/constants/featureFlags.ts`) 28 รายการ — backend เก็บแค่สถานะ ไม่เคยตรวจชื่อคีย์กับแค็ตตาล็อกใดเลย &nbsp;·&nbsp; **เข้าถึงได้ผ่านคู่ของตัวเองเท่านั้น:** `GET`/`PUT /api-system/backstage/feature-flags` ไม่ใช่ผ่าน `/api-system/backstage/configs` ทั่วไป (§4)
+> **ที่เก็บข้อมูล:** หนึ่งแถวของตาราง `tb_backstage_config` ที่ใช้ร่วมกัน `key = 'feature_flags'` — ตัว entity เองบันทึกไว้แบบเต็มที่[Backstage Config](/th/backstage/backstage-config/data-model) §2 หน้านี้ครอบคลุมเฉพาะส่วนที่เจาะจงกับคีย์นี้ &nbsp;·&nbsp; **รูปร่าง:** `Record<string, 'active' | 'inactive' | 'hide'>` แบบฟรีฟอร์ม (`FeatureFlagsConfigSchema` เป็น Zod `record` ไม่ใช่ object) — คีย์เดียวใน registry ที่ไม่มีรายชื่อฟิลด์ตายตัว และนั่นคือเหตุผลว่าทำไมมันเป็นคีย์เดียวที่ `PATCH` ไม่ได้เลย (§4) &nbsp;·&nbsp; **แหล่งความจริงว่า *มีอะไรบ้าง*:** `FEATURE_CATALOG` ฝั่ง frontend (`src/constants/featureFlags.ts`) 28 รายการ — backend เก็บแค่สถานะ ไม่เคยตรวจชื่อคีย์กับแค็ตตาล็อกใดเลย &nbsp;·&nbsp; **เข้าถึงได้ผ่านคู่ของตัวเองเท่านั้น:** `GET`/`PUT /api-system/backstage/feature-flags` ไม่ใช่ผ่าน `/api-system/backstage/configs` ทั่วไป (§4)
 
 > **Source of truth:** แค็ตตาล็อกฝั่ง frontend ที่นิยามว่ามีอะไร gate ได้บ้าง และ schema/controller ฝั่ง backend ที่เก็บและให้บริการมัน อ่านสิ่งเหล่านี้ก่อนเสมอเมื่อเขียนหรืออัปเดตหน้านี้:
 > - `../carmen-backstage/src/constants/featureFlags.ts`
@@ -26,7 +26,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 ## 2. Entity: แถว `feature_flags` บน `tb_backstage_config`
 
-ตัว `tb_backstage_config` เอง — ทุกคอลัมน์, unique index บน `key`+`deleted_at` ที่ไม่บังคับใช้จริง, และการแข่งกันของแถวซ้ำที่ยังไม่ถูกลบซึ่ง index นั้นไม่กัน — บันทึกไว้แบบเต็มที่[Platform Config — Data Model](/th/backstage/platform-config/data-model) §2 ด้านล่างนี้ไม่พูดซ้ำ สิ่งที่เจาะจงกับคีย์นี้:
+ตัว `tb_backstage_config` เอง — ทุกคอลัมน์, unique index บน `key`+`deleted_at` ที่ไม่บังคับใช้จริง, และการแข่งกันของแถวซ้ำที่ยังไม่ถูกลบซึ่ง index นั้นไม่กัน — บันทึกไว้แบบเต็มที่[Backstage Config — Data Model](/th/backstage/backstage-config/data-model) §2 ด้านล่างนี้ไม่พูดซ้ำ สิ่งที่เจาะจงกับคีย์นี้:
 
 - **`key = 'feature_flags'`** หนึ่งแถวที่ยังไม่ถูกลบ (หรือศูนย์แถว ก่อนการ save ครั้งแรก)
 - **`value`** คือตัวแมปเอง — `Record<string, 'active' | 'inactive' | 'hide'>` — ไม่ใช่ object รูปร่างตายตัวแบบที่ registry key อื่นทุกตัวเป็น (`invitation`, `license` ฯลฯ ทุกตัวมีรายชื่อฟิลด์ที่กำหนดไว้ ตัวนี้ไม่มี)
@@ -56,11 +56,11 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 | 15 | `cronjobs` | Scheduled Jobs | Platform | `navGroup.scheduling` |
 | 16 | `applications` | Applications | Platform | `navGroup.backstage` |
 | 17 | `email_settings` | Email Settings | Platform | `navGroup.backstage` |
-| 18 | `backstage_config` | Platform Config | Platform | `navGroup.backstage` |
+| 18 | `backstage_config` | Backstage Config | Platform | `navGroup.backstage` |
 | 19 | `backstage_roles` | Platform Roles | Platform | `navGroup.backstage` |
 | 20 | `super_admins` | Super Admins | Platform | `navGroup.backstage` |
 | 21 | `user_backstage` | Platform Users | Platform | `navGroup.backstage` |
-| 22 | `backstage_migrations` | Platform Migrations | Platform | `navGroup.database` |
+| 22 | `backstage_migrations` | Backstage Migrations | Platform | `navGroup.database` |
 | 23 | `sql_workbench` | SQL Workbench | Platform | `navGroup.database` |
 | 24 | `database_pools` | Database Pools | Platform | `navGroup.database` |
 | 25 | `cluster_admin_cluster` | Cluster | Cluster admin | `navGroup.clusterAdmin` |
@@ -81,7 +81,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - **แทนที่แมปทั้งใบ — ไม่มี `PATCH` สำหรับคีย์นี้ และโดยโครงสร้างแล้วมีไม่ได้ด้วย** ตัวสร้าง `PLATFORM_CONFIG_ENTRIES` ที่ `BackstageConfigService` ใช้ร่วมกันคำนวณรายชื่อ `fields` ที่รู้จักของแต่ละคีย์ไว้สำหรับให้ `PATCH` ปฏิเสธฟิลด์ที่ไม่รู้จัก และสำหรับ schema ที่ไม่ใช่ `z.ZodObject` — ซึ่ง `z.record(...)` ของ `feature_flags` เป็นแบบนั้น — รายการนั้นถูกปล่อยว่างไว้โดยเจตนา (`backstage-config.schema.ts:506-510`, คอมเมนต์: "there is no fixed field list, so PATCH is refused outright — such keys are replaced wholesale by PUT") `rejectBadPatchShape()` ปฏิเสธ payload ที่ไม่ว่างเปล่าทุกตัวที่ได้รับเมื่อ `fields` ว่างเปล่า ดังนั้นการเรียก `PATCH` กับ `feature_flags` จะล้มเหลวทุก payload ไม่ใช่แค่ตัวที่ผิดรูปแบบ — นี่เป็นผลลัพธ์เชิงโครงสร้างจาก schema ที่เป็น `record` ไม่ใช่ `object` ไม่ใช่ช่องโหว่ที่ใครลืมปิด
 - **ตรวจสอบสองครั้งบน `PUT` เพื่อข้อความ error ที่ดีกว่า** controller ฝั่ง gateway วนดูทุกคีย์ของ body ที่เข้ามาและตรวจค่ากับ `['active', 'inactive', 'hide']` ด้วยตัวเอง (`feature_flags.controller.ts:151-162`) **ก่อน** ส่งต่อไปยัง micro-cluster ซึ่งจะตรวจ body เดิมซ้ำอีกครั้งด้วย `FeatureFlagsConfigSchema` จริง (regex ของคีย์ `^[a-z][a-z0-9_]*$` บวก enum) ภายใน `BackstageConfigService.upsert()` คอมเมนต์อธิบายว่าทำไม gateway ถึงตรวจซ้ำสิ่งที่ backend จะตรวจอีกที: ตรวจตรงนี้ด้วยเพื่อให้ 422 ระบุคีย์ที่ผิดได้ — 422 ที่บอกแค่ "schema ไม่ผ่าน" ทำให้ผู้ดูแลหาไม่เจอว่าแถวไหนพัง (บรรทัด 148-150) การวนตรวจของ gateway เองไม่ได้ตรวจ regex ของชื่อคีย์เลย ตรวจแค่ค่าสถานะ — ชื่อคีย์ที่ผิด (เช่นมีตัวพิมพ์ใหญ่) จะถูกจับได้แค่ในรอบที่สอง ภายใน micro-cluster เท่านั้น
 - **คีย์ที่ไม่ได้ส่งไปใน body ของ `PUT` ถือว่าถูกลบ ไม่ใช่ถูกปล่อยไว้เฉย ๆ** ทั้ง service ฝั่ง frontend (`featureFlagService.ts:24`, "แทนที่แมปทั้งใบ — คีย์ที่ไม่ได้ส่งไปถือว่าถูกลบ") และคำอธิบาย Swagger ของ controller เอง ("a key left out is removed") ระบุตรงกัน: แมปที่เก็บไว้ทั้งใบถูกแทนที่ด้วย object ที่ผู้เรียกส่งมา คีย์ต่อคีย์ นี่คือกลไกเบื้องหลังการแข่งกันเขียนทับแมปทั้งใบใน §6
-- **ห้ามส่ง `doc_version` เด็ดขาด** `tb_backstage_config` มีคอลัมน์นี้อยู่ แต่ไม่มี write path ของคีย์ไหนในตารางนี้อ่านหรือเพิ่มค่ามันเลย (ยืนยันไว้ที่[Platform Config — Data Model](/th/backstage/platform-config/data-model) §5) — `feature_flags` ไม่ใช่กรณีพิเศษตรงนี้ มันแค่สืบทอดพฤติกรรมของตารางที่ใช้ร่วมกัน คอมเมนต์ของ service ฝั่ง frontend เองระบุเป็นคำสั่ง ไม่ใช่การค้นพบ: "ห้ามส่ง doc_version: ตาราง tb_backstage_config มีคอลัมน์นั้นแต่ backend ยังไม่บังคับ" (`featureFlagService.ts:25`)
+- **ห้ามส่ง `doc_version` เด็ดขาด** `tb_backstage_config` มีคอลัมน์นี้อยู่ แต่ไม่มี write path ของคีย์ไหนในตารางนี้อ่านหรือเพิ่มค่ามันเลย (ยืนยันไว้ที่[Backstage Config — Data Model](/th/backstage/backstage-config/data-model) §5) — `feature_flags` ไม่ใช่กรณีพิเศษตรงนี้ มันแค่สืบทอดพฤติกรรมของตารางที่ใช้ร่วมกัน คอมเมนต์ของ service ฝั่ง frontend เองระบุเป็นคำสั่ง ไม่ใช่การค้นพบ: "ห้ามส่ง doc_version: ตาราง tb_backstage_config มีคอลัมน์นั้นแต่ backend ยังไม่บังคับ" (`featureFlagService.ts:25`)
 
 ## 5. Consumer — ใครอ่านสถานะบ้าง และแต่ละตัวทำอะไร
 
@@ -99,10 +99,10 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 
 | สถานการณ์ | สิ่งที่เกิดขึ้นจริง |
 | --- | --- |
-| admin สองคนเปิดหน้า Feature Flags พร้อมกัน แต่ละคนแก้คนละคีย์ แล้วทั้งคู่กด Save | `PUT` ที่มาถึงทีหลังชนะเด็ดขาด — มันส่งร่างของตัวเองทั้งใบ (ตั้งต้นจากแมปตอนที่หน้าของ admin คนนั้นโหลด) เขียนทับการเปลี่ยนแปลงที่ admin คนแรก save ไปแล้วอย่างเงียบ ๆ สำหรับคีย์ที่คนที่สองไม่ได้แตะเลย ไม่มีการ merge ไม่มีการตรวจ conflict และไม่มีการตรวจ version (§4) — นี่คือพฤติกรรม last-write-wins-on-the-whole-map ปกติที่ทุกคีย์ของ `tb_backstage_config` มี (บันทึกไว้แบบทั่วไปที่[Platform Config — Data Model](/th/backstage/platform-config/data-model) §6) เห็นผลชัดกว่าที่นี่เพราะ *ทั้งแมป* คือค่าของคีย์เดียว ไม่ใช่หนึ่งใน namespace หลายตัว |
+| admin สองคนเปิดหน้า Feature Flags พร้อมกัน แต่ละคนแก้คนละคีย์ แล้วทั้งคู่กด Save | `PUT` ที่มาถึงทีหลังชนะเด็ดขาด — มันส่งร่างของตัวเองทั้งใบ (ตั้งต้นจากแมปตอนที่หน้าของ admin คนนั้นโหลด) เขียนทับการเปลี่ยนแปลงที่ admin คนแรก save ไปแล้วอย่างเงียบ ๆ สำหรับคีย์ที่คนที่สองไม่ได้แตะเลย ไม่มีการ merge ไม่มีการตรวจ conflict และไม่มีการตรวจ version (§4) — นี่คือพฤติกรรม last-write-wins-on-the-whole-map ปกติที่ทุกคีย์ของ `tb_backstage_config` มี (บันทึกไว้แบบทั่วไปที่[Backstage Config — Data Model](/th/backstage/backstage-config/data-model) §6) เห็นผลชัดกว่าที่นี่เพราะ *ทั้งแมป* คือค่าของคีย์เดียว ไม่ใช่หนึ่งใน namespace หลายตัว |
 | คีย์หนึ่งถูกเอาออกจาก `FEATURE_CATALOG` ใน frontend release รุ่นถัดไป แต่สถานะของมันเคยถูก save ไว้ก่อนหน้า | `isFeatureKey()` คืน `false` ให้มัน การคำนวณ `orphans` ของหน้า Feature Flags เอง (`FeatureFlagManagement.tsx:44-47`) จะแสดงมันในการ์ด "Unknown keys" แยกต่างหาก พร้อมปุ่ม Remove การลบแค่แก้ `draft` ในหน่วยความจำ (`setDraft`, บรรทัด 163-168) — แถวจริงยังไม่ถูกลบจาก backend จนกว่าจะ Save ครั้งถัดไป เพราะ `PUT` แทนที่แมปทั้งใบเสมอ (§4) ก่อนหน้านั้น การ refresh หน้าโดยไม่ save จะทำให้คีย์กำพร้ากลับมาทันที |
 | request `GET /api-system/backstage/feature-flags` ล้มเหลว (network error, backend ล่ม) | ทุก consumer ใน §5 fallback ไปที่ `DEFAULT_FEATURE_STATES` — ทุกคีย์ในแค็ตตาล็อกเป็น `active` — แบบเงียบ ๆ โดย `isReady` ยังคงเปลี่ยนเป็น `true` เพื่อไม่ให้หน้าไหนค้างที่ loader รอ request ที่ล้มเหลวไปแล้ว (`FeatureFlagContext.tsx:41-46`) ผลจริงคือความล้มเหลวในการเข้าถึง endpoint นี้ทำให้ **ทั้งผลิตภัณฑ์ดูเหมือนเปิดใช้งานเต็มที่** ไม่ใช่ซ่อนบางส่วน |
-| `PUT` สองตัวแข่งกันบนคีย์ที่ยังไม่เคยบันทึก (ยังไม่มีแถวสำหรับ `feature_flags`) | รูปแบบ `findFirst`-แล้ว-`create`/`update` ของ `BackstageConfigService.upsert()` (บันทึกไว้สำหรับตารางที่ใช้ร่วมกันที่[Platform Config — Data Model](/th/backstage/platform-config/data-model) §2) ใช้เหมือนกันที่นี่: ทั้งคู่อาจเห็นว่ายังไม่มีแถวแล้วทั้งคู่ `create()` เหลือแถวที่ยังไม่ถูกลบสองแถวสำหรับ `key = 'feature_flags'` ตัวอ่านทุกตัว (`findOne` และ handler `GET` ของคีย์นี้เอง) จะเอาแถวที่อัปเดตล่าสุด อาการที่เห็นจริงคือแถวที่เก่ากว่าจากสองแถวหายไปเงียบ ๆ ไม่ใช่ error — ไม่ใช่สิ่งที่โค้ดของคีย์นี้เองป้องกันเป็นพิเศษ |
+| `PUT` สองตัวแข่งกันบนคีย์ที่ยังไม่เคยบันทึก (ยังไม่มีแถวสำหรับ `feature_flags`) | รูปแบบ `findFirst`-แล้ว-`create`/`update` ของ `BackstageConfigService.upsert()` (บันทึกไว้สำหรับตารางที่ใช้ร่วมกันที่[Backstage Config — Data Model](/th/backstage/backstage-config/data-model) §2) ใช้เหมือนกันที่นี่: ทั้งคู่อาจเห็นว่ายังไม่มีแถวแล้วทั้งคู่ `create()` เหลือแถวที่ยังไม่ถูกลบสองแถวสำหรับ `key = 'feature_flags'` ตัวอ่านทุกตัว (`findOne` และ handler `GET` ของคีย์นี้เอง) จะเอาแถวที่อัปเดตล่าสุด อาการที่เห็นจริงคือแถวที่เก่ากว่าจากสองแถวหายไปเงียบ ๆ ไม่ใช่ error — ไม่ใช่สิ่งที่โค้ดของคีย์นี้เองป้องกันเป็นพิเศษ |
 | ค่าที่ไม่ใช่ `'active'`/`'inactive'`/`'hide'` ไปถึงการเรียก `flagOf()` (เช่นแถวที่แก้ในฐานข้อมูลตรง ๆ) | การตรวจของ `PUT` ฝั่ง gateway (§4) กันไม่ให้สิ่งนี้ถูก *save* ผ่าน UI ของผลิตภัณฑ์เองได้ แต่ไม่ได้ย้อนแก้แถวที่ถูกแก้ในฐานข้อมูลตรง ๆ `flagOf()` ไม่มีการตรวจสอบตอน runtime เลยนอกจาก type ของ TypeScript สตริงที่ไม่คาดคิดจะไม่ถูกมองว่าเป็น `'hide'` หรือ `'inactive'` โดยทุกการเปรียบเทียบ `!== 'hide'` / `=== 'inactive'` ใน §5 ซึ่งหมายความว่ามันจะทำงานเหมือน `'active'` ทุกที่โดยไม่เคยถูกตรวจว่าเป็นเช่นนั้นจริง — ไม่ได้ยืนยันกับฐานข้อมูลจริง เป็นการให้เหตุผลจาก operator เปรียบเทียบเท่านั้น |
 
 ## 7. คำแนะนำ
@@ -124,7 +124,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - `../carmen-backstage/src/services/featureFlagService.ts` — REST client รวมถึงคำเตือนเรื่อง `doc_version` (§4)
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/feature_flags/feature_flags.controller.ts` — คู่ `GET`/`PUT` เฉพาะทาง, guard, และการตรวจสองครั้ง (§4)
 - `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/backstage-config/backstage-config.schema.ts` (บรรทัด 242-246, 360-369, 452-456) — `FeatureFlagsConfigSchema`, entry ใน registry, และกลไก fields-ว่าง-แปลว่า-PATCH-ถูกปฏิเสธ (§4)
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (บรรทัด 1462) — `tb_backstage_config` บันทึกไว้แบบเต็มที่[Platform Config — Data Model](/th/backstage/platform-config/data-model)
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` (บรรทัด 1462) — `tb_backstage_config` บันทึกไว้แบบเต็มที่[Backstage Config — Data Model](/th/backstage/backstage-config/data-model)
 - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts` (บรรทัด 43) — entry catalog ของ `feature_flag.manage` อ้างถึงในหน้า landing §4
 
-**Cross-links:** [Feature Flags landing](/th/backstage/feature-flags) &nbsp;·&nbsp; [Platform Config — Data Model](/th/backstage/platform-config/data-model)
+**Cross-links:** [Feature Flags landing](/th/backstage/feature-flags) &nbsp;·&nbsp; [Backstage Config — Data Model](/th/backstage/backstage-config/data-model)

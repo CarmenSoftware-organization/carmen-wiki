@@ -2,7 +2,7 @@
 title: งานตามกำหนดเวลา (Cronjobs)
 description: คอนโซลจัดตารางเวลาของแพลตฟอร์มบนตารางที่ใช้ร่วมกัน "CRONJOBS"."Cronjob" — งานหกประเภท ใครเป็นคนรัน (../micro-cronjobs) และจุดที่จะเห็นว่า run ไหนล้มเหลว
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, cronjobs
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -122,7 +122,7 @@ dateCreated: '2026-09-05T18:14:07.000Z'
 - `../carmen-turborepo-backend/apps/backend-gateway/src/backstage/backstage_cronjobs/{backstage_cronjobs.controller.ts,backstage_cronjobs.service.ts,swagger/request.ts}` — REST surface และ HTTP proxy ของ gateway อ่านแบบเต็ม
 - `../carmen-turborepo-backend/apps/backend-gateway/src/application/reports/reports.service.ts` — เส้นทางสร้างงานแบบ `by-source` ที่กำหนดการรายงานใช้ (`cronjobHttp`, `CRONJOB_SERVICE_URL`)
 - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-permission.data.ts:228-237` — คำอธิบายแคตตาล็อก `cronjob.read`/`cronjob.manage`
-- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-role-permission.data.ts:11,34` — มีแค่ Platform Admin ที่ถือ `cronjob.*`
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/seed.backstage-role-permission.data.ts:11,34` — มีแค่ Backstage Admin ที่ถือ `cronjob.*`
 - `../micro-cronjobs/internal/model/cronjob.go`, `internal/executor/*.go`, `internal/scheduler/scheduler.go`, `internal/handler/cronjob_handler.go`, `internal/repository/cronjob_repo.go`, `cmd/server/main.go` — อ่านแบบเต็มทั้งหมด ดูรายการเต็มพร้อมจำนวนบรรทัดที่ [Data Model](/th/backstage/cronjobs/data-model) §8
 - `../micro-cronjobs/migrations/20260610120000_seed_dashboard_refresh_jobs.up.sql`, `20260730092930_seed_activity_rollup_job.up.sql`, `20260730093731_seed_activity_retention_job.up.sql` — งานที่ seed ไว้ตาม §3.2
 - ยืนยันกับ `carmen-backstage` HEAD `8405788f`, `carmen-turborepo-backend` HEAD `c9d788829` และ `micro-cronjobs` HEAD `c5464da` (ทั้งหมด origin/main, 2026-10-27)

@@ -2,7 +2,7 @@
 title: พูลฐานข้อมูล — โมเดลข้อมูล (Data Model)
 description: ตารางฟิลด์เต็มของ tb_database_pool — รหัสผ่านที่เข้ารหัส, note เทียบกับ description, ความหมายของ is_active และการยืนยันตรงกับ Business Units และ Tenant Migrations
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, database-pools, data-model
 editor: markdown
 dateCreated: '2026-09-05T18:14:07.000Z'
@@ -64,7 +64,7 @@ tb_database_pool  1 ─── M  tb_business_unit   (ผ่าน tb_business_un
 5. **ตอนใช้งานจริง** ไม่มีอะไรในโมดูลนี้ถอดรหัสรหัสผ่านของ pool เอง — สิ่งนั้นเกิดขึ้นก็ต่อเมื่อ *ผู้บริโภค* resolve connection ของ tenant [Tenant Migrations](/th/backstage/tenant-migrations/data-model) §3 บันทึกเส้นทางนั้นไว้: `resolveTenantUrl()` (`../carmen-turborepo-backend/packages/db-connection-utils/src/tenant-url.ts`) เรียก `decryptSecret()` แล้ว throw เมื่อล้มเหลว แทนที่จะถอยไปเดาว่าเป็น plaintext — "ไม่มี fallback โดยตั้งใจ" ตาม comment ของฟังก์ชันนั้นเอง — จากนั้น `buildTenantUrl()` ประกอบ `postgresql://{user}:{password}@{host}:{port}/{database}?schema={db_schema}` โดย `host`/`port` ถูกตรวจสอบ (`isSafeHost`/`isSafePort`) และส่วนอื่นทุกส่วนถูก percent-encode
 6. **ที่มาของการ backfill** สคริปต์ครั้งเดียว `migrate.database-pool.ts` (§1) เป็นจุดเดียวในโค้ดชุดนี้ที่เคยอ่านรหัสผ่านแบบ plaintext จาก `db_connection` ตรง ๆ เป็น dry-run โดยดีฟอลต์ ต้องใส่ `--apply` ถึงจะเขียนจริง และมีโหมด `--verify` แยกต่างหากที่ถอดรหัสผ่านของทุก pool ที่ยังไม่ถูกลบแล้วรายงานว่า pool *ชื่อ* ไหน (ไม่เคย log ciphertext หรือ plaintext) ถอดรหัสไม่ผ่านภายใต้ key ที่ตั้งค่าอยู่ปัจจุบัน — ตั้งใจให้รันครั้งเดียวก่อน migration ที่ลบ `db_connection` จะรัน สคริปต์นี้รันเส้นทาง scan/backfill ไม่ได้อีกแล้ววันนี้: มันต้องพึ่งคอลัมน์ `db_connection` ที่ migration `7f825bb20` ลบไปแล้ว มันยังอยู่ในโปรเจกต์แค่เป็นบันทึกว่าการย้ายข้อมูลครั้งเดียวนั้นทำอย่างไร ตามที่ comment หัวไฟล์ของมันเองระบุ
 
-ไม่พบรหัสผ่าน, connection string หรือ encryption key ที่ฝังไว้แบบ hardcode ที่ใดเลยในฝั่ง frontend, backend หรือสคริปต์ backfill ของโมดูลนี้ — ตรวจแล้วทั้ง `emptyForm`/`buildPayload` ของ `DatabasePoolEdit.tsx` (มีแต่สตริงว่างเปล่า ไม่มี credential ที่ฝังไว้), `database-pool.service.ts` (เข้ารหัสสิ่งที่ส่งเข้ามาเท่านั้น ไม่มีค่า fallback) และ `crypto.util.ts` (throw แทนที่จะใช้ค่า default) เรื่องนี้ควรพูดให้ชัดเพราะโมดูลพี่น้องในวิกินี้เคยถูกแก้ไขจากการกล่าวอ้างแบบนี้พอดี: ดู [Platform Migrations](/th/backstage/platform-migrations) §3.1 ที่ `PLATFORM_DEPLOY_TOKEN` ของมัน**มี** ค่า default เป็น string ว่างใน `config.env.ts` จริง
+ไม่พบรหัสผ่าน, connection string หรือ encryption key ที่ฝังไว้แบบ hardcode ที่ใดเลยในฝั่ง frontend, backend หรือสคริปต์ backfill ของโมดูลนี้ — ตรวจแล้วทั้ง `emptyForm`/`buildPayload` ของ `DatabasePoolEdit.tsx` (มีแต่สตริงว่างเปล่า ไม่มี credential ที่ฝังไว้), `database-pool.service.ts` (เข้ารหัสสิ่งที่ส่งเข้ามาเท่านั้น ไม่มีค่า fallback) และ `crypto.util.ts` (throw แทนที่จะใช้ค่า default) เรื่องนี้ควรพูดให้ชัดเพราะโมดูลพี่น้องในวิกินี้เคยถูกแก้ไขจากการกล่าวอ้างแบบนี้พอดี: ดู [Backstage Migrations](/th/backstage/backstage-migrations) §3.1 ที่ `PLATFORM_DEPLOY_TOKEN` ของมัน**มี** ค่า default เป็น string ว่างใน `config.env.ts` จริง
 
 ## 5. ความสอดคล้องกับ Business Units และ Tenant Migrations
 

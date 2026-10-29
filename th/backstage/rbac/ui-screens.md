@@ -1,8 +1,8 @@
 ---
 title: Backstage RBAC — หน้าจอ UI (UI Screens)
-description: RoleManagement/RoleEdit พร้อม RolesAccessSummary และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ User Platform
+description: RoleManagement/RoleEdit พร้อม RolesAccessSummary และ PermissionGrid แบบแถวต่อ resource, Permission Catalog แบบ read-only และ (ระดับสรุป) ทะเบียน Super Admins กับหน้าจอ assignment ของ Backstage Users
 published: true
-date: 2026-10-29T03:30:00.000Z
+date: 2026-10-29T05:00:00.000Z
 tags: book/backstage, rbac, ui
 editor: markdown
 dateCreated: 2026-06-10T15:00:00.000Z
@@ -11,13 +11,13 @@ dateCreated: 2026-06-10T15:00:00.000Z
 # Backstage RBAC — หน้าจอ UI (UI Screens)
 
 > **At a Glance**
-> **หน้าจอ:** `RoleManagement` (`/backstage/roles`) · `RoleEdit` (`/backstage/roles/new`, `/backstage/roles/:id/edit`) · `PermissionCatalog` (`/backstage/category-permissions`) · `SuperAdminManagement` (`/backstage/super-admins`) · `UserBackstageManagement` (`/backstage/user-backstage`) · `UserBackstageEdit` (`/backstage/user-backstage/:userId`) &nbsp;·&nbsp; **รูปแบบมาตรฐาน:** Roles และ User Platform ใช้ `DataTable` แบบ server-side; Super Admins (เขียนใหม่อีกครั้งเมื่อ 2026-09-02) เป็นทะเบียนแบบการ์ด ไม่ใช่ตาราง; Permission Catalog เป็น card grid แบบ read-only &nbsp;·&nbsp; **Component หลัก:** `PermissionGrid` — action ทุกตัวใน catalog แสดงเป็นแถวต่อ resource, ปุ่ม toggle ในโหมดแก้ไข, action ที่ไม่ได้มอบให้แสดงจางลงแทนที่จะซ่อนไป (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20) &nbsp;·&nbsp; **Gate ภายในหน้า:** list/edit ของ Roles gate Add/Edit/Delete และ toggle Edit ด้วยคีย์ `backstage_role.*`; `<Can permission="user_backstage.manage">` บนหน้า detail ของ User Platform &nbsp;·&nbsp; **แถบสรุป:** `RolesAccessSummary` บนหน้า list ของ Roles (วัดเทียบ catalog ตั้งแต่ 2026-09-02), `BackstageAccessSummary` บนหน้า list ของ User Platform
+> **หน้าจอ:** `RoleManagement` (`/backstage/roles`) · `RoleEdit` (`/backstage/roles/new`, `/backstage/roles/:id/edit`) · `PermissionCatalog` (`/backstage/category-permissions`) · `SuperAdminManagement` (`/backstage/super-admins`) · `UserBackstageManagement` (`/backstage/user-backstage`) · `UserBackstageEdit` (`/backstage/user-backstage/:userId`) &nbsp;·&nbsp; **รูปแบบมาตรฐาน:** Roles และ Backstage Users ใช้ `DataTable` แบบ server-side; Super Admins (เขียนใหม่อีกครั้งเมื่อ 2026-09-02) เป็นทะเบียนแบบการ์ด ไม่ใช่ตาราง; Permission Catalog เป็น card grid แบบ read-only &nbsp;·&nbsp; **Component หลัก:** `PermissionGrid` — action ทุกตัวใน catalog แสดงเป็นแถวต่อ resource, ปุ่ม toggle ในโหมดแก้ไข, action ที่ไม่ได้มอบให้แสดงจางลงแทนที่จะซ่อนไป (แทนที่ accordion `PermissionPicker` เมื่อ 2026-08-20) &nbsp;·&nbsp; **Gate ภายในหน้า:** list/edit ของ Roles gate Add/Edit/Delete และ toggle Edit ด้วยคีย์ `backstage_role.*`; `<Can permission="user_backstage.manage">` บนหน้า detail ของ Backstage Users &nbsp;·&nbsp; **แถบสรุป:** `RolesAccessSummary` บนหน้า list ของ Roles (วัดเทียบ catalog ตั้งแต่ 2026-09-02), `BackstageAccessSummary` บนหน้า list ของ Backstage Users
 
 ![Backstage RBAC — หน้าจอ UI (UI Screens) screen](/screenshots/platform/rbac/ui-screens.png)
 
 ![Backstage RBAC — หน้าจอ UI (UI Screens) form screen](/screenshots/platform/rbac/ui-screens-form.png)
 
-**หมายเหตุขอบเขต:** หน้านี้ตรวจสอบ §2 (Roles) และ §3 (Permission Catalog) กับซอร์สปัจจุบันอย่างครบถ้วน §4 (Super Admins) และ §5 (User Platform) อัพเดทเฉพาะระดับสรุปเท่านั้น — ดูหมายเหตุขอบเขตใน[หน้า landing ของโมดูล](/th/backstage/rbac)
+**หมายเหตุขอบเขต:** หน้านี้ตรวจสอบ §2 (Roles) และ §3 (Permission Catalog) กับซอร์สปัจจุบันอย่างครบถ้วน §4 (Super Admins) และ §5 (Backstage Users) อัพเดทเฉพาะระดับสรุปเท่านั้น — ดูหมายเหตุขอบเขตใน[หน้า landing ของโมดูล](/th/backstage/rbac)
 
 ## 1. ภาพรวม
 
@@ -25,7 +25,7 @@ dateCreated: 2026-06-10T15:00:00.000Z
 
 **Permission Catalog** เป็นหน้าอ้างอิงแบบ read-only: grid ของ card แบบ responsive จัดกลุ่มตาม resource ไม่มีตาราง ไม่มี mutation เข้าถึงได้จากปุ่ม header บนหน้า list ของ Roles เท่านั้น ไม่มีรายการ sidebar และ — ต่างจากทุกหน้าจอในโมดูลนี้ — **ไม่มี permission gate ที่ระดับ route ของ SPA เลย** ผู้ใช้ platform ที่ login แล้วคนใดก็นำทางไปหน้านี้ได้โดยตรง การดึงข้อมูลของหน้ายังคงถูกบังคับที่ฝั่ง backend ด้วย `backstage_role.read` (§3)
 
-**User Platform** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`carmen-backstage` PR #244/#250/#251 ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
+**Backstage Users** และ **Super Admins** สรุปไว้ใน §4/§5 ตามหมายเหตุขอบเขตข้างบน ทั้งคู่ผ่านการเขียนใหม่ต่ออีกครั้งตั้งแต่ sync ครั้งก่อน (`carmen-backstage` PR #244/#250/#251 ทั้งหมดเมื่อ 2026-09-02) ที่ไม่ได้ตรวจสอบบรรทัดต่อบรรทัดในหน้านี้
 
 ทั้งหกหน้าจอมาพร้อม **Debug Sheet** เฉพาะ dev ของ SPA — ปุ่มลอยสีเหลืองอำพัน (มุมขวาล่าง) ที่เปิด JSON ดิบของ API response ของหน้าจอนั้น (เฉพาะ `import.meta.env.DEV` ไม่มีใน production build) บน `RoleEdit` มีสอง tab คือ Role และ Catalog เปิดเผย payload ของทั้งสอง endpoint — เป็นวิธีที่เร็วที่สุดสำหรับ QA ในการตรวจสอบการซ้อนของ envelope และ shape ของ audit จริง ๆ ตามที่อธิบายด้านล่าง
 
@@ -115,7 +115,7 @@ Render เฉพาะขณะ `editing = true` ตาม pattern เดีย�
 
 response ของ list ยังคงซ้อน envelope `{ data }` หลายชั้นและถูกไล่ลงด้วย helper `extractArray` ระดับ local เหมือนเดิม สถานะ UI ที่จดจำไว้มีแค่ search term (`search_super_admins`)
 
-## 5. User Platform (ระดับสรุป — ดูหมายเหตุขอบเขตใน §1)
+## 5. Backstage Users (ระดับสรุป — ดูหมายเหตุขอบเขตใน §1)
 
 ทั้งสองหน้าจอถูกเขียนใหม่ครั้งใหญ่นับตั้งแต่ sync ฉบับเต็มครั้งก่อน (`#250`/`#251`, 2026-09-02, "ทำให้นี่เป็นทะเบียนสิทธิ์ ไม่ใช่ฟอร์มแก้ role")
 
@@ -123,11 +123,11 @@ response ของ list ยังคงซ้อน envelope `{ data }` หล�
 
 **`UserBackstageEdit`** (`/backstage/user-backstage/:userId`) detail: ได้ **Access Reach Band** (สรุปขอบเขตทั้งแพลตฟอร์มเทียบกับต่อ cluster) แบบใหม่, banner เตือนเมื่อบัญชีที่ถูกปิดใช้งานยังถือ role assignment อยู่, badge "Email Unverified" (`!!userRecord?.email_verified_at` — คอลัมน์ email-verification ของ `tb_user` ที่ระบุไว้ใน[หน้า landing ของโมดูล](/th/backstage/rbac)) และ **Membership Card** ที่ list cluster/BU ของผู้ใช้เพื่อบริบท การระบุ "granted by" ต่อ assignment ยัง workaround อยู่: endpoint ของ role ต่อผู้ใช้ไม่คืน actor มาด้วย หน้าจึง query endpoint list ของ registry ด้วย search term แยกต่างหากแล้วจับคู่ row กลับด้วย `user_id` ถ้าล้มเหลวจะแสดง "ไม่มีข้อมูล provenance" อย่างชัดเจนแทนที่จะเดา การ์ด Roles & Scope, gate `<Can permission="user_backstage.manage">` และ flow add-role/remove เป็นกลไกเดียวกับเดิม แม้ UI ของ add-role จะย้ายจากฟอร์ม inline ไปเป็น Sheet (`AddRoleSheet`)
 
-ด้วยความลึกของการเขียนใหม่นี้ การตรวจสอบ §4/§5 แบบละเอียดทุก section (คอลัมน์, ถ้อยคำที่แน่นอน, key ของ `localStorage` ที่จดจำไว้, ทุก component) จึงปล่อยให้เป็นหน้าที่ของโมดูล standalone [User Platform](/th/backstage/user-platform) และ [Super Admins](/th/backstage/super-admins) ซึ่งตอนนี้บันทึกแต่ละหน้าจอไว้ในระดับความละเอียดนั้นแล้ว
+ด้วยความลึกของการเขียนใหม่นี้ การตรวจสอบ §4/§5 แบบละเอียดทุก section (คอลัมน์, ถ้อยคำที่แน่นอน, key ของ `localStorage` ที่จดจำไว้, ทุก component) จึงปล่อยให้เป็นหน้าที่ของโมดูล standalone [Backstage Users](/th/backstage/user-backstage) และ [Super Admins](/th/backstage/super-admins) ซึ่งตอนนี้บันทึกแต่ละหน้าจอไว้ในระดับความละเอียดนั้นแล้ว
 
 ## 6. แหล่งข้อมูลอ้างอิง
 
-- `../carmen-backstage/src/App.tsx` — การลงทะเบียน route ของสี่ route Roles/Permission-Catalog (บรรทัด 450–480 รวม `<PrivateRoute>` เปล่า ๆ ของ `/backstage/category-permissions`); route ของ User Platform และ Super Admins อยู่ที่อื่นในไฟล์เดียวกัน
+- `../carmen-backstage/src/App.tsx` — การลงทะเบียน route ของสี่ route Roles/Permission-Catalog (บรรทัด 450–480 รวม `<PrivateRoute>` เปล่า ๆ ของ `/backstage/category-permissions`); route ของ Backstage Users และ Super Admins อยู่ที่อื่นในไฟล์เดียวกัน
 - `../carmen-backstage/src/pages/RoleManagement.tsx` — คอลัมน์ของ list (name+description รวมกัน, `RoleReachCell`), gate ด้วยคีย์ `backstage_role.*`, ส่งออก CSV รวม audit, key ที่จดจำไว้
 - `../carmen-backstage/src/pages/roleManagement/RolesAccessSummary.tsx`, `.../RoleReachCell.tsx` — แถบสรุปและแท่งของ cell ที่วัดเทียบ catalog (2026-09-02)
 - `../carmen-backstage/src/pages/RoleEdit.tsx` — เลย์เอาต์ hero + `PermissionGrid` (rail ของ Settings เฉพาะโหมดแก้ไข), not-found gating, `doc_version`, การ fallback audit จาก list endpoint (`fetchAudit`), การคำนวณ permission delta (`handleSubmit`)
