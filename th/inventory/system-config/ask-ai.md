@@ -2,7 +2,7 @@
 title: Ask AI
 description: การตั้งค่าต่อ business unit สำหรับเมนู "Ask AI" บนหน้า Purchase Request — เสนอ AI provider ตัวใดและส่ง prompt อะไร เก็บเป็นแถว ask_ai ใน tb_application_config; แคตตาล็อก provider เป็นของ Backstage
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: system-config, ask-ai, purchase-request, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-10-27T00:00:00.000Z
@@ -17,7 +17,7 @@ dateCreated: 2026-10-27T00:00:00.000Z
 
 หน้า PR มี dropdown **Ask AI** การเลือก provider จะสร้าง prompt จาก template ของ provider บวกตารางสินค้าของ PR (`#`, ชื่อสินค้าพร้อมชื่อท้องถิ่น, จำนวนและหน่วย, ราคาที่เสนอพร้อมสกุลเงิน) แล้วเปิดเว็บไซต์ของ provider ในแท็บใหม่โดยใส่ prompt ไว้ล่วงหน้า ชื่อคลังสินค้าไม่ถูกส่งโดยตั้งใจ (`build-pr-ai-query.ts`) ไม่มีอะไรถูกส่งจากเซิร์ฟเวอร์ของ Carmen — เบราว์เซอร์เป็นผู้เปิด URL ของ provider
 
-หน้าจอนี้ให้ Sysadmin ตัดสินใจ **สำหรับ BU ของตนเอง** ว่า provider ที่ active ของแพลตฟอร์มตัวใดจะปรากฏและแต่ละตัวใช้ prompt อะไร **ดูแลโดย** Sysadmin; **แคตตาล็อก provider** (label, icon, URL template, prompt เริ่มต้น, flag เปิดโดยค่าเริ่มต้น, ลำดับการเรียง) ดูแลโดยผู้ดูแลแพลตฟอร์มใน Backstage ([AI providers](/th/platform/ai-providers))
+หน้าจอนี้ให้ Sysadmin ตัดสินใจ **สำหรับ BU ของตนเอง** ว่า provider ที่ active ของแพลตฟอร์มตัวใดจะปรากฏและแต่ละตัวใช้ prompt อะไร **ดูแลโดย** Sysadmin; **แคตตาล็อก provider** (label, icon, URL template, prompt เริ่มต้น, flag เปิดโดยค่าเริ่มต้น, ลำดับการเรียง) ดูแลโดยผู้ดูแลแพลตฟอร์มใน Backstage ([AI providers](/th/backstage/ai-providers))
 
 ## 2. งานที่พบบ่อย
 

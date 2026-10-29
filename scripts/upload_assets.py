@@ -5,7 +5,9 @@ Usage: python3 scripts/upload_assets.py assets/screenshots/<book>/<module>/<file
 
 Folder layout (spec 2026-09-23 §2.1):
   inventory -> screenshots/<module>/            URL /screenshots/<module>/<file>
-  platform  -> screenshots/platform/<module>/   URL /screenshots/platform/<module>/<file>
+  backstage -> screenshots/platform/<module>/   URL /screenshots/platform/<module>/<file>
+  (the book was renamed platform -> backstage on 2026-10-29; the asset folder kept
+  its old slug so already-embedded image URLs stay valid)
 Reads WIKI_API_URL / WIKI_API_TOKEN from scripts/.env.
 """
 import hashlib, json, os, subprocess, sys, urllib.request
@@ -20,6 +22,8 @@ for line in (ROOT / "scripts" / ".env").read_text().splitlines():
 API = os.environ["WIKI_API_URL"]
 TOKEN = os.environ["WIKI_API_TOKEN"]
 BASE = os.environ.get("WIKI_BASE", API.rsplit("/graphql", 1)[0])
+# On-disk book folder -> Wiki.js asset folder, where the two differ.
+ASSET_FOLDER = {"backstage": "platform"}
 
 
 def gql(query: str, variables: dict) -> dict:
@@ -89,7 +93,7 @@ def served_sha256(url: str) -> tuple[int, str]:
 def upload(png: Path) -> tuple[bool, str]:
     rel = png.resolve().relative_to(ROOT / "assets" / "screenshots")
     book, module = rel.parts[0], rel.parts[1]
-    folder = ["screenshots", module] if book == "inventory" else ["screenshots", book, module]
+    folder = ["screenshots", module] if book == "inventory" else ["screenshots", ASSET_FOLDER.get(book, book), module]
     url = "/" + "/".join(folder + [png.name])
     up = post_upload(png, folder_for(folder))
     status, served = served_sha256(url)

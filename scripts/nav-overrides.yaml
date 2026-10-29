@@ -95,12 +95,12 @@ books:
             label_en: "Templates"
             label_th: "Templates"
 
-  platform:
+  backstage:
     label_en: "Carmen Blue Backstage"
     label_th: "Carmen Blue Backstage"
     groups:
       # Groups below mirror the SPA's own eight nav-group sections as
-      # documented on en/platform.md (Task 29 rebuild), which in turn mirror
+      # documented on en/backstage.md (Task 29 rebuild), which in turn mirror
       # `../carmen-backstage/src/components/nav/backstageNav.ts` groupKey order
       # (re-checked 2026-10-27: Platform group → Backstage, new AI group).
       # `sql-workbench` and `dashboard` are intentionally not nav-overrides
@@ -142,8 +142,8 @@ books:
             label_en: "Report Templates"
             label_th: "Report Templates"
           - slug: report-form-groups
-            label_en: "Report Form Groups"
-            label_th: "Report Form Groups"
+            label_en: "Form Groups"
+            label_th: "Form Groups"
           - slug: dashboard-templates
             label_en: "Dashboard Templates"
             label_th: "Dashboard Templates"
@@ -166,12 +166,12 @@ books:
         label_th: "Scheduling"
         modules:
           - slug: cronjobs
-            label_en: "Cronjobs"
-            label_th: "Cronjobs"
+            label_en: "Scheduled Jobs"
+            label_th: "Scheduled Jobs"
       - label_en: "Backstage"
         label_th: "Backstage"
         modules:
-          - slug: platform-config
+          - slug: backstage-config
             label_en: "Backstage Config"
             label_th: "Backstage Config"
           - slug: email-settings
@@ -181,11 +181,11 @@ books:
             label_en: "Applications"
             label_th: "Applications"
           - slug: rbac
-            label_en: "Backstage RBAC"
-            label_th: "Backstage RBAC"
-          - slug: user-platform
-            label_en: "User Backstage"
-            label_th: "User Backstage"
+            label_en: "Backstage Roles"
+            label_th: "Backstage Roles"
+          - slug: user-backstage
+            label_en: "Backstage Users"
+            label_th: "Backstage Users"
           - slug: super-admins
             label_en: "Super Admins"
             label_th: "Super Admins"
@@ -202,7 +202,7 @@ books:
       - label_en: "Database"
         label_th: "Database"
         modules:
-          - slug: platform-migrations
+          - slug: backstage-migrations
             label_en: "Backstage Migrations"
             label_th: "Backstage Migrations"
           - slug: database-pools

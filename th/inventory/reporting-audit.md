@@ -2,7 +2,7 @@
 title: รายงานและการตรวจสอบ (Reporting & Audit)
 description: บันทึกกิจกรรม (พร้อม Activity sheet ต่อระเบียน), ไฟล์แนบเก็บบน MinIO, การแจ้งเตือน (redesign 2026-08), report template และ print form, dashboard widget; ชี้ไปยังหน้า telemetry ในเล่ม Platform
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: reporting-audit, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -62,4 +62,4 @@ Reporting and Audit คือร่มของระบบที่ครอบ
 
 ## 6. UI telemetry — บันทึกไว้ในเล่ม Platform
 
-event การคลิกและ page-view จากแอป inventory (`lib/analytics.ts` → `POST /api/analytics-events`, batch ละ ≤ 100 รายการ, dedup ด้วย `event_id`, 2026-07-30) ถูกเก็บในตาราง Backstage `tb_activity_event`, roll up รายวันเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ micro-cronjobs และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` นี่คือ product telemetry ไม่ใช่ audit log และบริหารจากฝั่ง Backstage admin — ดู [Activity Events](/th/platform/activity-events) และ [Usage Analytics](/th/platform/usage-analytics) ในเล่ม Platform
+event การคลิกและ page-view จากแอป inventory (`lib/analytics.ts` → `POST /api/analytics-events`, batch ละ ≤ 100 รายการ, dedup ด้วย `event_id`, 2026-07-30) ถูกเก็บในตาราง Backstage `tb_activity_event`, roll up รายวันเข้า `tb_activity_event_daily` โดย job `activity_rollup` ของ micro-cronjobs และถูกลบทิ้งหลัง 365 วันโดย `activity_retention` นี่คือ product telemetry ไม่ใช่ audit log และบริหารจากฝั่ง Backstage admin — ดู [Activity Events](/th/backstage/activity-events) และ [Usage Analytics](/th/backstage/usage-analytics) ในเล่ม Platform

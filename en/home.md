@@ -1,8 +1,8 @@
 ---
 title: Carmen Blue Wiki
-description: Internal reference for Carmen Blue developers and testers — across Inventory and Platform products.
+description: Internal reference for Carmen Blue developers and testers — across the Inventory and Backstage books.
 published: true
-date: 2026-09-23T08:30:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: home, landing
 editor: markdown
 dateCreated: 2026-05-16T14:00:00.000Z
@@ -22,9 +22,9 @@ Inventory ERP for hospitality — costing, GRN, physical count, spot check, valu
 
 ## 2. Carmen Blue Backstage
 
-Platform admin — clusters, business units, users, and report templates that underlie every Carmen Blue deployment.
+Admin console — clusters, business units, users, RBAC, licenses, and report templates that underlie every Carmen Blue deployment.
 
-[Open the Platform book →](/en/platform)
+[Open the Backstage book →](/en/backstage)
 
 ---
 

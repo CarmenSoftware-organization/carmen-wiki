@@ -2,7 +2,7 @@
 title: Company Profile & Default Setting
 description: Two system-admin screens editing disjoint field groups of the same tb_business_unit row — Company Profile (identity, address, formats) and Default Setting (PR/SI/PO config + print forms). Permission system_admin.business_unit.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: system-config, business-unit, company-profile, default-setting, carmen-software
 editor: markdown
 dateCreated: 2026-07-29T10:30:00.000Z
@@ -71,7 +71,7 @@ Both screens share the exact same view/edit toggle pattern, the exact same `useB
 - **`si.cost-from` has a calculation-method-conditional option.** The `average` option in the Stock-In "Default price for added items" dropdown is only shown when `data.calculation_method` is `average` or `average_per_location` (`visibleWhenCalcMethod` is an array since FE `83bb0624`) — **unless** the BU's stored value is already `average` on a `fifo`-method tenant, in which case it stays visible so the stored value isn't silently dropped (`resolveConfigOptions()`).
 - **Branding is read-only on both screens.** Logo/avatar render via a plain `<img>` with no upload control — the actual upload flow lives elsewhere (the user's own profile screen, per the component's own code comment), not here.
 - **Number-format fields are structured, not raw strings.** `amount_format`/`quantity_format`/`recipe_format` are each `{ locales, minimumIntegerDigits }` — the UI shows this as an `Intl`-style locale string plus a digit count, not a free-text pattern like the `date_format`/`time_format` fields (which are plain enumerated strings from `company-profile-options.ts`).
-- **`master-data/business-unit.md`'s address-field portrayal is stale relative to this page's own source read.** That page's §5.1 (last touched by an earlier resync pass) still lists single `hotel_address`/`company_address`/`*_zip_code` columns; the actual `BusinessUnitDetail` type and this screen's form both confirm 10 structured columns per address (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) plus `*_postal_code` (not `*_zip_code`) — matching the same structured-address finding the Platform book's `carmen-backstage` resync pass independently made for `BusinessUnitEdit.tsx`. Flagging for a future correction pass on `master-data/business-unit.md` itself; not fixed here (out of this page's scope).
+- **`master-data/business-unit.md`'s address-field portrayal is stale relative to this page's own source read.** That page's §5.1 (last touched by an earlier resync pass) still lists single `hotel_address`/`company_address`/`*_zip_code` columns; the actual `BusinessUnitDetail` type and this screen's form both confirm 10 structured columns per address (`*_address_line1/line2/sub_district/district/city/province/postal_code/country/latitude/longitude`) plus `*_postal_code` (not `*_zip_code`) — matching the same structured-address finding the Backstage book's `carmen-backstage` resync pass independently made for `BusinessUnitEdit.tsx`. Flagging for a future correction pass on `master-data/business-unit.md` itself; not fixed here (out of this page's scope).
 
 ---
 

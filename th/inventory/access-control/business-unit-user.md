@@ -2,7 +2,7 @@
 title: ผู้ใช้ของหน่วยธุรกิจ (Business Unit User)
 description: Pivot สมาชิกต่อ BU (tb_user_tb_business_unit) บวก flow เชิญระดับ cluster (tb_user_invitation + _business_unit) ที่มาแทน tb_temp_bu_user ซึ่งถูก drop เมื่อ 2026-08-05
 published: true
-date: '2026-10-27T15:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: access-control, business-unit-user, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -22,7 +22,7 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - **`tb_temp_bu_user` ถูก drop** (platform migration `20260805100000_drop_temp_bu_user`) และ **`/api/auth/invite-user` ถูกลบ** (BE `7f93ce6ad`, 2026-08-05, "remove the invite flow that never worked")
 - **Flow การเชิญจริงมาแทน** (migration `20260805000000_user_invitation`; BE `3592a420e` 2026-08-05, `2945a4d04` 2026-08-08): `tb_user_invitation` คือข้อเสนอที่ scope ระดับ cluster และ **ผูกกับ email** (`cluster_id`, `email`, `token_hash`, `cluster_role`, `status` `pending|accepted|declined|revoked`, `invited_by_id`, `expires_at`, `accepted_at`/`accepted_user_id`, `declined_*`, `revoked_*`) พร้อม row `tb_user_invitation_business_unit` หนึ่งตัวต่อ BU ที่การเชิญมอบให้ (`business_unit_id`, `role` = `enum_user_business_unit_role`, `is_default`) partial unique index บังคับให้มีการเชิญ *pending* ได้หนึ่งรายการต่อ `(cluster, email)` — เป็น SQL เท่านั้น Prisma แสดงไม่ได้ `expired` ตั้งใจไม่เก็บเป็น status; derive จาก `expires_at`
 - **ใครทำอะไร:** cluster admin สร้าง / list / revoke / resend จาก Platform (`api-system/clusters/:cluster_id/invitations`, `backstage_cluster-invitations.controller.ts:74-266`, platform permission); ผู้รับอ่าน `GET api/invitations/:token` และ `GET api/invitations/mine` แล้วตอบด้วย `POST …/accept`, `POST …/accept-with-signup` (public — `@IgnoreGuards(KeycloakGuard)`, `invitations.controller.ts:107,206` — สำหรับ email ที่ยังไม่มีบัญชี) หรือ `POST …/decline` เมื่อ accept `user-invitation.service.ts` (micro-cluster) สร้าง cluster membership และ row `tb_user_tb_business_unit` หนึ่งตัวต่อ BU ที่เชิญ พร้อม `role` และ `is_default` ที่เชิญไว้ (`:480-500`, `:577-578`) ที่นั่งนับจาก pool ของ **cluster** (`v_business_unit_seat`, `SEAT_LIMIT_EXCEEDED`; การเชิญที่ pending รายงานคู่กับ `used`/`cap` ใน `GET /api/license` `seat.pending_invites`)
-- ตาราง membership เองไม่เปลี่ยน; `admin` RBAC bypass ใน `PermissionGuard` ยังคงอยู่ ยังคง**ไม่มีหน้าจอ BU-membership admin CRUD ใน `carmen-frontend`** — grant/revoke และ UI การเชิญอยู่ใน Platform SPA (ดู Platform book)
+- ตาราง membership เองไม่เปลี่ยน; `admin` RBAC bypass ใน `PermissionGuard` ยังคงอยู่ ยังคง**ไม่มีหน้าจอ BU-membership admin CRUD ใน `carmen-frontend`** — grant/revoke และ UI การเชิญอยู่ใน Platform SPA (ดู Backstage book)
 
 ## 1. คืออะไรและใครใช้
 
@@ -150,4 +150,4 @@ stateDiagram-v2
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_user_tb_business_unit`, `tb_user_invitation`, `tb_user_invitation_business_unit`, `enum_user_business_unit_role`, `enum_user_invitation_status`; migrations `20260805000000_user_invitation`, `20260805100000_drop_temp_bu_user`
 - **Backend:** `../carmen-turborepo-backend/apps/backend-gateway/src/application/invitations/invitations.controller.ts` (`mine` `:70`, `:token` `:106`, `accept` `:148`, `accept-with-signup` `:201`, `decline` `:257`); `apps/backend-gateway/src/backstage/backstage_cluster-invitations/` (`POST` `:74`, `GET` `:147`, `DELETE :id` `:202`, `POST :id/resend` `:266`); `apps/micro-cluster/src/cluster/user-invitation/user-invitation.service.ts`; `apps/backend-gateway/src/application/user-business-units/user-business-units.controller.ts` (`POST default`, `GET`, `PUT`, `PATCH`)
 - **Bruno:** `../carmen-turborepo-backend-bruno/collections/carmen-inventory/platform/cluster-invitations/`, `user-management/`
-- **Frontend:** `../carmen-frontend/components/navbar/bu-switcher.tsx` + `hooks/use-switch-bu.ts` (switch/default); `../carmen-frontend/routes/profile/bu-section.tsx` (self-view) ไม่มีหน้าจอ BU-membership admin CRUD หรือหน้าจอการเชิญใน frontend นี้ — ดู Platform book
+- **Frontend:** `../carmen-frontend/components/navbar/bu-switcher.tsx` + `hooks/use-switch-bu.ts` (switch/default); `../carmen-frontend/routes/profile/bu-section.tsx` (self-view) ไม่มีหน้าจอ BU-membership admin CRUD หรือหน้าจอการเชิญใน frontend นี้ — ดู Backstage book

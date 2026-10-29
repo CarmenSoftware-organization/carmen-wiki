@@ -2,7 +2,7 @@
 title: Query Dataset
 description: SQL Workbench — backend admin-SQL service whose UI is the Backstage SPA. All five routes gated by sql_workbench.read/manage backstage permissions; execute runs any SQL. system_admin.query_dataset key removed 2026-09-21.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T05:30:00.000Z
 tags: system-config, query, dataset, sql, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T15:00:00.000Z
@@ -11,7 +11,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 # Query Dataset
 
 > **At a Glance**
-> **Owner:** Gated by two backstage permissions — `sql_workbench.read` (browse) and `sql_workbench.manage` (run / save / drop), on **all five routes** since 2026-08-20 &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **No screen in *this* product** — the console is the Backstage SPA's [SQL Workbench](/en/platform/sql-workbench); no matching route/component/hook exists in `carmen-frontend` &nbsp;·&nbsp; **`execute` is NOT read-only** — it runs any SQL, including DDL and multiple statements.
+> **Owner:** Gated by two backstage permissions — `sql_workbench.read` (browse) and `sql_workbench.manage` (run / save / drop), on **all five routes** since 2026-08-20 &nbsp;·&nbsp; **Storage:** PostgreSQL catalog (`pg_class`, `pg_proc`) in the tenant schema — **no `tb_query_dataset`** &nbsp;·&nbsp; **No screen in *this* product** — the console is the Backstage SPA's [SQL Workbench](/en/backstage/sql-workbench); no matching route/component/hook exists in `carmen-frontend` &nbsp;·&nbsp; **`execute` is NOT read-only** — it runs any SQL, including DDL and multiple statements.
 
 ## Implementation status (verified 2026-07-16; permissions and UI re-verified 2026-09-06 and 2026-09-22)
 
@@ -19,7 +19,7 @@ dateCreated: 2026-05-16T15:00:00.000Z
 
 Three claims in earlier versions of this page do not match current source and are corrected below. Items 1 and 2 were corrected on 2026-07-16; item 3 on 2026-09-06:
 
-1. **No frontend implementation was found.** The previously-cited `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts`, and `lib/sql-validator.ts` (frontend mirror) **do not exist anywhere in `carmen-frontend`** — a repo-wide search for `query-dataset` and `sql-query` in that repo returns zero files, and `routes/router.tsx` has no `query-dataset` path under `/system-admin`. The backend service and its endpoints (below) are real, and **there is a UI — it is just not in this product.** The Backstage SPA (`carmen-backstage`) ships a full [SQL Workbench](/en/platform/sql-workbench) screen at `/sql-workbench` (added 2026-07-09) whose `sqlQueryService.ts` calls `/api/config/${buCode}/sql-query` — the same five endpoints documented here. Read as "no Carmen Blue screen", not "no screen anywhere"; the original wording predates anyone checking the other SPA.
+1. **No frontend implementation was found.** The previously-cited `routes/system-admin/query-dataset/page.tsx`, `_components/query-dataset-component.tsx`, `hooks/use-sql-query.ts`, and `lib/sql-validator.ts` (frontend mirror) **do not exist anywhere in `carmen-frontend`** — a repo-wide search for `query-dataset` and `sql-query` in that repo returns zero files, and `routes/router.tsx` has no `query-dataset` path under `/system-admin`. The backend service and its endpoints (below) are real, and **there is a UI — it is just not in this product.** The Backstage SPA (`carmen-backstage`) ships a full [SQL Workbench](/en/backstage/sql-workbench) screen at `/sql-workbench` (added 2026-07-09) whose `sqlQueryService.ts` calls `/api/config/${buCode}/sql-query` — the same five endpoints documented here. Read as "no Carmen Blue screen", not "no screen anywhere"; the original wording predates anyone checking the other SPA.
 2. **`execute` is an unrestricted admin SQL console, not a read-only Run.** `SqlQueryService.execute()` calls `validateSqlSafety(sql_text, { allowMultiple: true, allowDangerous: true })` — `allowDangerous: true` skips the forbidden-keyword blocklist (`DROP`, `TRUNCATE`, `ALTER`, `GRANT`, `REVOKE`, `COPY`, `VACUUM`, `CLUSTER`, `REASSIGN`, `REINDEX`) entirely, and no `allowedLeading` restriction is passed, so `INSERT`/`UPDATE`/`DELETE`/`CREATE`/`DROP`/`ALTER` all pass, and `allowMultiple: true` permits multi-statement scripts. The controller's own Swagger description says as much: *"Runs any SQL against the tenant DB — SELECT, DML (INSERT/UPDATE/DELETE) and DDL (CREATE/ALTER/DROP/…), one or more statements."* The code comment is explicit about why: *"Access is gated by the `sql_workbench.manage` backstage permission at the gateway; this validator only rejects empty/unparseable input here — it is not the security boundary."* Only `saveDdl()` (the "Save" contract in §5.3) keeps the restrictive `SELECT`/`WITH`-only or `CREATE`-only validation this page originally attributed to `execute`.
 
 3. **The permission gap this page reported is closed — do not act on the old text.** Between 2026-07-16 and 2026-08-20 this page correctly reported that only `POST .../execute` was guarded and that `save`, `db-objects` (list), `db-objects/definition` (get) and `db-objects` (drop, `DELETE`) were reachable by any authenticated caller. **That is no longer true.** Commit `525597688` (2026-08-20, `carmen-turborepo-backend`, *fix(security): คุมสิทธิ์ 4 endpoint ของ SQL Workbench ที่เปิดให้สมาชิก BU ทุกคน*, closing issue #321) added `@UseGuards(BackstagePermissionGuard)` + `@RequireBackstagePermission(...)` to all four:
@@ -42,13 +42,13 @@ The rest of this page (catalog projections, save/DDL contract, response shapes) 
 
 Query Dataset (internally "SQL Workbench") is a **backend admin-SQL-console service** for running arbitrary SQL and creating / browsing / dropping reusable database objects — **views**, **stored procedures**, and **functions** — directly inside the tenant database. There is currently **no frontend screen that calls it** (see Implementation status). Outputs are intended to become the data source for report templates and dashboard tiles, consumed at run time by the separate **micro-data** service.
 
-**Audience today:** operators holding `sql_workbench.read` (browse) or `sql_workbench.manage` (run / save / drop), whether they work through the Backstage SPA's [SQL Workbench](/en/platform/sql-workbench) screen or call the API directly (e.g. via Bruno). There is no audience inside *this* product, because Carmen Blue has no screen for it. Unlike most Carmen Blue tables, **there is no `tb_query_dataset` row** for each saved object — the registry is the live PostgreSQL catalog scoped to the tenant schema.
+**Audience today:** operators holding `sql_workbench.read` (browse) or `sql_workbench.manage` (run / save / drop), whether they work through the Backstage SPA's [SQL Workbench](/en/backstage/sql-workbench) screen or call the API directly (e.g. via Bruno). There is no audience inside *this* product, because Carmen Blue has no screen for it. Unlike most Carmen Blue tables, **there is no `tb_query_dataset` row** for each saved object — the registry is the live PostgreSQL catalog scoped to the tenant schema.
 
 The views, stored procedures, and functions authored here are intended as data sources the **micro-data** service executes at run time: a report or dashboard would name one (by `builder_key` or template `name`), and micro-data resolves it via `POST /api/datasets/execute`, composes the WHERE clause from the supplied filters, fans the query across the requested business units, and returns a `Dataset` (columns + rows + totals + summary). See [reporting-audit/report](/en/inventory/reporting-audit/report) for the render side. This linkage was not independently re-verified in this pass.
 
 ## 2. Common Tasks
 
-No UI exists *in Carmen Blue* (see Implementation status) — these are the underlying API operations, reachable through the Backstage SPA's [SQL Workbench](/en/platform/sql-workbench) or callable directly (e.g. via Bruno).
+No UI exists *in Carmen Blue* (see Implementation status) — these are the underlying API operations, reachable through the Backstage SPA's [SQL Workbench](/en/backstage/sql-workbench) or callable directly (e.g. via Bruno).
 
 | Task | API call | Notes |
 |---|---|---|
@@ -71,7 +71,7 @@ No UI exists *in Carmen Blue* (see Implementation status) — these are the unde
 | "Database is busy" | Connection pool exhausted; one retry already attempted after 500 ms | Retry later; investigate concurrent load |
 | `BigInt` column returns as string in result | Expected — JSON cannot natively carry `bigint` | Cast in SQL if numeric handling needed downstream |
 | Report errors after drop | Bound view / procedure removed from catalog | Re-create the object or update the report binding |
-| 403 on `execute`, `save` or `DELETE db-objects` | Caller lacks `sql_workbench.manage` | Grant via the backstage permission system — see [Platform RBAC](/en/platform/rbac) |
+| 403 on `execute`, `save` or `DELETE db-objects` | Caller lacks `sql_workbench.manage` | Grant via the backstage permission system — see [Backstage Roles](/en/backstage/rbac) |
 | 403 on `GET db-objects` or `db-objects/definition` | Caller lacks `sql_workbench.read` | Same; `.read` is the browse-only grant |
 | `save` / list / get-definition / drop succeed for any authenticated caller | **Historical only — fixed 2026-08-20 by `525597688`.** If you observe this today, you are on a build older than that commit | Upgrade; do not treat it as expected behaviour |
 

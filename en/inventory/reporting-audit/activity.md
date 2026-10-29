@@ -2,7 +2,7 @@
 title: Activity
 description: Tenant-wide activity log — every state change as a row with actor, entity, before/after snapshot, IP and user agent; read via /system-admin/activity-log and, since 2026-08, a per-record Activity sheet on every list and detail page.
 published: true
-date: 2026-10-27T00:00:00.000Z
+date: 2026-10-29T03:30:00.000Z
 tags: reporting-audit, activity, configuration, carmen-software
 editor: markdown
 dateCreated: 2026-05-16T08:00:00.000Z
@@ -122,7 +122,7 @@ Source: tenant schema.
 | `GET /:activity_log_id` | `activityLog.findOne` | One row |
 | `DELETE /:id`, `DELETE /batch/soft`, `DELETE /:id/hard`, `DELETE /batch/hard` | `activityLog.delete` / `deleteMany` / `hardDelete` / `hardDeleteMany` | No frontend caller found |
 
-Backstage records (clusters, business units, users, report templates) have their own audit trail in the **Backstage** `tb_activity` with `api-system/backstage/activity-logs/record/:entity_id` and `/:id/detail` (Backstage permissions `activity_log.read` / `activity_log.detail`, `backstage-activity-logs.controller.ts`, 2026-08-31; renamed from `platform` in 2026-10) — documented in the Platform book, not here.
+Backstage records (clusters, business units, users, report templates) have their own audit trail in the **Backstage** `tb_activity` with `api-system/backstage/activity-logs/record/:entity_id` and `/:id/detail` (Backstage permissions `activity_log.read` / `activity_log.detail`, `backstage-activity-logs.controller.ts`, 2026-08-31; renamed from `platform` in 2026-10) — documented in the Backstage book, not here.
 
 ## 6. Business Rules
 
@@ -156,4 +156,4 @@ Backstage records (clusters, business units, users, report templates) have their
 
 ## 9. Not this table — UI telemetry
 
-Click and page-view events captured by the frontend (`lib/analytics.ts`: batches of up to 50, flushed every 10 s, `POST /api/analytics-events`, max 100 events per request, deduplicated by `event_id`, user/app/domain stamped server-side) land in the **Backstage** table `tb_activity_event`, are rolled up nightly into `tb_activity_event_daily` by the `micro-cronjobs` `activity_rollup` job and purged after 365 days by `activity_retention` (both 2026-07-30). That pipeline has nothing to do with `tb_activity` — it is documented in the Platform book: [Activity Events](/en/platform/activity-events) (per-event explorer, `activity_event.detail`) and [Usage Analytics](/en/platform/usage-analytics) (dashboard, `activity_event.read`).
+Click and page-view events captured by the frontend (`lib/analytics.ts`: batches of up to 50, flushed every 10 s, `POST /api/analytics-events`, max 100 events per request, deduplicated by `event_id`, user/app/domain stamped server-side) land in the **Backstage** table `tb_activity_event`, are rolled up nightly into `tb_activity_event_daily` by the `micro-cronjobs` `activity_rollup` job and purged after 365 days by `activity_retention` (both 2026-07-30). That pipeline has nothing to do with `tb_activity` — it is documented in the Backstage book: [Activity Events](/en/backstage/activity-events) (per-event explorer, `activity_event.detail`) and [Usage Analytics](/en/backstage/usage-analytics) (dashboard, `activity_event.read`).

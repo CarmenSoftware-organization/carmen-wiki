@@ -2,7 +2,7 @@
 title: Carmen Blue
 description: Carmen Blue ERP — module reference for developers and testers.
 published: true
-date: '2026-09-22T18:00:00.000Z'
+date: 2026-10-29T03:30:00.000Z
 tags: book/inventory, home
 editor: markdown
 dateCreated: 2026-05-19T00:00:00.000Z
@@ -66,4 +66,4 @@ Reference manual for developers and QA engineers working on the Carmen Blue ERP 
 
 - Start with the module home page for an overview
 - Drill into sub-pages for data models, UI flows, and edge cases
-- See the [global wiki landing](/en/home) for the Platform book
+- See the [global wiki landing](/en/home) for the Backstage book

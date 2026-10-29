@@ -1,0 +1,306 @@
+---
+title: Licenses — Data Model
+description: The BU-quota, seat, interface (INF) and subscription ledgers, their views and counting rules, the group kind enum, and the four configurable expiry thresholds.
+published: true
+date: 2026-10-29T05:00:00.000Z
+tags: book/backstage, licenses, data-model
+editor: markdown
+dateCreated: '2026-09-05T18:14:07.000Z'
+---
+
+# Licenses — Data Model
+
+> **At a Glance**
+> **Purchase ledgers:** `tb_cluster_license` (BU quota, per cluster, cancellable) &nbsp;·&nbsp; `tb_business_unit_license` (seats, per BU, not cancellable) &nbsp;·&nbsp; `tb_business_unit_interface_license` (interface/INF, per BU, one `kind = 'interface'` feature group per row, not cancellable — since migration `20260910010000`) &nbsp;·&nbsp; **Contract:** `tb_subscription` (one row per cluster+BU pair) → `tb_subscription_bu` → `tb_subscription_bu_group` (feature-group entitlements, replace-on-save) &nbsp;·&nbsp; **Views:** `v_cluster_bu_cap` (one row per **cluster** — the winning licence's cap) and `v_cluster_bu_quota` (one row per **business unit** — rank + the cap borrowed from the first view) are two different grains answering two different questions — do not conflate them &nbsp;·&nbsp; `v_business_unit_seat` (one row per BU — summed, not winner-take-all) &nbsp;·&nbsp; **No view for INF licences** — their `state`/`in_force`/`contract_state` are computed per request by the service, never stored and never client-derived &nbsp;·&nbsp; **Group kind:** `tb_license_feature_group.kind` (`standard` | `interface`), set at create only; `interface` groups attach only to INF licences, `standard` groups only to subscriptions (400 either way) &nbsp;·&nbsp; **Concurrency:** `doc_version Int @default(0)` on all four purchase/contract tables, optimistic lock on every write &nbsp;·&nbsp; **Expiry thresholds:** four independent day-counts (`subscription_days`, `bu_quota_days`, `seat_days`, `interface_days`), default 30 each, editable from Backstage Config, read with no permission required
+
+> **Source of truth:** Backend Prisma platform schema and its hand-written migration SQL. Always read these first when writing or updating this page:
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma`
+> - `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260822000000_add_cluster_license/migration.sql`, `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql`, `20260819000000_bu_user_license/migration.sql`, `20260821130000_subscription_one_bu/migration.sql`, `20260910000000_license_feature_group_kind/migration.sql`, `20260910010000_business_unit_interface_license/migration.sql`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`, `20261018130000_license_number_retired/migration.sql`
+>
+> The `generated/client/schema.prisma` file is an auto-generated copy and not authoritative. Verified against `carmen-turborepo-backend` HEAD `c9d788829` and `carmen-backstage` HEAD `8405788f` (both 2026-10-27).
+
+## 1. Overview
+
+Four purchase types, four tables, no shared parent. `tb_cluster_license` is a cluster's purchased right to create up to N business units for a date range — a pure ledger of purchase rows; "which row wins right now" is a question the database answers with a view (§3), not a column on the table. `tb_business_unit_license` is the same shape one level down: a business unit's purchased right to fill up to N user seats for a date range, but counted by **summing** every currently-active row rather than picking a single winner (§3.2) — buying two concurrent seat blocks genuinely adds their capacities together, unlike BU quota, where a second purchase replaces the first's effect rather than adding to it. `tb_business_unit_interface_license` (2026-09-10) is the fourth shape and the **third counting rule**: a business unit's purchased right to use one interface feature group (`interface.pos.micros3700`, `interface.accounting.carmen_gl`, …) for a date range, where the entitlement is on if *any* row for that group covers `now` — a union of coverage windows, neither summed like seats nor winner-take-all like BU quota — **and** the BU's main subscription is `active` (§2.4). `tb_subscription` is a different kind of record entirely: not a capacity ledger but a commercial contract between a cluster and one specific business unit, whose only purpose in this schema is to anchor which **`standard`-kind feature groups** (defined by [License Catalog](/en/backstage/license-catalog)) that BU's contract entitles it to use.
+
+All four purchase/contract tables carry the platform-standard audit trio, soft delete, and a `doc_version` optimistic-concurrency counter enforced on every write (`PATCH`/`PUT`/the cancel endpoint all require it and 409 on a stale value).
+
+## 2. Entities
+
+### 2.1 `tb_cluster_license` — BU-quota purchase ledger
+
+One purchased licence granting a cluster the right to create up to `licensed_bus` business units for `[start_date, end_date)`. Schema line 1463.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key, default `gen_random_uuid()` |
+| `license_number` | `String @db.VarChar` | No | Server-issued `BUQ-YYMM-####`; not accepted on create — the client never sends it. Unique among live rows via a partial unique index declared only in raw SQL (Prisma cannot express a `WHERE` clause on `@@unique`) |
+| `cluster_id` | `String @db.Uuid` | No | FK to `tb_cluster.id` — the owner |
+| `licensed_bus` | `Int` | No | The quota this licence grants; `CHECK (licensed_bus >= 0)` |
+| `start_date` / `end_date` | `DateTime @db.Timestamptz(6)` | No | Coverage window; `CHECK (end_date > start_date)`. A "no expiry" purchase writes the sentinel `2099-12-31T23:59:59.999Z` as `end_date` — there is no separate boolean column for "perpetual" |
+| `reference_no` | `String? @db.VarChar` | Yes | Free-text purchase-order reference |
+| `note` | `String?` | Yes | Free-text — also used by data migrations to record where a backfilled row's numbers came from |
+| `cancelled_at` | `DateTime? @db.Timestamptz(6)` | Yes | Added by `20260901020000_cluster_license_cancel`. Non-null means this licence has been cancelled: it stays in the ledger and stays visible, but stops granting quota from that moment. **There is no un-cancel** — restoring coverage means issuing a new licence |
+| `cancelled_by_id` | `String? @db.Uuid` | Yes | Actor who cancelled it |
+| `cancel_reason` | `String?` | Yes | Optional free-text reason |
+| `doc_version` | `Int` | No | Default `0`; optimistic-lock counter, required on `PATCH` and on `cancel` |
+| audit trio + soft delete | — | Yes | Standard `created_at`/`created_by_id`/`updated_at`/`updated_by_id`/`deleted_at`/`deleted_by_id` |
+
+**Constraints:** `CHECK (licensed_bus >= 0)`, `CHECK (end_date > start_date)`, FK `cluster_id → tb_cluster.id` (`NoAction`/`NoAction`).
+**Indexes:** `(cluster_id, deleted_at)`, `(end_date)`, `(cluster_id, cancelled_at)` (added with the cancel columns — a cancelled licence never wins again, so the winning-row query can skip it entirely via this index).
+
+Overlapping date ranges across rows are expected, not an error — buying extra quota mid-contract is a new row whose range overlaps an existing one (backend Swagger states this explicitly on the create/list endpoints).
+
+### 2.2 `tb_business_unit_license` — seat purchase ledger
+
+Same shape, one level down. Schema line 1395.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key |
+| `license_number` | `String @db.VarChar` | No | Server-issued `SEAT-YYMM-####`; same partial-unique-index caveat as §2.1 |
+| `business_unit_id` | `String @db.Uuid` | No | FK to `tb_business_unit.id` — the owner |
+| `licensed_users` | `Int` | No | The seat count this licence grants; `CHECK (licensed_users >= 0)` |
+| `start_date` / `end_date` | `DateTime @db.Timestamptz(6)` | No | Coverage window; `CHECK (end_date > start_date)`. **This table has no "no expiry" convention in the SPA** — `LicensePurchaseForm`'s no-expiry toggle is not offered for the seat kind (`SEAT_CONFIG.showNoExpiry: false`) |
+| `reference_no` | `String? @db.VarChar` | Yes | Free-text purchase-order reference |
+| `note` | `String?` | Yes | Free-text; a migrated placeholder row's note is prefixed `"migrated"`, which the SPA reads back to render an "end date required" warning badge |
+| `doc_version` | `Int` | No | Default `0` |
+| audit trio + soft delete | — | Yes | Standard |
+
+**Constraints:** `CHECK (licensed_users >= 0)`, `CHECK (end_date > start_date)`, FK `business_unit_id → tb_business_unit.id`.
+**Indexes:** `(business_unit_id, deleted_at)`, `(end_date)`.
+
+**No `cancelled_at`/`cancelled_by_id`/`cancel_reason` columns exist on this table at all.** A seat licence can be edited or hard-deleted (`DELETE`), but never cancelled — there is no cancel endpoint on either the frontend service or the backend controller for this table. This is a genuine capability gap between the two purchase kinds, not an oversight this page is flagging as a bug: `licenseKindConfig.ts`'s own doc-comment states the reason directly — `cancel` is typed `null` for `SEAT_CONFIG` because reading it through a union with `ClusterLicenseConfig`'s real `cancel` function would fail type-checking, and casting past that would hide a call that fails at runtime.
+
+### 2.3 `tb_subscription` and its feature-group joins
+
+`tb_subscription` (schema line 558) is the contract header: `cluster_id`, `subscription_number` (server-issued `SUB-YYMM-####`), `start_date`/`end_date`, `status` (`enum_subscription_status`, line 939: `active` / `inactive` / `expired`), `doc_version`, audit trio, soft delete. `@@unique([cluster_id, subscription_number, deleted_at])`.
+
+Since migration `20260821130000_subscription_one_bu`, a subscription binds to **exactly one** business unit via `tb_subscription_bu` (schema line 1583: `subscription_id`, `business_unit_id`, `doc_version`, audit trio, soft delete; `@@unique([subscription_id, business_unit_id, deleted_at])`) — the BU cannot be changed after creation (`SubscriptionForm`'s `business_unit_id` field is only ever writable on the create form). That join row's own child, `tb_subscription_bu_group` (schema line 1336: `subscription_bu_id`, `group_id → tb_license_feature_group.id`, doc_version, audit trio, soft delete; `@@unique([subscription_bu_id, group_id, deleted_at])`), is where the actual feature-group entitlements live — this is what `PUT /subscriptions/:id/groups` replaces wholesale on every save. A prior schema generation instead joined subscriptions directly to individual features (dropped by `20260901000000_drop_subscription_bu_feature`); that table no longer exists, and this module's UI has no equivalent per-feature picker any more (§3.2 of the [landing page](/en/backstage/licenses)).
+
+`tb_license_feature_group` (schema line 1610: `code`, `name`, `description`, `sort_order`, `is_active`, **`kind`** (`enum_license_feature_group_kind`, default `standard`), doc_version, audit trio, soft delete) and `tb_license_feature` (schema line 1214) are owned and documented by [License Catalog](/en/backstage/license-catalog) — this page lists them only to show what `tb_subscription_bu_group.group_id` points at. **Only `kind = 'standard'` groups may be attached to a subscription** since migration `20260910000000`: the backend answers 400 to a `PUT .../groups` that names an `interface` group, and the data migration `20260910020000` moved every `interface` group that was hanging off a subscription on 2026-09-10 into its own INF licence row (§2.4) before soft-deleting the `tb_subscription_bu_group` link.
+
+### 2.4 `tb_business_unit_interface_license` — interface (INF) licence ledger
+
+Added by `20260910010000_business_unit_interface_license` (schema line 1429) as the fourth licence shape, deliberately a sibling of `tb_business_unit_license` rather than a `type` column on `tb_subscription` — the design spec (`../carmen-backstage/docs/superpowers/specs/2026-09-09-interface-license-split-design.md` §2) rejected the column because every subscription query, summary and the one-BU-one-contract partial unique index would each have needed a `WHERE type = 'contract'` that one forgotten call site could silently omit.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key |
+| `license_number` | `String @db.VarChar` | No | Server-issued `INF-YYMM-####` via `nextLicenseNumber('INF', …)` — the same counter family as SEAT/BUQ/SUB, which counts soft-deleted rows so a number once issued is never reused (it may appear on a receipt). Unique among live rows via the SQL-only partial index `bu_interface_license_number_global_u` |
+| `business_unit_id` | `String @db.Uuid` | No | FK to `tb_business_unit.id` — the owner is the BU, as for seats |
+| `license_feature_group_id` | `String @db.Uuid` | No | FK to `tb_license_feature_group.id`; the service requires the group to exist, be undeleted, and be `kind = 'interface'` — a `standard` group is refused with 400, not filtered out |
+| `start_date` / `end_date` | `DateTime @db.Timestamptz(6)` | No | Coverage window; `CHECK (end_date > start_date)` (`bu_interface_license_dates_chk`). The SPA offers the "no expiry" toggle for this kind (`INTERFACE_CONFIG.showNoExpiry: true`, writing the `2099-12-31` sentinel) — the spec had ruled that out, the owner reversed it on 2026-09-09 |
+| `reference_no` | `String? @db.VarChar` | Yes | Free-text receipt reference |
+| `note` | `String?` | Yes | Free text; rows produced by the 2026-09-10 data migration carry `migrated from SUB-… (sbg <uuid>)`, and that `(sbg <uuid>)` marker is the migration's idempotency key |
+| `doc_version` | `Int` | No | Default `0` |
+| audit trio + soft delete | — | Yes | Standard |
+
+**Constraints:** `CHECK (end_date > start_date)`, FK `business_unit_id → tb_business_unit.id`, FK `license_feature_group_id → tb_license_feature_group.id` (both `NoAction`). **Indexes:** `(business_unit_id, deleted_at)`, `(license_feature_group_id, deleted_at)`, `(end_date)`. **Deliberately no unique index on `(business_unit_id, license_feature_group_id)`** — renewing an interface is issuing a new row; the old one stays as history, and overlapping ranges are expected (the create endpoint's Bruno docs say so explicitly).
+
+**No `cancelled_at` columns** — like seats, an INF licence is edited or hard-deleted, never cancelled.
+
+**Three server-computed fields travel with every row and are not stored anywhere** (`business-unit-interface-license.service.ts` `serialize()`, `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/`):
+
+```
+state          = 'scheduled' | 'active' | 'expired'   from this row's own start/end vs now
+contract_state = the owning BU's main-subscription state ('active' | 'expired' | 'inactive' | 'none')
+in_force       = state === 'active' && contract_state === 'active'
+```
+
+`in_force` is the only field any screen may badge on. The two-condition rule is the trap the spec names outright (§4): a check that only asks "is there a live INF licence" would let a customer whose main contract expired keep pushing POS data in. The same rule is what `GET /api/license` applies when it builds a BU's `features[]` — live INF groups are unioned in only while the main contract is `active`; otherwise every INF key goes to `expired_features[]` (`license.service.ts`, `license.types.ts` in `apps/backend-gateway/src/license/`).
+
+### 2.5 `tb_license_number_retired` — numbers of permanently-deleted licences
+
+Added by `20261018130000_license_number_retired` (schema line 1513). When a super admin **hard-deletes** a subscription or licence, its number is written here so the number issuer (`nextLicenseNumber`, which reads this table after the live ledgers) never hands it out again. It is a reuse guard, **not** a restore path: `snapshot` keeps a copy of the row for later inspection, but nothing reads it back.
+
+| Field | Prisma Type | Nullable | Description |
+| ----- | ----------- | -------- | ----------- |
+| `id` | `String @db.Uuid` | No | Primary key |
+| `license_number` | `String @db.VarChar` | No | The retired number |
+| `kind` | `String @db.VarChar` | No | `'SUB'` \| `'SEAT'` \| `'BUQ'` \| `'INF'` (a string, not an enum) |
+| `original_id` | `String @db.Uuid` | No | The deleted row's id (no FK — the row is gone) |
+| `business_unit_id` / `cluster_id` | `String? @db.Uuid` | Yes | Owner at deletion time |
+| `snapshot` | `Json` | No | Copy of the row before deletion |
+| `deleted_by_id` / `deleted_at` | `String? @db.Uuid` / `DateTime?` | Yes | Who and when |
+
+**Constraints:** `@@unique([license_number, original_id])` — a pair, not the number alone, because legacy data may hold duplicate numbers and hand-typed numbers such as `SUB-2608-0002-EXTRA` can repeat across rows. **Indexes:** `(license_number)`. No `doc_version`, no soft delete.
+
+## 3. Views — the two capacity views, and why there are two
+
+Both are defined in `20260822000000_add_cluster_license/migration.sql` (`v_cluster_bu_cap` line 36, `v_cluster_bu_quota` line 55) and amended by `20260824000000_add_cap_end_date_to_view` (adds `cap_end_date`) and `20260901020000_cluster_license_cancel` (adds `cancelled_at IS NULL` to the winning-row filter, plus a `winning_license_id` column). They answer **different questions at different grains**, and a page that cites the wrong one for a claim will be wrong in a way that looks plausible:
+
+### 3.1 `v_cluster_bu_cap` — one row per **cluster**
+
+```sql
+SELECT c.id AS cluster_id,
+       COALESCE(w.licensed_bus, 0)::int AS cap,
+       w.end_date                       AS cap_end_date,
+       w.id                             AS winning_license_id
+FROM tb_cluster c
+LEFT JOIN LATERAL (
+  SELECT l.id, l.licensed_bus, l.end_date
+  FROM tb_cluster_license l
+  WHERE l.cluster_id = c.id
+    AND l.deleted_at IS NULL
+    AND l.cancelled_at IS NULL
+    AND l.start_date <= now()
+    AND l.end_date > now()
+  ORDER BY l.start_date DESC, l.created_at DESC, l.id DESC
+  LIMIT 1
+) w ON true
+WHERE c.deleted_at IS NULL;
+```
+
+Every live cluster gets exactly one row, even one with zero business units and even one with no licence at all (`cap = 0` via `COALESCE`). The `LATERAL` join picks the single **winning** licence covering `now()` — both `deleted_at` and (since 2026-09-01) `cancelled_at` must be `NULL`, and among the survivors the newest `start_date` wins (ties broken by `created_at`, then `id`). This is the *cluster-level* fact: "how many BUs may this cluster have right now, and until when." The frontend's `activeLicense()` (`utils/clusterLicense.ts`) reimplements this exact tie-break order client-side for pages that only hold the licence list, not this view's output.
+
+### 3.2 `v_cluster_bu_quota` — one row per **business unit**
+
+```sql
+SELECT b.id         AS business_unit_id,
+       b.cluster_id AS cluster_id,
+       ROW_NUMBER() OVER (
+         PARTITION BY b.cluster_id
+         ORDER BY COALESCE(b.is_hq, false) DESC, b.created_at ASC, b.id ASC
+       )::int       AS rank,
+       q.cap        AS cap
+FROM tb_business_unit b
+JOIN v_cluster_bu_cap q ON q.cluster_id = b.cluster_id
+WHERE b.deleted_at IS NULL;
+```
+
+This is a **different grain entirely**: one row per business unit, not per cluster. It joins `v_cluster_bu_cap` to **borrow** the cap — it never recomputes the winning-licence rule itself — and ranks every live BU within its cluster (HQ first, then oldest-created, then `id`). A BU whose `rank` exceeds its cluster's borrowed `cap` is **over the purchased limit**; this is exactly what the SPA's "Over limit" badge (`utils/businessUnitRank.ts`'s `rankBusinessUnits()`/`countOverLimit()`, used by [Clusters](/en/backstage/clusters)' Business Units tab and this module's `BuQuotaSection`) must match rank-for-rank, since a badge that disagrees with which BU actually gets rejected at creation time is worse than no badge. The rank formula is duplicated client-side (rather than read from this view directly) because the SPA needs it against a BU list it already has loaded for other reasons — but it is documented in the source as required to match this view's `ORDER BY` exactly, field for field.
+
+**Why two views instead of one:** `v_cluster_bu_cap` answers "what's the cluster's quota" (one number, needed by the cluster's own screens and by the health strip on `ClusterLicenseDetail`); `v_cluster_bu_quota` answers "is *this specific BU* within that quota" (one row per BU, needed by any screen that lists business units and wants to flag the ones over the line). Folding both into one view would force every BU-listing query to also carry cluster-quota columns it does not need, and every cluster-quota query to join through every BU it does not care about individually.
+
+### 3.3 `v_business_unit_seat` — one row per **business unit**, summed
+
+Defined in `20260819000000_bu_user_license/migration.sql`, alongside `tb_business_unit_license` itself:
+
+```sql
+SELECT bu.id         AS business_unit_id,
+       bu.cluster_id AS cluster_id,
+       coalesce(sum(l.licensed_users) FILTER (
+         WHERE l.deleted_at IS NULL
+           AND now() >= l.start_date
+           AND now() <= l.end_date
+       ), 0)::int AS licensed_users
+  FROM "tb_business_unit" bu
+  LEFT JOIN "tb_business_unit_license" l ON l.business_unit_id = bu.id
+ WHERE bu.is_active = true
+   AND bu.deleted_at IS NULL
+ GROUP BY bu.id, bu.cluster_id;
+```
+
+Unlike either cluster view above, this one **sums** every currently-active row rather than picking a winner — matching the SPA's `sumActiveLicenses()` (§3.1 of the [landing page](/en/backstage/licenses)). Two nuances worth a tester's attention: the coverage test is `now() BETWEEN start_date AND end_date` inclusive on both ends (not the exclusive-end convention `tb_cluster_license`'s winning-row query uses), and the view filters `bu.is_active = true` — a deactivated business unit's seat total disappears from this view entirely, even if its licence rows are still live and unexpired. `now()` here means `transaction_timestamp()`, deliberately, so a single request's seat pool/used/already-invited numbers all come from one consistent snapshot.
+
+## 4. Relationships
+
+```
+tb_cluster_license.cluster_id            ──>  tb_cluster.id
+tb_business_unit_license.business_unit_id ──>  tb_business_unit.id
+tb_business_unit_interface_license.business_unit_id         ──>  tb_business_unit.id
+tb_business_unit_interface_license.license_feature_group_id ──>  tb_license_feature_group.id   (kind = 'interface' only)
+tb_subscription.cluster_id                ──>  tb_cluster.id
+tb_subscription_bu.subscription_id        ──>  tb_subscription.id
+tb_subscription_bu.business_unit_id       ──>  tb_business_unit.id
+tb_subscription_bu_group.subscription_bu_id ──>  tb_subscription_bu.id
+tb_subscription_bu_group.group_id         ──>  tb_license_feature_group.id
+*.created_by_id / *.updated_by_id / *.cancelled_by_id / *.deleted_by_id  ──>  tb_user.id  (audit actors)
+```
+
+`v_cluster_bu_cap` reads only `tb_cluster` and `tb_cluster_license`. `v_cluster_bu_quota` additionally reads `tb_business_unit`, joined through `v_cluster_bu_cap` rather than `tb_cluster_license` directly (§3.2). `v_business_unit_seat` reads only `tb_business_unit` and `tb_business_unit_license`. None of the four purchase/contract tables in §2 has a foreign key to any of the others — a cluster's BU quota, a BU's seat pool, a BU's interface licences, and a BU's subscription contract are four independent purchase records that happen to be browsed together on this module's screens. The one cross-ledger dependency is computed, not declared: an INF licence's `in_force` reads the BU's subscription state at request time (§2.4).
+
+## 5. Enums
+
+`enum_license_feature_group_kind` (`standard` / `interface`, schema line 962, added 2026-09-10) decides which ledger a group may be sold on and is settable only at group creation — `LicenseFeatureGroupEdit` shows it as a locked read-only value with an explanatory hint in edit mode, and the backend `update` DTO does not accept it. The backfill in `20260910000000` set `interface` on every group whose live items were *all* `interface`/`interface.*` keys; mixed and empty groups stayed `standard`.
+
+`enum_subscription_status` (`active` / `inactive` / `expired`) is the other enum this module touches, and it is **not** the same thing as the `state` a caller actually sees. The backend derives a display `state` (`SubscriptionState`) from `status` plus the current time via a single shared function, `deriveSubscriptionState()` (`packages/prisma-shared-schema-backstage/src/index.ts`), used identically by the gateway and by `micro-business`:
+
+```
+inactive status  → state = 'inactive'   (unconditional)
+expired  status  → state = 'expired'    (unconditional)
+active   status  → state = 'expired' if end_date < now, else 'active'
+```
+
+The SPA is explicitly told never to recompute this itself (`src/utils/subscriptionState.ts`'s own doc-comment cites the Swagger note: "the frontend must not recompute this — use this field directly") — it only derives the separate, non-enum "expiring soon" flag from `state` plus a threshold (§6). `tb_cluster_license` and `tb_business_unit_license` have no status column at all; their status (`active`/`scheduled`/`expired`/`superseded`/`cancelled`) is computed entirely client-side from dates and, for BU quota, from `cancelled_at` and the winning-row comparison (`licenseStatus()`/`statusMap()` in `utils/clusterLicense.ts` and `utils/buLicense.ts`). `tb_business_unit_interface_license` is the opposite case: its `state`/`in_force`/`contract_state` are computed **server-side only** (§2.4) and the SPA is forbidden from re-deriving them from dates. Since PR #290 the fleet list endpoints of all three purchase ledgers also accept `sort=status:asc|desc` (`takeSortKey(q.sort, ['status'])` in each `micro-cluster` licence service) so the Status column's header sorts server-side despite not being a column.
+
+## 6. Expiry Thresholds
+
+Four independent, backend-configurable day-counts decide when this module's screens paint an "expiring soon" warning — a value a tester cannot infer from the screen alone, since the same "expires in 12 days" fact reads as urgent at a 30-day threshold and unremarkable at a 7-day one.
+
+| Field (`ExpiryThresholdsConfig`) | Governs | Default |
+|---|---|---|
+| `subscription_days` | `SubscriptionSection`'s expiring-soon count, `SubscriptionTable`'s per-row badge, `IssuedSubscriptionPlate` | 30 |
+| `bu_quota_days` | `BuQuotaSection`, `ClusterLicenseTable`'s "Quota Expires" badge, `IssuedLicensePlate` (BU-quota mode), `LicenseHealthStrip` | 30 |
+| `seat_days` | `SeatSection`'s per-row and per-BU earliest-expiry badge, `IssuedLicensePlate` (seat mode) | 30 |
+| `interface_days` | `PurchaseLicenseTable` (interface tab), `IssuedLicensePlate` (interface mode), `BusinessUnitInterfaceLicensesCard` and `ClusterAdminLicenses`' `InterfaceLicensesCard` per-row "N days left" badges — since PR #287 | 30 |
+
+**Source and delivery:** `GET /api-system/backstage/expiry-thresholds` (`expiryThresholdService.getAll()`) is deliberately **open to any authenticated user with no permission check** — unlike the Backstage Config service's `getAll()`, which requires `backstage_config.read`. The comment in `expiryThresholdService.ts` states the reason directly: gating this endpoint the same way would 403 every ordinary user who opens `/licenses`, silently pinning them to the in-code default forever regardless of what an administrator actually configured. The four values are stored as one JSON object under a `backstage_config` key (edited from the [Backstage Config](/en/backstage/backstage-config) module's Expiry Thresholds card, gated there by `backstage_config.manage` alone — **not** `license.manage`, a different key entirely that gates an unrelated License Enforcement toggle on that same screen; see the correction in [Permissions](/en/backstage/licenses/permissions) §1) and served through `ExpiryThresholdContext`, which merges the backend response onto `DEFAULT_EXPIRY_THRESHOLDS` **field by field** — a backend that has not yet learned a new field cannot turn it into `undefined` and silently break every comparison against it (an `undefined` operand makes every `<=` comparison `false`, which would make the warning badge vanish system-wide with no visible error); `interface_days` is exactly the case this guards — a gateway older than 2026-09-09 does not send it and the SPA still gets `30`. A fetch failure (including "not logged in yet") falls back silently to the in-code defaults (all four `30`) with no toast — the page still works, only the badge window reverts to the old value.
+
+**Effect per ledger, precisely:**
+- **Subscription:** `isExpiringSoon(state, endDate, days)` — `true` only when the backend-computed `state` is `'active'` **and** `daysLeft <= days`. An `'inactive'` or already-`'expired'` state never reads as "expiring soon."
+- **BU quota:** `isExpiringSoon(lic, days)` — `false` unconditionally for a perpetual licence (`end_date >= 2099-01-01`) and for anything not currently `'active'` per `licenseStatus()` (a cancelled or superseded row is never "expiring," it is already inert).
+- **Seat:** `isExpiringSoon(lic, days)` — `false` for anything not currently `'active'`; seats have no perpetual concept at all (§2.2), so every active seat licence is eligible to eventually warn.
+- **Interface:** the "N days left" badge fires only when the row is `in_force` **and** `end_date - now <= interface_days` — a licence that is within its dates but capped by an expired main contract shows "Capped by contract," never "expiring soon," because it is not granting anything to expire.
+
+## 7. Divergences from carmen-backstage SPA shape
+
+| SPA shape | SPA source | Prisma storage | Notes |
+| --------- | ---------- | -------------- | ----- |
+| `LicenseKindConfig.readUsage` returning `undefined` | `licenseKindConfig.ts` | n/a | `undefined` means "unknown" (fetch not attempted or failed); the seat kind's `readUsage` is `null` outright, meaning the concept does not apply. Callers must never coerce either to `0` — a seat licence has no owner-usage divisor at all, and a BU-quota licence whose usage read failed is not the same fact as a cluster that has used zero BUs |
+| `ClusterLicense.is_in_force` | `utils/clusterLicense.ts` `statusMap()` | not stored — computed by `v_cluster_bu_cap`'s `winning_license_id` on the list/detail endpoints that join it | Trusted ahead of the client's own `activeLicense()` tie-break whenever present; the client formula exists only as a fallback for the one load path (`GET .../licenses` per-cluster) whose DTO predates this field |
+| `FleetLicenseRow` (the fleet-wide `PurchaseLicenseTable` row shape) has no `updated_at` | `PurchaseLicenseTable.tsx` | Neither `BusinessUnitLicenseListRowDto` nor `ClusterLicenseListRowDto` sends it | Not a bug to fix — both fleet-list DTOs simply never project `updated_at`, so the table's CSV export and its single audit column show Created only, never Updated, for this one screen |
+| `group_ids` / `feature_keys` on `SubscriptionDetail.bu` | `SubscriptionForm.tsx` `load()` | `tb_subscription_bu_group` (join) / server-computed flattening | `group_ids` is read as optional and defaulted to `[]` — a contract created before the group system existed carries `feature_keys` with no `group_ids`, and the SPA must not crash reading a field that plan-migration-era rows never had |
+| `ExpiryThresholdsConfig` merge | `ExpiryThresholdContext.tsx` | one JSON value on a `backstage_config` row (owned by [Backstage Config](/en/backstage/backstage-config)) | Merged per field onto in-code defaults, not replaced wholesale (§6) |
+| `InterfaceLicense.state` / `in_force` / `contract_state` | `types/index.ts:1703`, `BusinessUnitInterfaceLicensesCard.tsx` | not stored — computed per request by `serialize()` in the micro-cluster service (§2.4) | The reverse of the seat/BU-quota pattern: the SPA **must not** compute these from dates; the card's own comment calls the "within dates but `in_force = false`" row the point where the screen most easily lies |
+| `LicenseFeatureGroup.kind` read as optional (`kind ?? 'standard'`) | `GroupCatalogPanel.tsx:202`, `GroupSelectionCard.tsx:104` | `tb_license_feature_group.kind`, `NOT NULL DEFAULT 'standard'` | Defensive read for a gateway predating the 2026-09-10 rollout; the column itself is never null |
+
+## 8. References
+
+REST surface consumed by this module's services:
+
+| Method + Path | Purpose | Notes |
+|---|---|---|
+| `GET /api-system/clusters/:clusterId/licenses` | List one cluster's BU-quota licences | No `@RequireBackstagePermission` — scope-authorized inside `micro-cluster` |
+| `GET /api-system/backstage/cluster-licenses` | Fleet-wide BU-quota licence list, paginated | No `@RequireBackstagePermission`; scope-filtered per caller |
+| `GET /api-system/backstage/{cluster-licenses,business-unit-licenses,interface-licenses}/summary` | Fleet status counts for the License Center summary band (total / per-status / deleted) — counted in the same read scope and with the same date rules as the list | New since the 2026-09-22 round; declared above `:id` so `summary` is not bound as an id (`BackstageClusterLicensesFleetController`, `backstage_cluster-licenses.controller.ts:430`; business-unit-licenses `:366`; interface `:388`) |
+| `GET /api-system/backstage/{cluster-licenses,business-unit-licenses,interface-licenses}/deleted` | Soft-deleted rows of that kind, `deleted_at desc` by default | **Super-admin only** (`BackstageSuperAdminGuard`, no permission key) — `:460` / `:396` / `:418` |
+| `POST /api-system/backstage/{…}/:id/restore` | Un-delete a soft-deleted licence | `subscription.manage` — `backstage_cluster-licenses.controller.ts:539-541`, `backstage_business-unit-licenses.controller.ts:475-477`, `backstage_business-unit-interface-licenses.controller.ts:499-501` |
+| `DELETE /api-system/backstage/{…}/:id/hard` | Permanently delete (writes the number to `tb_license_number_retired`, §2.5) | **Super-admin only** — `:573` / `:512` / `:536`. Allowed only on a row already soft-deleted **or** (BU quota only) cancelled; an active row is refused (`LICENSE_HARD_DELETE_ACTIVE`, 409). The number-retire insert and the row delete share one transaction |
+| `GET /api-system/backstage/cluster-licenses/:id` | One BU-quota licence by bare id | Fails **403** (not 404) when outside the caller's readable cluster scope |
+| `POST/PATCH/DELETE /api-system/clusters/:clusterId/licenses[/:id]` | Create/update/soft-delete a BU-quota licence | All three require `subscription.manage` |
+| `POST /api-system/clusters/:clusterId/licenses/:id/cancel` | Cancel a BU-quota licence | Requires `subscription.manage`; irreversible; `doc_version` required |
+| `GET /api-system/business-units/:buId/licenses` | List one BU's seat licences | No `@RequireBackstagePermission` |
+| `GET /api-system/backstage/business-unit-licenses[/:id]` | Fleet-wide seat licence list / one by bare id | Same scope rules as the cluster-licence fleet routes |
+| `POST/PATCH/DELETE /api-system/business-units/:buId/licenses[/:id]` | Create/update/soft-delete a seat licence | All three require `subscription.manage`; **no cancel route exists for seats** |
+| `GET /api-system/business-units/:buId/interface-licenses` | List one BU's interface licences (each row carries `group`, `state`, `in_force`, `contract_state`) | No `@RequireBackstagePermission` — `AppIdGuard('businessUnitInterfaceLicense.findAll')` only, scope-authorized inside `micro-cluster` |
+| `POST/PATCH/DELETE /api-system/business-units/:buId/interface-licenses[/:id]` | Create/update/soft-delete an interface licence | All three require `subscription.manage` (`backstage_business-unit-interface-licenses.controller.ts:143-145,189-191,236-238`); body on create: `license_feature_group_id`, `start_date`, `end_date`, `reference_no?`, `note?` — never `license_number`; **no cancel route** |
+| `GET /api-system/backstage/interface-licenses[/:id]` | Fleet-wide interface licence list (paginated, `searchfields=license_number,reference_no`, `sort=status` accepted) / one by bare id (returns `business_unit_id` so the nested update path can be built) | No `@RequireBackstagePermission`; scope-filtered per caller like the other two fleet routes |
+| `GET /api-system/clusters/:id/subscriptions` | One cluster's subscriptions, authorized by cluster-admin membership | Used by the cluster-admin shell (`useClusterSubscriptions(clusterId, 'cluster')`, `useBusinessUnitSubscriptions(buId, { clusterId })`) instead of `GET /api-system/backstage/subscriptions` |
+| `GET/POST/PATCH/DELETE /api-system/backstage/subscriptions[/:id]` | Subscription CRUD | `GET` requires `subscription.read`; write verbs require `subscription.manage` |
+| `GET /api-system/backstage/subscriptions/deleted`, `POST /api-system/backstage/subscriptions/:id/restore`, `DELETE /api-system/backstage/subscriptions/:id/hard` | Deleted-contract list / restore / permanent delete | `deleted` and `hard` are super-admin only; `restore` requires `subscription.manage` (`backstage_subscriptions.controller.ts:178-179,459-461,498-499`) |
+| `PUT /api-system/backstage/subscriptions/:id/groups` | Replace a subscription's feature-group set | Requires `subscription.manage`; full desired set, not a delta |
+| `GET /api-system/backstage/subscriptions/summary` | Unfiltered fleet-wide subscription counts | Requires `subscription.read`; independent of the current list filter |
+| `GET /api-system/backstage/license-features` | Feature catalog (read-only, for the SPA's group-expansion display) | Owned by [License Catalog](/en/backstage/license-catalog) |
+| `GET /api-system/backstage/expiry-thresholds` | The four configurable day-counts (§6) | No permission required |
+| `GET /api/license` (inventory gateway, not `/api-system`) | The consumer of all of the above: a BU's `state`, `end_date`, `features[]`, `hidden_features[]`, `expired_features[]` — INF groups unioned into `features[]` only while the main contract is `active` (§2.4) | Bearer + `x-app-id`; no RBAC. Since `feat(user)!` (2026-09) licence data is **no longer on `GET /api/user/profile`** — see the Inventory book |
+
+**Primary (source of truth):**
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/schema.prisma` — `tb_subscription` (558), `enum_subscription_status` (939), `enum_license_feature_group_kind` (962), `tb_business_unit_license` (1395), `tb_business_unit_interface_license` (1429), `tb_cluster_license` (1463), `tb_license_number_retired` (1513), `tb_license_feature` (1540), `tb_subscription_bu` (1583), `tb_license_feature_group` (1610), `tb_subscription_bu_group` (1667).
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260910000000_license_feature_group_kind`, `20260910010000_business_unit_interface_license`, `20260910020000_migrate_interface_groups_to_inf_license/migration.sql`, and `prisma/check.interface-license-migration.ts` — the INF schema, its data migration, and the mandatory preflight/snapshot/verify gate around it (§2.4).
+- `../carmen-turborepo-backend/apps/micro-cluster/src/cluster/business-unit-interface-license/business-unit-interface-license.service.ts` — `serialize()` (`state`/`in_force`/`contract_state`), the `kind = 'interface'` group check, `takeSortKey(…, ['status'])`.
+- `../carmen-turborepo-backend/apps/backend-gateway/src/license/{license.service.ts,license.types.ts}` — how `GET /api/license` folds INF licences into `features[]`/`expired_features[]`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260819000000_bu_user_license/migration.sql` — `tb_business_unit_license`, `v_business_unit_seat`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260822000000_add_cluster_license/migration.sql` (lines 36, 55), `20260824000000_add_cap_end_date_to_view/migration.sql`, `20260901020000_cluster_license_cancel/migration.sql` — `tb_cluster_license`, `v_cluster_bu_cap`, `v_cluster_bu_quota`.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/prisma/migrations/20260821130000_subscription_one_bu/migration.sql`, `20260831000000_subscription_bu_group/migration.sql`, `20260901000000_drop_subscription_bu_feature/migration.sql` — the one-BU-per-subscription model and the feature→group migration for entitlements.
+- `../carmen-turborepo-backend/packages/prisma-shared-schema-backstage/src/index.ts` — `deriveSubscriptionState()`, the single shared `state`-derivation function (§5).
+
+**Secondary (consumer shape):**
+- `../carmen-backstage/src/pages/licenses/licenseKindConfig.ts` — `SEAT_CONFIG`/`BU_QUOTA_CONFIG`/`INTERFACE_CONFIG`.
+- `../carmen-backstage/src/utils/clusterLicense.ts`, `src/utils/buLicense.ts`, `src/utils/subscriptionState.ts` — the three independent status/expiry-soon formulas.
+- `../carmen-backstage/src/utils/businessUnitRank.ts` — `rankBusinessUnits()`/`countOverLimit()`, must match `v_cluster_bu_quota`'s `ORDER BY` exactly.
+- `../carmen-backstage/src/context/ExpiryThresholdContext.tsx`, `src/services/expiryThresholdService.ts` — threshold delivery (§6).
+- `../carmen-backstage/src/types/index.ts` — `ClusterLicense`, `BusinessUnitLicense`, `InterfaceLicense` (1703), `LicenseFeatureGroupKind`, `Subscription`, `SubscriptionDetail`, `ExpiryThresholdsConfig`.
+
+**Cross-links:** [Licenses landing](/en/backstage/licenses) &nbsp;·&nbsp; [UI Screens](/en/backstage/licenses/ui-screens) &nbsp;·&nbsp; [Permissions](/en/backstage/licenses/permissions) &nbsp;·&nbsp; [License Catalog](/en/backstage/license-catalog) &nbsp;·&nbsp; [Backstage Config](/en/backstage/backstage-config)
