@@ -31,3 +31,7 @@ graft/
 # Obsidian's per-user vault settings — personal, not part of the wiki.
 .obsidian/
 data-model.pdf
+
+# trail hooks ของ Cursor มี absolute path ของเครื่อง local
+.cursor/hooks/
+.cursor/hooks.json
