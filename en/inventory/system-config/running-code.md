@@ -1,6 +1,6 @@
 ---
 title: Running Code
-description: Document-number patterns — prefix, date token, running counter per document type (PR, PO, GRN, SR, GL-JV, …). Since 2026-08-27 the admin dialog is a part-by-part editor with live preview; raw JSON is a collapsed fallback.
+description: Document-number patterns — prefix, date token, running counter per document type (PR, PO, GRN, SR, JOURNAL-VOUCHER, …). Since 2026-08-27 the admin dialog is a part-by-part editor with live preview; raw JSON is a collapsed fallback.
 published: true
 date: '2026-10-27T00:00:00.000Z'
 tags: system-config, running-code, configuration, carmen-software
@@ -32,13 +32,13 @@ dateCreated: 2026-05-16T08:00:00.000Z
 - The raw JSON textarea still exists, collapsed under **Advanced config** (`running-code-dialog.tsx:185-245`) with the pretty-print button; when `parseConfig()` returns `null` (no `format`, or `format` references a missing slot) the structured editor is disabled with a `configUnreadable` notice and the JSON textarea opens for manual repair.
 - `type` remains a free-text input that becomes read-only once a row exists (`disabled={isPending || isEdit}`, `:172`).
 
-The underlying pattern language (`date('yyyyMM')`, `running(5,'0')`, `format` template) is unchanged and still consumed by `GenerateCode`/`getPattern` in `common/helpers/running-code.helper.ts`. Backend fallback: when a BU has no row for a type, `getRunningPattern()` reads `RUNNING_CODE_PRESET[type].config` (`apps/micro-business/src/master/running-code/const/running-code.const.ts`) — presets exist for `PURCHASE-REQUEST`, `PURCHASE-ORDER`, `GOOD-RECEIVED-NOTE`, `CREDIT-NOTE`, `PRICE-LIST`, `STOCK-IN`, `STOCK-OUT`, `STORE-REQUISITION`, `SPOT-CHECK`, `PHYSICAL-COUNT`, `PRODUCT-CAT`, `PRODUCT-SUB-CAT`, `PRODUCT-ITEM-GROUP`, `PRODUCT`, and since 2026-09-15 `GL-JV` (`27f65cba1` — the missing preset made the first JV of every BU fail with a 500). There is **no guard** for a type outside the preset: a document type with neither a row nor a preset still crashes at number generation.
+The underlying pattern language (`date('yyyyMM')`, `running(5,'0')`, `format` template) is unchanged and still consumed by `GenerateCode`/`getPattern` in `common/helpers/running-code.helper.ts`. Backend fallback: when a BU has no row for a type, `getRunningPattern()` reads `RUNNING_CODE_PRESET[type].config` (`apps/micro-business/src/master/running-code/const/running-code.const.ts`) — presets exist for `PURCHASE-REQUEST`, `PURCHASE-ORDER`, `GOOD-RECEIVED-NOTE`, `CREDIT-NOTE`, `PRICE-LIST`, `STOCK-IN`, `STOCK-OUT`, `STORE-REQUISITION`, `SPOT-CHECK`, `PHYSICAL-COUNT`, `PRODUCT-CAT`, `PRODUCT-SUB-CAT`, `PRODUCT-ITEM-GROUP`, `PRODUCT`, and since 2026-09-15 the journal voucher — `JOURNAL-VOUCHER`, named `GL-JV` until 2026-11-26 (`27f65cba1` — the missing preset made the first JV of every BU fail with a 500). There is **no guard** for a type outside the preset: a document type with neither a row nor a preset still crashes at number generation.
 
 ## 1. What & Who
 
 Running codes are the **document-numbering rules** for every transactional document type. A row defines the prefix, optional date token, and zero-padded running counter — assembled into a `format` string — which the numbering service consumes at document-create time to mint a human-readable reference like `PR202605-00001`. Since 2026-08-27 the pattern is authored through a structured part editor with a live preview (see Implementation status); the JSON is a storage detail.
 
-The system is keyed by `type` (one row per document type — the preset keys above; note the seed/preset spelling is `PURCHASE-REQUEST`, `GOOD-RECEIVED-NOTE`, `GL-JV`, not `PR`/`GRN`) with the entire pattern captured inside the `config` JSONB column. Keeping the pattern as data lets a property change `PR-YYYYMM-NNNN` to `REQ-2026-NNNNN` without a code deploy.
+The system is keyed by `type` (one row per document type — the preset keys above; note the seed/preset spelling is `PURCHASE-REQUEST`, `GOOD-RECEIVED-NOTE`, `JOURNAL-VOUCHER`, not `PR`/`GRN`) with the entire pattern captured inside the `config` JSONB column. Keeping the pattern as data lets a property change `PR-YYYYMM-NNNN` to `REQ-2026-NNNNN` without a code deploy.
 
 **Maintained by** Sysadmin. **Read by** the numbering service on every new document.
 
@@ -62,14 +62,15 @@ The system is keyed by `type` (one row per document type — the preset keys abo
 | `RUNNING_CODE_CONFIG_UNUSABLE` (422) when a document is created | The stored config for that type cannot number documents (saved before the save-time check, or edited in the database) | Correct the row here; the error names the type and reason |
 | Part editor disabled, `configUnreadable` shown | `config` has no `format`, or `format` references a slot that does not exist | Repair in Advanced config; the editor refuses to guess and overwrite |
 | Counter unexpectedly restarted | Dated segment changed | Counter scoped by `type + dated-segment` — adding `yyyyMM` restarts monthly |
-| 500 `Cannot read properties of undefined (reading 'config')` on first document of a type | BU has no row for the type **and** no preset (`RUNNING_CODE_PRESET`) | Add the row here, or a preset in code (`GL-JV` was fixed this way on 2026-09-15) |
+| 500 `Cannot read properties of undefined (reading 'config')` on first document of a type | BU has no row for the type **and** no preset (`RUNNING_CODE_PRESET`) | Add the row here, or a preset in code (the journal voucher was fixed this way on 2026-09-15) |
 | Document number collision | Counter persistence bug or manual edit | Reset numbering service counter; investigate |
 | Cannot delete | Active document type | Soft-delete only after retirement |
 
 ## 4. Edge Cases
 
 - **Structured editor with a JSON escape hatch.** The part editor guarantees a consistent `format` for anything it saves; only the Advanced-config path can still store a `format` that references an undefined slot, which then fails at document-create time.
-- **`GL-JV` has no literal prefix part on purpose** — the prefix lives on `tb_gl_jv_header.prefix_code` and `jv_no` holds only `date('yyyyMM') + running(5,'0')`; the series is scoped to `prefix_code` by `generateJvNo`, so each prefix counts on its own (`running-code.const.ts:109-117`; the older `startsWith` rationale was dropped from the source comment in BE `2a343f502`). The preset list also gained AP/AR/tax codes (`AP-IV`, `AP-DN`, `AP-CN`, `AP-DP`, `AP-PV`, `AR-IV`, `AR-DN`, `AR-CN`, `TX-IV`, `TX-DN`, `TX-CN`).
+- **`JOURNAL-VOUCHER` carries the voucher's prefix through a token** — since 2026-11-25 the config is `{JV-PREFIX}-yyMM#####` (e.g. `JV-261100001`, legacy Carmen format); `generateJvNo` fills `{JV-PREFIX}` with `tb_gl_jv_header.prefix_code`, the series is scoped to `prefix_code` so each prefix counts on its own, and saving a config without exactly one `{JV-PREFIX}` part is refused (`RUNNING_CODE_TOKEN_REQUIRED`). Vouchers numbered earlier keep their old `yyyyMM#####` number.
+- **Renamed from `GL-JV` on 2026-11-26** — users did not recognise `GL-JV`. Migration `20261126090000_running_code_journal_voucher_type` renames existing rows (soft-deleted ones too) and soft-deletes a `JOURNAL-VOUCHER` row the backend may have seeded from the preset before migrating, so the admin's old config wins. JV counters do not reset (they read `tb_gl_jv_header`, not the type). Deploy order: migrate every tenant schema → backend. Code uses `JV_RUNNING_CODE_TYPE` (`running-code.const.ts`). The preset list also gained AP/AR/tax codes (`AP-IV`, `AP-DN`, `AP-CN`, `AP-DP`, `AP-PV`, `AR-IV`, `AR-DN`, `AR-CN`, `TX-IV`, `TX-DN`, `TX-CN`).
 - **Counter scope.** Implicit — scoped by `type + dated-segment`. Without a dated segment, counter is global per type.
 - **Counter persistence** is service state (advisory lock / sequence), not this table — this entity defines the *pattern* only.
 - **Pattern changes mid-period** take effect at next mint; existing references render as stored.
@@ -135,6 +136,6 @@ Observed in seed data:
 - **Prisma:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/schema.prisma` — `tb_config_running_code` (lines ~4864-4883).
 - **Backend pattern logic:** `../carmen-turborepo-backend/apps/micro-business/src/common/helpers/running-code.helper.ts` — `GenerateCode`, `getPattern`; presets `apps/micro-business/src/master/running-code/const/running-code.const.ts` (`RUNNING_CODE_PRESET`); service `apps/micro-business/src/master/running-code/running-code.service.ts` (`update` is `doc_version`-guarded, `:309`).
 - **Gateway:** `../carmen-turborepo-backend/apps/backend-gateway/src/config/config_running-codes/` — `api/config/:bu_code/running-codes`; licence `system_admin.running_code` (`permission.route-map.ts:125`).
-- **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (includes `GL-JV`).
+- **Seed:** `../carmen-turborepo-backend/packages/prisma-shared-schema-tenant/prisma/seed-data-a01/tb_config_running_code.json`; `packages/prisma-shared-schema-tenant/src/seed-data/running-code.ts` (includes `JOURNAL-VOUCHER`).
 - **Frontend:** `../carmen-frontend/routes/system-admin/running-code/` — `running-code-component.tsx` (list), `running-code-dialog.tsx` (create/edit), `running-code-config-fields.tsx` (part editor + preview), `running-code-config.ts` (`parseConfig`, `serializeConfig`, `previewCode`, `slotName`), `running-code-form-schema.ts`.
 - **E2E:** `../carmen-frontend-e2e/docs/test-cases/1110-running-code.md` — catalog only.
